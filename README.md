@@ -1,197 +1,312 @@
 # ClubAtlas
 
-**A web-based centralized club platform for transparent access, AI recommendations, and campus engagement.**
+**투명한 접근, AI 추천, 캠퍼스 참여를 위한 웹 기반 중앙 집중식 동아리 플랫폼**
 
-## Project Overview
+## 프로젝트 개요
 
-ClubAtlas replaces fragmented, last-minute club communication (emails, word-of-mouth) with a **central, student-friendly hub** where students can:
+ClubAtlas는 분산되고 마지막 순간에 이루어지는 동아리 소통(이메일, 구전)을 **중앙 집중식의 학생 친화적 허브**로 대체합니다. 학생들은 다음을 할 수 있습니다:
 
-- Discover clubs
-- View meeting schedules & past activities
-- Subscribe and get notifications
-- Receive AI-powered club recommendations
+- 동아리 발견
+- 모임 일정 및 과거 활동 보기
+- 구독 및 알림 받기
+- AI 기반 동아리 추천 받기
 
-Club leaders can:
+동아리 리더는 다음을 할 수 있습니다:
 
-- Manage club profiles
-- Post announcements and events
-- Reach both members and prospective students
+- 동아리 프로필 관리
+- 공지사항 및 이벤트 게시
+- 회원 및 예비 학생 모두에게 도달
 
-### Key Features
+### 주요 기능
 
-1. **Club Profile Pages**
-   - Each club has: mission, leadership, meeting schedule, past activities, optional media highlights
-   - Students can subscribe to each club
+1. **동아리 프로필 페이지**
+   - 각 동아리는 다음을 포함: 사명, 리더십, 모임 일정, 과거 활동, 선택적 미디어 하이라이트
+   - 학생들은 각 동아리를 구독할 수 있음
 
-2. **Club Calendar**
-   - Integrated calendar showing upcoming meetings/events
-   - Filter by date, club, or category
-   - Easy to scan in a timeline/month/week style
+2. **동아리 캘린더**
+   - 예정된 모임/이벤트를 보여주는 통합 캘린더
+   - 날짜, 동아리 또는 카테고리별 필터링
+   - 타임라인/월/주 스타일로 쉽게 스캔 가능
 
-3. **AI Recommendation Assistant**
-   - Suggests relevant clubs based on:
-     - User's stated interests (e.g., tags/checkboxes)
-     - Usage behavior (viewed clubs, subscribed clubs, attended events) — if available
-   - Supports:
-     - Active query (user asks: "Recommend clubs for someone who likes X and Y")
-     - Passive discovery (suggested list on dashboard/home)
+3. **AI 추천 어시스턴트**
+   - 다음을 기반으로 관련 동아리 제안:
+     - 사용자가 명시한 관심사 (예: 태그/체크박스)
+     - 사용 행동 (본 동아리, 구독한 동아리, 참석한 이벤트) — 가능한 경우
+   - 지원:
+     - 활성 쿼리 (사용자가 요청: "X와 Y를 좋아하는 사람을 위한 동아리 추천")
+     - 수동 발견 (대시보드/홈의 제안 목록)
 
-4. **Subscription & Notification System**
-   - Students can "follow/subscribe" to clubs
-   - They receive timely alerts (email and/or in-app) for:
-     - New announcements
-     - Upcoming meeting reminders
-     - Major updates (e.g., time/location changes)
+4. **구독 및 알림 시스템**
+   - 학생들은 동아리를 "팔로우/구독"할 수 있음
+   - 다음에 대한 적시 알림(이메일 및/또는 앱 내)을 받음:
+     - 새로운 공지사항
+     - 예정된 모임 알림
+     - 주요 업데이트 (예: 시간/장소 변경)
 
-5. **Club Leader / Admin Dashboard**
-   - Club leaders can:
-     - Edit club profile info
-     - Create & edit events (with schedule and location)
-     - Post announcements
-   - Access should be permission-controlled (leaders vs normal students)
+5. **동아리 리더 / 관리자 대시보드**
+   - 동아리 리더는 다음을 할 수 있음:
+     - 동아리 프로필 정보 편집
+     - 이벤트 생성 및 편집 (일정 및 장소 포함)
+     - 공지사항 게시
+   - 접근은 권한 기반으로 제어되어야 함 (리더 vs 일반 학생)
 
-6. **Cross-Club Collaboration Board**
-   - Shared board where clubs can:
-     - Post joint events
-     - Propose collaborations
-   - Students can discover these joint events
+6. **교차 동아리 협업 게시판**
+   - 동아리들이 다음을 할 수 있는 공유 게시판:
+     - 공동 이벤트 게시
+     - 협업 제안
+   - 학생들은 이러한 공동 이벤트를 발견할 수 있음
 
-### Optional Features (Phase 2)
+### 선택적 기능 (2단계)
 
-- **Student Dashboard ("My Page")**
-  - Personal overview: subscribed clubs, past participation, saved recommendations
-  - Architecture should support this, but UI can be minimal in first iteration
+- **학생 대시보드 ("마이 페이지")**
+  - 개인 개요: 구독한 동아리, 과거 참여, 저장된 추천
+  - 아키텍처는 이를 지원해야 하지만, 첫 번째 반복에서는 UI는 최소한으로 가능
 
-- **Social Interaction Features**
-  - Lightweight engagement: comments, reactions
-  - Design system to support easy addition later
+- **소셜 상호작용 기능**
+  - 경량 참여: 댓글, 반응
+  - 나중에 쉽게 추가할 수 있도록 설계 시스템 지원
 
-## Engineering Principles
+## 엔지니어링 원칙
 
-- Aim for **clean, maintainable, well-structured code**, not quick hacks
-- Prefer clear naming over brevity
-- Keep business logic and presentation logic separated where possible
-- For any complex logic (e.g., recommendation scoring, subscription/notification dispatch), add short, clear comments
-- If unsure about a requirement:
-  1. First infer from this Project Overview
-  2. If still ambiguous, clearly list assumptions in comments and in response
+- 빠른 해킹이 아닌 **깨끗하고 유지보수 가능하며 잘 구조화된 코드**를 목표로 함
+- 간결함보다 명확한 명명 선호
+- 가능한 경우 비즈니스 로직과 프레젠테이션 로직 분리
+- 복잡한 로직(예: 추천 점수 계산, 구독/알림 전송)의 경우 짧고 명확한 주석 추가
+- 요구사항에 대해 확실하지 않은 경우:
+  1. 먼저 이 프로젝트 개요에서 추론
+  2. 여전히 모호한 경우, 주석과 응답에 가정을 명확히 나열
 
-## Architecture & Data Modeling
+## 아키텍처 및 데이터 모델링
 
-### Core Entities
+### 핵심 엔티티
 
-- **User / Student**
-  - Basic profile (name, email, etc.)
-  - Role flags (e.g., normal student, club leader, admin)
-  - Interest tags (for recommendations)
+- **사용자 / 학생**
+  - 기본 프로필 (이름, 이메일 등)
+  - 역할 플래그 (예: 일반 학생, 동아리 리더, 관리자)
+  - 관심사 태그 (추천용)
 
-- **Club**
-  - Name, mission/description
-  - Category/tags
-  - Leadership (link to Users who are leaders)
-  - Meeting schedule summary (e.g., "Every Tuesday after school")
-  - Media (optional images, links, etc.)
+- **동아리**
+  - 이름, 사명/설명
+  - 카테고리/태그
+  - 리더십 (리더인 사용자에 대한 링크)
+  - 모임 일정 요약 (예: "매주 화요일 방과 후")
+  - 미디어 (선택적 이미지, 링크 등)
 
-- **ClubEvent**
-  - Belongs to a Club
-  - Title, description
-  - Start/end datetime, location
-  - Optional category (e.g., recruitment, workshop, social)
-  - Visibility status (active, cancelled, etc.)
+- **동아리 이벤트**
+  - 동아리에 속함
+  - 제목, 설명
+  - 시작/종료 날짜/시간, 장소
+  - 선택적 카테고리 (예: 모집, 워크샵, 소셜)
+  - 가시성 상태 (활성, 취소됨 등)
 
-- **ClubSubscription**
-  - User ↔ Club relation
-  - Created_at, active flag
+- **동아리 구독**
+  - 사용자 ↔ 동아리 관계
+  - 생성일, 활성 플래그
 
-- **Announcement**
-  - Belongs to a Club
-  - Title, body
-  - Created_at, updated_at
-  - Visibility status
+- **공지사항**
+  - 동아리에 속함
+  - 제목, 본문
+  - 생성일, 수정일
+  - 가시성 상태
 
-- **CollaborationPost / CrossClubEvent**
-  - Joint post across multiple clubs (e.g., many-to-many relationship with Club)
-  - Title, description, date/time, location
-  - Powers the "Cross-Club Collaboration Board"
+- **협업 게시물 / 교차 동아리 이벤트**
+  - 여러 동아리에 걸친 공동 게시물 (예: 동아리와의 다대다 관계)
+  - 제목, 설명, 날짜/시간, 장소
+  - "교차 동아리 협업 게시판"을 지원
 
-- **Notification / EmailQueue** (if implemented)
-  - Tracks notifications to be sent or recently sent
-  - Type (event reminder, announcement, etc.)
+- **알림 / 이메일 큐** (구현된 경우)
+  - 전송할 알림 또는 최근 전송된 알림 추적
+  - 유형 (이벤트 알림, 공지사항 등)
 
-- **RecommendationData / RecommendationHistory** (optional)
-  - For storing logs or scores from the recommendation engine
+- **추천 데이터 / 추천 기록** (선택적)
+  - 추천 엔진의 로그 또는 점수 저장용
 
-### AI Recommendation Engine
+### AI 추천 엔진
 
-- For the MVP, design the system so that the recommendation logic is **modular**:
-  - Start with something simple (e.g., rule-based: tag matching between user interests and club tags)
-  - Make it easy to swap/extend later with ML/LLM-based recommendations
-- Encapsulate recommendation logic in a dedicated module/service file
+- MVP의 경우, 추천 로직이 **모듈화**되도록 시스템 설계:
+  - 간단한 것으로 시작 (예: 규칙 기반: 사용자 관심사와 동아리 태그 간 태그 매칭)
+  - 나중에 ML/LLM 기반 추천으로 쉽게 교체/확장 가능하도록 함
+- 전용 모듈/서비스 파일에 추천 로직 캡슐화
 
-## Non-Functional & UX Considerations
+## 비기능적 및 UX 고려사항
 
-- The interface MUST be **student-friendly and easy to scan**:
-  - Club profiles should highlight:
-    - "Is this club right for me?" (mission, tags, activity type)
-    - When & where it meets next
-  - Calendar views should clearly show conflicts and timing
+- 인터페이스는 **학생 친화적이고 쉽게 스캔**할 수 있어야 함:
+  - 동아리 프로필은 다음을 강조해야 함:
+    - "이 동아리가 나에게 맞나요?" (사명, 태그, 활동 유형)
+    - 다음에 언제 어디서 만나는지
+  - 캘린더 보기는 충돌과 시간을 명확히 표시해야 함
 
-- For Club leaders:
-  - Make content management simple and safe:
-    - Validate data
-    - Prevent accidental loss
-    - Use clear forms for events and announcements
+- 동아리 리더의 경우:
+  - 콘텐츠 관리를 간단하고 안전하게:
+    - 데이터 검증
+    - 실수로 인한 손실 방지
+    - 이벤트 및 공지사항에 대한 명확한 양식 사용
 
-- Access Control:
-  - Only authorized club leaders can modify their club's content
-  - Admins can manage all clubs and moderate collaboration posts
+- 접근 제어:
+  - 승인된 동아리 리더만 자신의 동아리 콘텐츠를 수정할 수 있음
+  - 관리자는 모든 동아리를 관리하고 협업 게시물을 조정할 수 있음
 
-## Figma Design as Source of Truth
+## Figma 디자인을 진실의 원천으로
 
-- Treat the Figma-based spec as the **primary source of truth for UI layout and visual hierarchy**
-- Follow the described layout structure, sections, and components as closely as reasonably possible
-- Keep components reusable and align naming with the Figma semantics (e.g., "ClubCard", "ClubList", "EventCalendarSidebar" etc.)
-- Make the implementation easily adjustable in case we later tweak the Figma design
+- Figma 기반 사양을 **UI 레이아웃 및 시각적 계층 구조의 주요 진실의 원천**으로 취급
+- 설명된 레이아웃 구조, 섹션 및 컴포넌트를 합리적으로 가능한 한 가깝게 따름
+- 컴포넌트를 재사용 가능하게 유지하고 Figma 의미론과 정렬 (예: "ClubCard", "ClubList", "EventCalendarSidebar" 등)
+- 나중에 Figma 디자인을 조정하는 경우 구현을 쉽게 조정 가능하도록 함
 
-**When matching Figma design**:
-- Respect layout structure (sections, cards, sidebars, header/footer, spacing)
-- Respect key typography hierarchy (what is the main title, subtitle, body, meta)
-- Respect main colors, borders, and corner radius tokens if provided
+**Figma 디자인을 일치시킬 때**:
+- 레이아웃 구조 존중 (섹션, 카드, 사이드바, 헤더/푸터, 간격)
+- 주요 타이포그래피 계층 구조 존중 (주요 제목, 부제목, 본문, 메타)
+- 제공된 경우 주요 색상, 테두리 및 모서리 반경 토큰 존중
 
-If there is any ambiguity in the text spec:
-- Make a reasonable assumption and **write it down as a short comment** in the code (e.g. `// Assumption: mobile breakpoint at 768px`)
+텍스트 사양에 모호함이 있는 경우:
+- 합리적인 가정을 하고 **코드에 짧은 주석으로 기록** (예: `// 가정: 모바일 중단점 768px`)
 
-## Scope & Priority
+## 범위 및 우선순위
 
-When prioritizing tasks or making trade-offs, follow this order:
+작업을 우선순위화하거나 절충안을 만들 때 다음 순서를 따름:
 
-1. **Core club directory & club profiles**
-2. **Club events & calendar**
-3. **Subscriptions & notifications**
-4. **Club leader dashboard**
-5. **Cross-club collaboration board**
-6. **Simple, modular AI recommendations (rule-based to start)**
-7. Optional: Student "My Page" dashboard, social features
+1. **핵심 동아리 디렉토리 및 동아리 프로필**
+2. **동아리 이벤트 및 캘린더**
+3. **구독 및 알림**
+4. **동아리 리더 대시보드**
+5. **교차 동아리 협업 게시판**
+6. **간단하고 모듈화된 AI 추천 (규칙 기반으로 시작)**
+7. 선택적: 학생 "마이 페이지" 대시보드, 소셜 기능
 
-If implementing something in a later priority requires minimal extra effort at the current step (e.g., adding a column now to avoid migration churn later), you may do it — but clearly document it.
+나중에 우선순위의 무언가를 구현하는 것이 현재 단계에서 최소한의 추가 노력이 필요한 경우 (예: 나중에 마이그레이션 혼란을 피하기 위해 지금 열 추가), 이를 수행할 수 있음 — 하지만 명확히 문서화해야 함
 
-## Development Guidelines
+## 개발 가이드라인
 
-### Response Structure
+### 응답 구조
 
-When given a task, follow this structure:
+작업이 주어지면 다음 구조를 따름:
 
-1. **Restate** the task in 1–3 sentences to confirm understanding
-2. If needed, ask **at most 2–3 precise clarification questions**. If you can infer safely from this spec, prefer inference over asking
-3. Propose a **small step plan** (1–5 steps)
-4. Show the concrete code changes:
-   - File paths
-   - New/updated code
-   - Very short explanations for each significant block
+1. 이해를 확인하기 위해 1-3문장으로 작업을 **재진술**
+2. 필요한 경우 **최대 2-3개의 정확한 명확화 질문**을 함. 이 사양에서 안전하게 추론할 수 있는 경우, 질문보다 추론을 선호
+3. **작은 단계 계획** 제안 (1-5단계)
+4. 구체적인 코드 변경 사항 표시:
+   - 파일 경로
+   - 새/업데이트된 코드
+   - 각 중요한 블록에 대한 매우 짧은 설명
 
-### Never
+### 금지 사항
 
-- Change or delete existing functionality silently
-- Ignore the project overview or feature list above
-- Over-engineer (build huge abstractions) without a clear benefit for this project
+- 기존 기능을 조용히 변경하거나 삭제하지 않음
+- 위의 프로젝트 개요 또는 기능 목록을 무시하지 않음
+- 이 프로젝트에 대한 명확한 이점 없이 과도하게 설계하지 않음 (거대한 추상화 구축)
 
+## 프로젝트 구조
+
+```
+ClubAtlas/
+├── src/                    # Next.js 프론트엔드 (App Router)
+│   └── app/
+│       ├── components/     # React 컴포넌트
+│       ├── page.tsx        # 메인 페이지
+│       └── ...
+├── backend/                 # Python FastAPI 백엔드
+│   ├── app/
+│   │   ├── main.py         # FastAPI 앱 진입점
+│   │   ├── api/            # API 엔드포인트
+│   │   ├── models/         # 데이터 모델
+│   │   ├── services/       # 비즈니스 로직
+│   │   └── utils/          # 유틸리티 함수
+│   ├── requirements.txt    # Python 의존성
+│   └── README.md
+├── public/                 # 정적 파일
+├── package.json            # Node.js 의존성
+└── README.md
+```
+
+## 기술 스택
+
+- **프론트엔드**: Next.js 15 + TypeScript
+- **백엔드**: Python FastAPI
+- **데이터베이스**: (향후 추가 예정)
+- **LLM**: (향후 추가 예정)
+
+## 개발 환경 설정
+
+### 사전 요구사항
+- Node.js 18+ 및 npm
+- Python 3.9+
+- (선택) Git
+
+### 전체 프로젝트 실행
+
+#### 1. 저장소 클론 및 의존성 설치
+
+```bash
+# 저장소 클론 (이미 있다면 생략)
+git clone <repository-url>
+cd ClubAtlas
+
+# 프론트엔드 의존성 설치
+npm install
+
+# 백엔드 의존성 설치
+cd backend
+python -m venv venv
+
+# 가상환경 활성화
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# Python 패키지 설치
+pip install -r requirements.txt
+cd ..
+```
+
+#### 2. 환경 변수 설정 (선택사항)
+
+**프론트엔드** - `.env.local` 파일 생성:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+**백엔드** - `backend/.env` 파일 생성:
+```env
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+PORT=8000
+HOST=0.0.0.0
+```
+
+#### 3. 서버 실행
+
+**터미널 1 - 백엔드 서버:**
+```bash
+cd backend
+python run.py
+# 또는
+uvicorn app.main:app --reload --port 8000
+```
+
+**터미널 2 - 프론트엔드 서버:**
+```bash
+npm run dev
+```
+
+#### 4. 접속 확인
+
+- **프론트엔드**: http://localhost:3000
+- **백엔드 API**: http://localhost:8000
+- **API 문서**: http://localhost:8000/docs
+
+### 개별 실행
+
+#### 프론트엔드만 실행
+```bash
+npm install
+npm run dev
+```
+
+#### 백엔드만 실행
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python run.py
+```

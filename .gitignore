@@ -27,7 +27,24 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+backend/.env
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/env/
+backend/.venv
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+*.pyc
