@@ -109,3 +109,5 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 - 프론트엔드: `package.json`의 `dev` 스크립트 수정
 - 백엔드: `backend/.env`의 `PORT` 변경
 
+
+

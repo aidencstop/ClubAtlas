@@ -39,7 +39,7 @@ export default function WelcomePage() {
             title="Admin Access"
             description="Club leaders: Manage your club profile, events, announcements, and engage with subscribers"
             buttonText="Admin Login"
-            buttonHref="/admin"
+            buttonHref="/admin/login"
           />
         </div>
 

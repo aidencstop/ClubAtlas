@@ -32,8 +32,14 @@ class Settings:
     # LLM API 설정 (향후 추가)
     # OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     # ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    
+    # Firebase 설정
+    FIREBASE_PROJECT_ID: str = os.getenv("FIREBASE_PROJECT_ID", "")
+    FIREBASE_PRIVATE_KEY: str = os.getenv("FIREBASE_PRIVATE_KEY", "")
+    FIREBASE_CLIENT_EMAIL: str = os.getenv("FIREBASE_CLIENT_EMAIL", "")
 
 
 # 전역 설정 인스턴스
 settings = Settings()
+
 

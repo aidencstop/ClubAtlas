@@ -1,19 +1,24 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './LoginForm.module.css';
 import ForgotPasswordModal from './ForgotPasswordModal';
 
 export default function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 로그인 로직 구현
+    // TODO: 실제 Firebase 인증 로직 구현
     console.log('Login:', { email, password });
+    
+    // 임시: 로그인 성공 시 홈으로 리다이렉트
+    router.push('/student/home');
   };
 
   return (
@@ -75,7 +80,7 @@ export default function LoginForm() {
       <div className={styles.divider}></div>
 
       <div className={styles.footer}>
-        <p className={styles.footerText}>Don't have an account?</p>
+        <p className={styles.footerText}>Don&apos;t have an account?</p>
         <Link href="/student/signup" className={styles.signupLink}>
           Create Student Account →
         </Link>

@@ -1,0 +1,78 @@
+.sidebar {
+  width: 290px;
+  flex-shrink: 0;
+}
+
+.navContainer {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.navTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #6a7282;
+  margin: 0;
+  padding: 0 8px;
+  letter-spacing: -0.1504px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.navItem:hover {
+  background-color: #f9fafb;
+}
+
+.navItemActive {
+  background: linear-gradient(90deg, rgba(63, 95, 29, 1) 0%, rgba(96, 156, 34, 1) 100%);
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.navItemActive .navText {
+  color: white;
+}
+
+.navIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.navText {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #364153;
+  letter-spacing: -0.3125px;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 100%;
+  }
+}
+
+

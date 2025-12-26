@@ -88,3 +88,5 @@ curl http://localhost:8000/
 2. `NEXT_PUBLIC_API_URL` 환경 변수 확인
 3. 브라우저 네트워크 탭에서 요청 확인
 
+
+

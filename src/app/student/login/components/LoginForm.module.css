@@ -1,5 +1,6 @@
 .panel {
   width: 512px;
+  min-width: 512px; /* 고정 너비 보장 */
   height: 766px;
   background: white;
   border-radius: 0 24px 24px 0;
@@ -8,6 +9,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 32px;
+  flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .header {

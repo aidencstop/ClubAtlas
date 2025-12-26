@@ -4,6 +4,13 @@ ClubAtlas Backend - FastAPI Main Application
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
+from app.services.firebase_admin import initialize_firebase_admin
+
+# Firebase Admin 초기화
+try:
+    initialize_firebase_admin()
+except Exception as e:
+    print(f"Warning: Firebase Admin initialization failed: {e}")
 
 app = FastAPI(
     title=settings.API_TITLE,

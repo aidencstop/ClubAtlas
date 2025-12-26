@@ -1,0 +1,29 @@
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.mainContent {
+  padding-top: 112px;
+  display: flex;
+  gap: 24px;
+  padding-left: 94.5px;
+  padding-right: 94.5px;
+  padding-bottom: 32px;
+  min-height: calc(100vh - 80px);
+}
+
+@media (max-width: 1400px) {
+  .mainContent {
+    padding: 32px 48px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    flex-direction: column;
+    padding: 24px 24px;
+  }
+}
+
+

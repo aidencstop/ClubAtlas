@@ -109,7 +109,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                     alt="check"
                     className={styles.checkIcon}
                   />
-                  <span>You'll receive further instructions via email within 24-48 hours</span>
+                  <span>You&apos;ll receive further instructions via email within 24-48 hours</span>
                 </li>
               </ul>
             </div>
@@ -134,4 +134,5 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
     </div>
   );
 }
+
 
