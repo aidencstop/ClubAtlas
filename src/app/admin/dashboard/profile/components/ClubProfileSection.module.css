@@ -1,0 +1,197 @@
+.profileSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 918px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+}
+
+.pageTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 36px;
+  color: #0a0a0a;
+  margin: 0;
+  letter-spacing: 0.3955px;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 24px;
+  background: linear-gradient(90deg, rgba(63, 95, 29, 1) 0%, rgba(96, 156, 34, 1) 100%);
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.editButton:hover {
+  opacity: 0.9;
+}
+
+.buttonIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.buttonText {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: white;
+  letter-spacing: -0.3125px;
+}
+
+.profileCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cardTitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #0a0a0a;
+  margin: 0;
+  letter-spacing: -0.4492px;
+}
+
+.imagesSection {
+  display: flex;
+  gap: 24px;
+}
+
+.logoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 274px;
+  flex-shrink: 0;
+}
+
+.coverSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+  letter-spacing: -0.1504px;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 274px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 1) 0%, rgba(250, 245, 255, 1) 100%);
+}
+
+.logoIcon {
+  width: 64px;
+  height: 64px;
+}
+
+.coverContainer {
+  height: 192px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(239, 246, 255, 1) 0%, rgba(241, 239, 255, 1) 50%, rgba(250, 245, 255, 1) 100%);
+}
+
+.fieldsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldGroupLarge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldValue {
+  background: #f9fafb;
+  border-radius: 14px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.fieldValueLarge {
+  background: #f9fafb;
+  border-radius: 14px;
+  min-height: 96px;
+  padding: 16px;
+}
+
+.fieldText {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0;
+  letter-spacing: -0.3125px;
+}
+
+@media (max-width: 1024px) {
+  .profileSection {
+    max-width: 100%;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    gap: 16px;
+  }
+
+  .editButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .imagesSection {
+    flex-direction: column;
+  }
+
+  .logoSection {
+    width: 100%;
+  }
+}
+
