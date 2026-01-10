@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import styles from './ClubProfileSection.module.css';
 
 const imgIcon = "https://www.figma.com/api/mcp/asset/924b1ed6-ce7e-41d3-a882-68365bf1ac6a";
@@ -10,10 +11,10 @@ export default function ClubProfileSection() {
     <div className={styles.profileSection}>
       <div className={styles.header}>
         <h2 className={styles.pageTitle}>Club Profile Management</h2>
-        <button className={styles.editButton}>
+        <Link href="/admin/dashboard/profile/edit" className={styles.editButton}>
           <img src={imgIcon} alt="" className={styles.buttonIcon} />
           <span className={styles.buttonText}>Edit Profile</span>
-        </button>
+        </Link>
       </div>
 
       <div className={styles.profileCard}>
@@ -59,4 +60,5 @@ export default function ClubProfileSection() {
     </div>
   );
 }
+
 

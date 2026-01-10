@@ -1,0 +1,26 @@
+.container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(118.41deg, #f1fff6 0%, #eff6ff 100%);
+}
+
+.content {
+  padding: 112px 87px 0;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1232px;
+  padding-bottom: 48px;
+}
+
+@media (max-width: 1024px) {
+  .content {
+    padding: 80px 24px 0;
+  }
+}
+
