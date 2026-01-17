@@ -4,7 +4,7 @@ import Link from 'next/link';
 import styles from './EventsSection.module.css';
 import EventCard from './EventCard';
 
-const arrowIcon = "https://www.figma.com/api/mcp/asset/be0b2b8b-a481-4b56-bdb5-dc45b8621589";
+const arrowIcon = "https://www.figma.com/api/mcp/asset/bbb23193-5526-4a19-8739-d5af769dba0d";
 
 const events = [
   {
@@ -65,5 +65,8 @@ export default function EventsSection() {
     </section>
   );
 }
+
+
+
 
 

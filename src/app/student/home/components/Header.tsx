@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import styles from './Header.module.css';
 
-const logoIcon = "https://www.figma.com/api/mcp/asset/6348a1d4-e9af-4a54-b48b-b72b48b4a9f5";
-const searchIcon = "https://www.figma.com/api/mcp/asset/852932b0-4fd8-46b7-971d-27c904703d8c";
-const bellIcon = "https://www.figma.com/api/mcp/asset/e347607a-6937-4ec4-bf74-72e82a27dec8";
-const profileIcon = "https://www.figma.com/api/mcp/asset/062f01fb-4f88-47ed-9471-b573b8ccb775";
+const logoIcon = "https://www.figma.com/api/mcp/asset/b379cb2b-fb4a-4ab2-bfb2-916edaa498ff";
+const searchIcon = "https://www.figma.com/api/mcp/asset/351c15c4-0715-4cb3-ac12-2fc82757c5a5";
+const bellIcon = "https://www.figma.com/api/mcp/asset/340e4d5e-2a59-468a-bccc-27081a701fd2";
+const profileIcon = "https://www.figma.com/api/mcp/asset/e00204ec-bd22-40f5-ad2c-8979aa723275";
 
 export default function Header() {
   return (
@@ -32,7 +32,7 @@ export default function Header() {
           <Link href="/student/home/collaborations" className={styles.navLink}>
             Collaborations
           </Link>
-          <Link href="/student/mypage" className={styles.navLink}>
+          <Link href="/student/home/mypage" className={styles.navLink}>
             My Page
           </Link>
         </nav>

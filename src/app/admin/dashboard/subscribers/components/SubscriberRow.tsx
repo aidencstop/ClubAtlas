@@ -36,3 +36,6 @@ export default function SubscriberRow({ subscriber, onViewDetails }: SubscriberR
   );
 }
 
+
+
+

@@ -62,3 +62,6 @@ export default function SubscriberDetailsModal({ isOpen, onClose, subscriber }: 
   );
 }
 
+
+
+

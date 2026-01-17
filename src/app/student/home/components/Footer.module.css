@@ -1,5 +1,6 @@
 .footer {
   width: 100%;
+  max-width: 1406px;
   height: 74px;
   background: #101828;
   display: flex;
@@ -43,5 +44,8 @@
     line-height: 18px;
   }
 }
+
+
+
 
 

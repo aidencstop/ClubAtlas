@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import styles from './HeroSection.module.css';
 
-const arrowIcon = "https://www.figma.com/api/mcp/asset/cb9cdd08-8327-491c-9f38-4096073305ba";
-const sparklesIcon = "https://www.figma.com/api/mcp/asset/ff4f0e9e-61b4-4260-8a8b-4fb49f61ce89";
+const arrowIcon = "https://www.figma.com/api/mcp/asset/a6dd96f1-49f8-4b35-9d67-cde991ad7e57";
+const sparklesIcon = "https://www.figma.com/api/mcp/asset/c9458851-23cf-4bdc-b150-3074986ab2c4";
 
 export default function HeroSection() {
   return (
@@ -29,5 +29,8 @@ export default function HeroSection() {
     </section>
   );
 }
+
+
+
 
 

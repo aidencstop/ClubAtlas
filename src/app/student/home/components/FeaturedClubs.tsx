@@ -4,11 +4,11 @@ import Link from 'next/link';
 import styles from './FeaturedClubs.module.css';
 import ClubCard from './ClubCard';
 
-const arrowIcon = "https://www.figma.com/api/mcp/asset/be0b2b8b-a481-4b56-bdb5-dc45b8621589";
+const arrowIcon = "https://www.figma.com/api/mcp/asset/bbb23193-5526-4a19-8739-d5af769dba0d";
 
-const roboticsImage = "https://www.figma.com/api/mcp/asset/f19d250f-4777-4e93-a829-b8d8a3fb9731";
-const photographyImage = "https://www.figma.com/api/mcp/asset/26c28010-3be4-4f44-9eec-b41bdbe5107b";
-const dramaImage = "https://www.figma.com/api/mcp/asset/ee5859ec-9a0c-4ae8-9d13-b762ad52e5a9";
+const roboticsImage = "https://www.figma.com/api/mcp/asset/adbb5034-2eec-4094-a8b8-60c41e0f8e2c";
+const photographyImage = "https://www.figma.com/api/mcp/asset/22444cad-5b6b-4b96-a5c1-0a9e01453064";
+const dramaImage = "https://www.figma.com/api/mcp/asset/75f31f36-98bd-4a9c-ac01-9c77b1484f18";
 
 const clubs = [
   {
@@ -63,5 +63,8 @@ export default function FeaturedClubs() {
     </section>
   );
 }
+
+
+
 
 
