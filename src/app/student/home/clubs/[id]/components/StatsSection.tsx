@@ -47,3 +47,4 @@ export default function StatsSection({ clubId }: StatsSectionProps) {
 }
 
 
+

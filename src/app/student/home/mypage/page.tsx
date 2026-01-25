@@ -21,10 +21,35 @@ const calendarIconBlue = "https://www.figma.com/api/mcp/asset/382d65ad-73da-4bc4
 const clockIcon = "https://www.figma.com/api/mcp/asset/5cde0127-b609-4238-b941-7c6cfba8259a";
 const heartIcon = "https://www.figma.com/api/mcp/asset/5fb67623-b0e8-418b-a1ba-989d20404da1";
 
-// 클럽 이미지
+// Subscribed 탭 아이콘
+const checkIcon = "https://www.figma.com/api/mcp/asset/a10af64b-bdf3-48e7-8a33-eb26119adc3c";
+const notificationIcon = "https://www.figma.com/api/mcp/asset/e4e15446-57a6-4f70-9168-97347620bfa5";
+
+// History 탭 아이콘
+const eventsAttendedIconGreen = "https://www.figma.com/api/mcp/asset/c2603490-f4ff-4e3b-aef5-0e9f27cbd014";
+const eventsMissedIconRed = "https://www.figma.com/api/mcp/asset/baa6039f-f018-4afc-9a74-6622527f3228";
+const attendanceRateIconBlue = "https://www.figma.com/api/mcp/asset/bfdb0d48-97a6-4933-b834-5d3fd1a8afbc";
+const eventCheckIcon = "https://www.figma.com/api/mcp/asset/ea9c1071-7c96-438b-a18c-95d22f4c8d13";
+const eventXIcon = "https://www.figma.com/api/mcp/asset/e135f0ff-8493-43ad-aa18-a3944ccca728";
+
+// Saved 탭 아이콘 및 이미지
+const removeIcon = "https://www.figma.com/api/mcp/asset/b0bdc92e-b7b4-4a5b-95fe-3bb61fadee36";
+const computerScienceImage = "https://www.figma.com/api/mcp/asset/413a64fa-85e4-49b5-8871-247a1a387913";
+const makerSpaceImage = "https://www.figma.com/api/mcp/asset/908f2a50-f8c7-40e6-8b8c-1d619f9d8367";
+const dramaSocietyImage = "https://www.figma.com/api/mcp/asset/69187ad4-3095-48ad-96fb-fd0afbf85f5a";
+
+// Settings 탭 아이콘
+const passwordIcon = "https://www.figma.com/api/mcp/asset/33a04ed2-c07f-4e0b-b3e7-1aa53efb7099";
+
+// 클럽 이미지 (Overview 탭용)
 const roboticsImage = "https://www.figma.com/api/mcp/asset/4ba38dbe-026b-4fd0-bc00-b3d0131f693c";
 const photographyImage = "https://www.figma.com/api/mcp/asset/a186a9fb-03e2-4ba0-aa24-2ce436bc6074";
 const debateImage = "https://www.figma.com/api/mcp/asset/8e892fbd-ccf1-4c07-b2a8-e86e1e877f61";
+
+// 클럽 이미지 (Subscribed 탭용 - 더 큰 사이즈)
+const roboticsImageLarge = "https://www.figma.com/api/mcp/asset/2ea62fac-3b99-4b23-8a29-b749e4db2b63";
+const photographyImageLarge = "https://www.figma.com/api/mcp/asset/cad04e6a-4e92-4d32-a266-af8cb40da6b0";
+const debateImageLarge = "https://www.figma.com/api/mcp/asset/21474162-77bc-4f7c-90a2-637ab7563087";
 
 export default function MyPagePage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -273,6 +298,348 @@ export default function MyPagePage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Subscribed Tab Content */}
+          {activeTab === 'subscribed' && (
+            <div className={styles.subscribedContent}>
+              {/* Header with Browse More Clubs Button */}
+              <div className={styles.subscribedHeader}>
+                <div></div>
+                <Link href="/student/home/clubs" className={styles.browseMoreButton}>
+                  Browse More Clubs
+                </Link>
+              </div>
+
+              {/* Subscribed Clubs List */}
+              <div className={styles.subscribedClubsList}>
+                {[
+                  {
+                    name: 'Robotics Club',
+                    category: 'ACADEMIC',
+                    image: roboticsImageLarge,
+                    description: 'Exploring innovative ideas and building the future of technology through hands-on projects.',
+                    nextMeeting: 'Mon, Nov 27, 4:00 PM',
+                    emailNotifications: true,
+                    memberSince: 'Nov 2024'
+                  },
+                  {
+                    name: 'Photography Club',
+                    category: 'ARTS',
+                    image: photographyImageLarge,
+                    description: 'Exploring innovative ideas and building the future of technology through hands-on projects.',
+                    nextMeeting: 'Thu, Nov 30, 6:00 PM',
+                    emailNotifications: true,
+                    memberSince: 'Nov 2024'
+                  },
+                  {
+                    name: 'Debate Team',
+                    category: 'ACADEMIC',
+                    image: debateImageLarge,
+                    description: 'Exploring innovative ideas and building the future of technology through hands-on projects.',
+                    nextMeeting: 'Wed, Nov 29, 3:00 PM',
+                    emailNotifications: true,
+                    memberSince: 'Nov 2024'
+                  }
+                ].map((club, index) => (
+                  <div key={index} className={styles.subscribedClubCard}>
+                    <div className={styles.subscribedClubContent}>
+                      <img src={club.image} alt={club.name} className={styles.subscribedClubImage} />
+                      <div className={styles.subscribedClubInfo}>
+                        <div className={styles.subscribedClubTags}>
+                          <span className={styles.categoryTag}>{club.category}</span>
+                          <span className={styles.subscribedTag}>Subscribed ✓</span>
+                        </div>
+                        <h3 className={styles.subscribedClubName}>{club.name}</h3>
+                        <p className={styles.subscribedClubDescription}>{club.description}</p>
+                        
+                        <div className={styles.clubDetailsGrid}>
+                          <div className={styles.clubDetail}>
+                            <p className={styles.detailLabel}>Next Meeting</p>
+                            <p className={styles.detailValue}>{club.nextMeeting}</p>
+                          </div>
+                          <div className={styles.clubDetail}>
+                            <p className={styles.detailLabel}>Email Notifications</p>
+                            <div className={styles.detailValueWithIcon}>
+                              <img src={checkIcon} alt="" className={styles.checkIcon} />
+                              <p className={styles.detailValueEnabled}>Enabled</p>
+                            </div>
+                          </div>
+                          <div className={styles.clubDetail}>
+                            <p className={styles.detailLabel}>Member Since</p>
+                            <p className={styles.detailValue}>{club.memberSince}</p>
+                          </div>
+                        </div>
+
+                        <div className={styles.clubActions}>
+                          <button className={styles.viewClubProfileButton}>View Club Profile</button>
+                          <button className={styles.manageNotificationsButton}>
+                            <img src={notificationIcon} alt="" />
+                            <span>Manage Notifications</span>
+                          </button>
+                          <button className={styles.unsubscribeButton}>Unsubscribe</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* History Tab Content */}
+          {activeTab === 'history' && (
+            <div className={styles.historyContent}>
+              {/* Filter Buttons */}
+              <div className={styles.historyHeader}>
+                <div className={styles.historyFilters}>
+                  <button className={styles.filterButtonActive}>All (4)</button>
+                  <button className={styles.filterButton}>Attended</button>
+                  <button className={styles.filterButton}>Missed</button>
+                </div>
+              </div>
+
+              {/* Stats Cards */}
+              <div className={styles.historyStatsGrid}>
+                <div className={styles.historyStatCard}>
+                  <div className={styles.historyStatHeader}>
+                    <div className={styles.historyStatIconGreen}>
+                      <img src={eventsAttendedIconGreen} alt="" />
+                    </div>
+                    <span className={styles.historyStatNumber}>3</span>
+                  </div>
+                  <p className={styles.historyStatLabel}>Events Attended</p>
+                </div>
+
+                <div className={styles.historyStatCard}>
+                  <div className={styles.historyStatHeader}>
+                    <div className={styles.historyStatIconRed}>
+                      <img src={eventsMissedIconRed} alt="" />
+                    </div>
+                    <span className={styles.historyStatNumber}>1</span>
+                  </div>
+                  <p className={styles.historyStatLabel}>Events Missed</p>
+                </div>
+
+                <div className={styles.historyStatCard}>
+                  <div className={styles.historyStatHeader}>
+                    <div className={styles.historyStatIconBlue}>
+                      <img src={attendanceRateIconBlue} alt="" />
+                    </div>
+                    <span className={styles.historyStatNumber}>75%</span>
+                  </div>
+                  <p className={styles.historyStatLabel}>Attendance Rate</p>
+                </div>
+              </div>
+
+              {/* Event Timeline */}
+              <div className={styles.eventTimeline}>
+                <h2 className={styles.eventTimelineTitle}>Event Timeline</h2>
+                <div className={styles.eventTimelineList}>
+                  {[
+                    {
+                      club: 'Robotics Club',
+                      event: 'Workshop',
+                      date: 'Nov 20, 2024',
+                      status: 'Attended'
+                    },
+                    {
+                      club: 'Photography Club',
+                      event: 'Exhibition',
+                      date: 'Nov 15, 2024',
+                      status: 'Attended'
+                    },
+                    {
+                      club: 'Robotics Club',
+                      event: 'Weekly Meeting',
+                      date: 'Nov 13, 2024',
+                      status: 'Attended'
+                    },
+                    {
+                      club: 'Debate Team',
+                      event: 'Tournament',
+                      date: 'Nov 10, 2024',
+                      status: 'Missed'
+                    }
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className={item.status === 'Attended' ? styles.eventItemAttended : styles.eventItemMissed}
+                    >
+                      <div className={styles.eventItemContent}>
+                        <div className={item.status === 'Attended' ? styles.eventIconAttended : styles.eventIconMissed}>
+                          <img src={item.status === 'Attended' ? eventCheckIcon : eventXIcon} alt="" />
+                        </div>
+                        <div className={styles.eventItemInfo}>
+                          <p className={styles.eventItemClub}>{item.club}</p>
+                          <h3 className={styles.eventItemEvent}>{item.event}</h3>
+                          <p className={styles.eventItemDate}>{item.date}</p>
+                        </div>
+                      </div>
+                      <div className={item.status === 'Attended' ? styles.eventStatusAttended : styles.eventStatusMissed}>
+                        {item.status}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Saved Tab Content */}
+          {activeTab === 'saved' && (
+            <div className={styles.savedContent}>
+              {/* Header with Get More Recommendations Button */}
+              <div className={styles.savedHeader}>
+                <div></div>
+                <button className={styles.getRecommendationsButton}>Get More Recommendations</button>
+              </div>
+
+              {/* Saved Clubs Card */}
+              <div className={styles.savedClubsCard}>
+                <h2 className={styles.savedClubsTitle}>Saved Clubs</h2>
+                <div className={styles.savedClubsList}>
+                  {[
+                    {
+                      name: 'Computer Science Society',
+                      category: 'ACADEMIC',
+                      match: '88% Match',
+                      description: 'Based on your tech interests',
+                      image: computerScienceImage
+                    },
+                    {
+                      name: 'Maker Space',
+                      category: 'TECH',
+                      match: '82% Match',
+                      description: 'Similar to clubs you follow',
+                      image: makerSpaceImage
+                    },
+                    {
+                      name: 'Drama Society',
+                      category: 'ARTS',
+                      match: '75% Match',
+                      description: 'Explore new interests',
+                      image: dramaSocietyImage
+                    }
+                  ].map((club, index) => (
+                    <div key={index} className={styles.savedClubItem}>
+                      <div className={styles.savedClubItemContent}>
+                        <img src={club.image} alt={club.name} className={styles.savedClubItemImage} />
+                        <div className={styles.savedClubItemInfo}>
+                          <div className={styles.savedClubItemTags}>
+                            <span className={styles.savedClubItemCategory}>{club.category}</span>
+                            <span className={styles.savedClubItemMatch}>{club.match}</span>
+                          </div>
+                          <h3 className={styles.savedClubItemName}>{club.name}</h3>
+                          <p className={styles.savedClubItemDescription}>{club.description}</p>
+                          <div className={styles.savedClubItemActions}>
+                            <button className={styles.viewProfileButtonBlue}>View Profile</button>
+                            <button className={styles.subscribeButton}>Subscribe</button>
+                          </div>
+                        </div>
+                      </div>
+                      <button className={styles.removeButton}>
+                        <img src={removeIcon} alt="Remove" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Settings Tab Content */}
+          {activeTab === 'settings' && (
+            <div className={styles.settingsContent}>
+              {/* Account Information */}
+              <div className={styles.settingsSection}>
+                <h2 className={styles.settingsSectionTitle}>Account Information</h2>
+                <div className={styles.accountInfoForm}>
+                  <div className={styles.formRow}>
+                    <div className={styles.formField}>
+                      <label className={styles.formLabel}>First Name</label>
+                      <input type="text" className={styles.formInput} defaultValue="John" />
+                    </div>
+                    <div className={styles.formField}>
+                      <label className={styles.formLabel}>Last Name</label>
+                      <input type="text" className={styles.formInput} defaultValue="Doe" />
+                    </div>
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Email</label>
+                    <input type="email" className={styles.formInput} defaultValue="john.doe@email.edu" />
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Student ID</label>
+                    <input type="text" className={`${styles.formInput} ${styles.formInputDisabled}`} defaultValue="STU202301234" disabled />
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Department / Major</label>
+                    <input type="text" className={styles.formInput} defaultValue="Computer Science" />
+                  </div>
+                  <div className={styles.formActions}>
+                    <button className={styles.saveChangesButton}>Save Changes</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Password & Security */}
+              <div className={styles.settingsSection}>
+                <h2 className={styles.settingsSectionTitle}>Password & Security</h2>
+                <div className={styles.passwordSection}>
+                  <div className={styles.passwordInfo}>
+                    <div className={styles.passwordIconWrapper}>
+                      <img src={passwordIcon} alt="Password" />
+                    </div>
+                    <div className={styles.passwordDetails}>
+                      <p className={styles.passwordTitle}>Password</p>
+                      <p className={styles.passwordDate}>Last changed: Nov 15, 2025</p>
+                    </div>
+                  </div>
+                  <button className={styles.changePasswordButton}>Change Password</button>
+                </div>
+              </div>
+
+              {/* Notification Preferences */}
+              <div className={styles.settingsSection}>
+                <h2 className={styles.settingsSectionTitle}>Notification Preferences</h2>
+                <div className={styles.notificationsList}>
+                  <div className={styles.notificationItem}>
+                    <div className={styles.notificationInfo}>
+                      <p className={styles.notificationTitle}>Email Notifications</p>
+                      <p className={styles.notificationDescription}>Receive updates about subscribed clubs</p>
+                    </div>
+                    <button className={styles.notificationButtonEnabled}>Enabled</button>
+                  </div>
+                  <div className={styles.notificationItem}>
+                    <div className={styles.notificationInfo}>
+                      <p className={styles.notificationTitle}>Event Reminders</p>
+                      <p className={styles.notificationDescription}>Get reminded about upcoming events</p>
+                    </div>
+                    <button className={styles.notificationButtonEnabled}>Enabled</button>
+                  </div>
+                  <div className={styles.notificationItem}>
+                    <div className={styles.notificationInfo}>
+                      <p className={styles.notificationTitle}>Weekly Digest</p>
+                      <p className={styles.notificationDescription}>Receive weekly summary of club activities</p>
+                    </div>
+                    <button className={styles.notificationButtonDisabled}>Disabled</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Danger Zone */}
+              <div className={styles.dangerZoneSection}>
+                <h2 className={styles.dangerZoneTitle}>Danger Zone</h2>
+                <div className={styles.dangerZoneContent}>
+                  <div className={styles.dangerZoneInfo}>
+                    <p className={styles.dangerZoneActionTitle}>Delete Account</p>
+                    <p className={styles.dangerZoneActionDescription}>Permanently delete your account and all associated data</p>
+                  </div>
+                  <button className={styles.deleteAccountButton}>Delete Account</button>
                 </div>
               </div>
             </div>

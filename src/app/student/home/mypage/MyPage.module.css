@@ -698,3 +698,1023 @@
   margin: 0;
 }
 
+/* Subscribed Tab */
+.subscribedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.subscribedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+  width: 100%;
+}
+
+.browseMoreButton {
+  background: #2a644d;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 11px 24px;
+  border-radius: 14px;
+  border: 1px solid #2a644d;
+  box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.browseMoreButton:hover {
+  background: #1f4a38;
+}
+
+.subscribedClubsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.subscribedClubCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.subscribedClubContent {
+  display: flex;
+  gap: 24px;
+}
+
+.subscribedClubImage {
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.subscribedClubInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subscribedClubTags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.categoryTag {
+  background: #dbeafe;
+  color: #1447e6;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.subscribedTag {
+  background: #dcfce7;
+  color: #008236;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.subscribedClubName {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.subscribedClubDescription {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.clubDetailsGrid {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.clubDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.detailValueWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.checkIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.detailValueEnabled {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #00a63e;
+  margin: 0;
+}
+
+.clubActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.viewClubProfileButton {
+  background: #58931a;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 9px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.viewClubProfileButton:hover {
+  background: #4a7a15;
+}
+
+.manageNotificationsButton {
+  background: white;
+  color: #0a0a0a;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.manageNotificationsButton:hover {
+  background: #f9fafb;
+}
+
+.manageNotificationsButton img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.unsubscribeButton {
+  background: white;
+  color: #e7000b;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 9px 24px;
+  border-radius: 10px;
+  border: 1px solid #ffc9c9;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.unsubscribeButton:hover {
+  background: #fff5f5;
+}
+
+/* History Tab Content */
+.historyContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  height: 40px;
+}
+
+.historyFilters {
+  display: flex;
+  gap: 8px;
+}
+
+.filterButtonActive {
+  background: linear-gradient(135deg, #13412f 0%, #2a644d 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.filterButtonActive:hover {
+  opacity: 0.9;
+}
+
+.filterButton {
+  background: #f3f4f6;
+  color: #0a0a0a;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.filterButton:hover {
+  background: #e5e7eb;
+}
+
+.historyStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.historyStatCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.historyStatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+}
+
+.historyStatIconGreen {
+  width: 48px;
+  height: 48px;
+  background: #dcfce7;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historyStatIconGreen img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.historyStatIconRed {
+  width: 48px;
+  height: 48px;
+  background: #ffe2e2;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historyStatIconRed img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.historyStatIconBlue {
+  width: 48px;
+  height: 48px;
+  background: #dbeafe;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historyStatIconBlue img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.historyStatNumber {
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 36px;
+  color: #0a0a0a;
+}
+
+.historyStatLabel {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.eventTimeline {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.eventTimelineTitle {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.eventTimelineList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eventItemAttended {
+  background: #f0fdf4;
+  border: 2px solid #b9f8cf;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eventItemMissed {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.eventItemContent {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.eventIconAttended {
+  width: 48px;
+  height: 48px;
+  background: #58931a;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.eventIconAttended img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.eventIconMissed {
+  width: 48px;
+  height: 48px;
+  background: #d1d5dc;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.eventIconMissed img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.eventItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eventItemClub {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.eventItemEvent {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.eventItemDate {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.eventStatusAttended {
+  background: #dcfce7;
+  color: #008236;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+.eventStatusMissed {
+  background: #e5e7eb;
+  color: #364153;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+/* Saved Tab Content */
+.savedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.savedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+}
+
+.getRecommendationsButton {
+  background: linear-gradient(135deg, #13412f 0%, #2a644d 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.getRecommendationsButton:hover {
+  opacity: 0.9;
+}
+
+.savedClubsCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.savedClubsTitle {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.savedClubsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.savedClubItem {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 21px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.savedClubItemContent {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.savedClubItemImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.savedClubItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.savedClubItemTags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.savedClubItemCategory {
+  background: #dbeafe;
+  color: #1447e6;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.savedClubItemMatch {
+  background: #dcfce7;
+  color: #008236;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.savedClubItemName {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.savedClubItemDescription {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.savedClubItemActions {
+  display: flex;
+  gap: 8px;
+}
+
+.viewProfileButtonBlue {
+  background: #155dfc;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.viewProfileButtonBlue:hover {
+  background: #1049c7;
+}
+
+.subscribeButton {
+  background: #58931a;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.subscribeButton:hover {
+  background: #4a7a15;
+}
+
+.removeButton {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.removeButton:hover {
+  background: #f9fafb;
+}
+
+.removeButton img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Settings Tab Content */
+.settingsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.settingsSection {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settingsSectionTitle {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+/* Account Information */
+.accountInfoForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formLabel {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+}
+
+.formInput {
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #0a0a0a;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #155dfc;
+}
+
+.formInputDisabled {
+  background: #f9fafb;
+  color: #6a7282;
+  cursor: not-allowed;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.saveChangesButton {
+  background: #155dfc;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.saveChangesButton:hover {
+  background: #1049c7;
+}
+
+/* Password & Security */
+.passwordSection {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.passwordInfo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.passwordIconWrapper {
+  width: 48px;
+  height: 48px;
+  background: #dbeafe;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.passwordIconWrapper img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.passwordDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.passwordTitle {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.passwordDate {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.changePasswordButton {
+  background: linear-gradient(135deg, #0f3a29 0%, #2a644d 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.changePasswordButton:hover {
+  opacity: 0.9;
+}
+
+/* Notification Preferences */
+.notificationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notificationItem {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notificationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notificationTitle {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.notificationDescription {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #4a5565;
+  margin: 0;
+}
+
+.notificationButtonEnabled {
+  background: #00a63e;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notificationButtonEnabled:hover {
+  background: #008a33;
+}
+
+.notificationButtonDisabled {
+  background: #e5e7eb;
+  color: #364153;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notificationButtonDisabled:hover {
+  background: #d1d5dc;
+}
+
+/* Danger Zone */
+.dangerZoneSection {
+  background: white;
+  border: 2px solid #ffc9c9;
+  border-radius: 16px;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dangerZoneTitle {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #e7000b;
+  margin: 0;
+}
+
+.dangerZoneContent {
+  background: #fef2f2;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dangerZoneInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dangerZoneActionTitle {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #82181a;
+  margin: 0;
+}
+
+.dangerZoneActionDescription {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #c10007;
+  margin: 0;
+}
+
+.deleteAccountButton {
+  background: #e7000b;
+  color: white;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 12px 24px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.deleteAccountButton:hover {
+  background: #c10007;
+}
+
+
