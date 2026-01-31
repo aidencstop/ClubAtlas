@@ -29,7 +29,7 @@ export default function AccessCard({
         <Link href={buttonHref} className={`${styles.button} ${styles[`button${type.charAt(0).toUpperCase() + type.slice(1)}`]}`}>
           <span className={styles.buttonText}>{buttonText}</span>
           <img 
-            src="https://www.figma.com/api/mcp/asset/723539d9-1e3a-49b9-a6b7-d0026feba904" 
+            src="https://www.figma.com/api/mcp/asset/1d039011-b882-496b-a708-1f18b797816b" 
             alt="arrow"
             className={styles.arrowIcon}
           />
@@ -38,6 +38,8 @@ export default function AccessCard({
     </div>
   );
 }
+
+
 
 
 

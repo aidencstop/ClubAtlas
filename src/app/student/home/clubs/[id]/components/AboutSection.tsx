@@ -54,3 +54,5 @@ export default function AboutSection({ clubId }: AboutSectionProps) {
 
 
 
+
+

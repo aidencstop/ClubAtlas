@@ -26,7 +26,7 @@
   top: 15.76px;
   background: #a1d867;
   border-radius: 33554400px;
-  filter: blur(40px);
+  filter: blur(24px);
   opacity: 0.2;
   pointer-events: none;
 }
@@ -39,7 +39,7 @@
   top: 156.79px;
   background: #d5faae;
   border-radius: 33554400px;
-  filter: blur(40px);
+  filter: blur(24px);
   opacity: 0.2;
   pointer-events: none;
 }
@@ -52,7 +52,7 @@
   top: 1012.35px;
   background: #a8d479;
   border-radius: 33554400px;
-  filter: blur(40px);
+  filter: blur(24px);
   opacity: 0.2;
   pointer-events: none;
 }

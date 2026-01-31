@@ -27,7 +27,7 @@ export default function WelcomePage() {
         <div className={styles.accessCards}>
           <AccessCard
             type="student"
-            iconSrc="https://www.figma.com/api/mcp/asset/1a1036c9-60ad-4435-bd64-718b4bf7862b"
+            iconSrc="https://www.figma.com/api/mcp/asset/26c79f35-6695-476f-a15c-2394b08bdf80"
             title="Student Access"
             description="Browse clubs, discover events, get AI-powered recommendations, and manage your subscriptions"
             buttonText="Enter as Student"
@@ -35,7 +35,7 @@ export default function WelcomePage() {
           />
           <AccessCard
             type="admin"
-            iconSrc="https://www.figma.com/api/mcp/asset/ef78bc82-25ea-4998-817a-f8e19ca4e74a"
+            iconSrc="https://www.figma.com/api/mcp/asset/7195aba8-4364-4064-bc08-a6476a8d2a9b"
             title="Admin Access"
             description="Club leaders: Manage your club profile, events, announcements, and engage with subscribers"
             buttonText="Admin Login"
@@ -48,17 +48,17 @@ export default function WelcomePage() {
           <h2 className={styles.featuresTitle}>Platform Features</h2>
           <div className={styles.featuresGrid}>
             <FeatureCard
-              iconSrc="https://www.figma.com/api/mcp/asset/e340a1af-5577-45e3-8e4b-9af678348e12"
+              iconSrc="https://www.figma.com/api/mcp/asset/c961ed6d-e6eb-449a-a493-5c47e14eb7ff"
               title="Club Discovery"
               description="Browse and search from all campus clubs with smart filters"
             />
             <FeatureCard
-              iconSrc="https://www.figma.com/api/mcp/asset/e716709a-d34f-4326-9e83-1fba7611afd4"
+              iconSrc="https://www.figma.com/api/mcp/asset/5e87c688-0fe2-4a6a-91e9-079d8794e8e1"
               title="Event Calendar"
               description="Track meetings and activities in one unified calendar"
             />
             <FeatureCard
-              iconSrc="https://www.figma.com/api/mcp/asset/59a88fd4-c704-48d4-bc84-9435d427da82"
+              iconSrc="https://www.figma.com/api/mcp/asset/ad8254c0-173d-4ddb-9ff1-471d65d75a15"
               title="AI Recommendations"
               description="Get personalized club suggestions based on your interests"
             />

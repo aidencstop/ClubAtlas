@@ -30,29 +30,42 @@ def initialize_firebase_admin():
                 "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL", ""),
             })
             firebase_admin.initialize_app(cred)
+            return firebase_admin.get_app()
         else:
-            # 기본 자격 증명 사용 (GCP 환경에서 자동으로 인식)
-            firebase_admin.initialize_app()
+            print("⚠️  Firebase 환경 변수가 설정되지 않았습니다. 개발 모드로 실행합니다.")
+            return None
     
-    return firebase_admin.get_app()
+    return firebase_admin.get_app() if firebase_admin._apps else None
 
 
-# Firebase Admin 초기화
-initialize_firebase_admin()
-
-# Firestore 및 Auth 인스턴스
-db = firestore.client()
-auth_client = auth
+# Firebase Admin 초기화 (전역 변수)
+_firebase_initialized = False
+_db = None
+_auth_client = None
 
 
 def get_firestore():
     """Firestore 클라이언트 반환"""
-    return db
+    global _firebase_initialized, _db
+    if not _firebase_initialized:
+        app = initialize_firebase_admin()
+        _firebase_initialized = True
+        if app is None:
+            return None
+    if _db is None and firebase_admin._apps:
+        _db = firestore.client()
+    return _db
 
 
 def get_auth():
     """Firebase Auth 클라이언트 반환"""
-    return auth_client
+    global _firebase_initialized, _auth_client
+    if not _firebase_initialized:
+        initialize_firebase_admin()
+        _firebase_initialized = True
+    if _auth_client is None:
+        _auth_client = auth
+    return _auth_client
 
 
 

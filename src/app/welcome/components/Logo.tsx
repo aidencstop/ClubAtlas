@@ -5,7 +5,7 @@ export default function Logo() {
     <div className={styles.logoContainer}>
       <div className={styles.logoIcon}>
         <img 
-          src="https://www.figma.com/api/mcp/asset/c2f42767-8af4-4630-a3b1-edeb83b8aa04" 
+          src="https://www.figma.com/api/mcp/asset/e7d1fc6a-5e14-4c8e-9c03-c97e1f85a67a" 
           alt="ClubAtlas Logo"
           className={styles.logoImage}
         />
@@ -13,6 +13,8 @@ export default function Logo() {
     </div>
   );
 }
+
+
 
 
 

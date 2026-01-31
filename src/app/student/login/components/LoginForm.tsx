@@ -69,7 +69,7 @@ export default function LoginForm() {
 
         <button type="submit" className={styles.submitButton}>
           <img 
-            src="https://www.figma.com/api/mcp/asset/88488418-f09a-4267-bc48-4dbe2d6fe827" 
+            src="https://www.figma.com/api/mcp/asset/682111c2-69ee-4a27-a798-26ebe6c32264" 
             alt="arrow"
             className={styles.arrowIcon}
           />

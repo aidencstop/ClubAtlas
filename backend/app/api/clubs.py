@@ -1,0 +1,246 @@
+"""
+Clubs API 엔드포인트
+"""
+from typing import Optional, List
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from app.models.club import (
+    Club,
+    ClubCreate,
+    ClubUpdate,
+    ClubListResponse
+)
+from app.api.dependencies import get_current_user, require_admin, require_club_leader, get_current_user_optional
+from app.services.firestore_service import club_service
+import uuid
+
+router = APIRouter(prefix="/api/clubs", tags=["clubs"])
+
+
+@router.get("", response_model=ClubListResponse)
+async def get_clubs(
+    categories: Optional[str] = Query(None, description="쉼표로 구분된 카테고리"),
+    activity_type: Optional[str] = Query(None, description="활동 유형"),
+    page: int = Query(1, ge=1, description="페이지 번호"),
+    page_size: int = Query(20, ge=1, le=100, description="페이지 크기"),
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    동아리 목록 조회
+    
+    - 필터링: 카테고리, 활동 유형
+    - 페이징 지원
+    - 인증 선택적 (로그인하지 않아도 조회 가능)
+    """
+    try:
+        category_list = None
+        if categories:
+            category_list = [c.strip() for c in categories.split(',')]
+        
+        offset = (page - 1) * page_size
+        
+        clubs = await club_service.get_clubs(
+            categories=category_list,
+            activity_type=activity_type,
+            limit=page_size,
+            offset=offset
+        )
+        
+        total = await club_service.count_documents(
+            club_service.COLLECTION,
+            filters=[('is_active', '==', True)]
+        )
+        
+        club_objects = []
+        for club_data in clubs:
+            club_objects.append(Club(
+                id=club_data['id'],
+                name=club_data['name'],
+                description=club_data['description'],
+                tagline=club_data.get('tagline'),
+                categories=club_data['categories'],
+                tags=club_data.get('tags', []),
+                activity_type=club_data['activity_type'],
+                meeting_schedule=club_data.get('meeting_schedule'),
+                leaders=club_data.get('leaders', []),
+                contact_email=club_data.get('contact_email'),
+                stats=club_data.get('stats', {}),
+                logo_url=club_data.get('logo_url'),
+                banner_url=club_data.get('banner_url'),
+                media_urls=club_data.get('media_urls', []),
+                created_at=club_data.get('created_at'),
+                updated_at=club_data.get('updated_at'),
+                is_active=club_data.get('is_active', True)
+            ))
+        
+        return ClubListResponse(
+            clubs=club_objects,
+            total=total,
+            page=page,
+            page_size=page_size
+        )
+    except RuntimeError:
+        return ClubListResponse(
+            clubs=[],
+            total=0,
+            page=page,
+            page_size=page_size
+        )
+
+
+@router.get("/{club_id}", response_model=Club)
+async def get_club(
+    club_id: str,
+    current_user: Optional[dict] = Depends(get_current_user_optional)
+):
+    """
+    동아리 상세 조회
+    
+    - 조회 시 view_count 증가
+    """
+    club_data = await club_service.get_club(club_id)
+    
+    if not club_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Club not found"
+        )
+    
+    await club_service.increment_view_count(club_id)
+    
+    return Club(
+        id=club_data['id'],
+        name=club_data['name'],
+        description=club_data['description'],
+        tagline=club_data.get('tagline'),
+        categories=club_data['categories'],
+        tags=club_data.get('tags', []),
+        activity_type=club_data['activity_type'],
+        meeting_schedule=club_data.get('meeting_schedule'),
+        leaders=club_data.get('leaders', []),
+        contact_email=club_data.get('contact_email'),
+        stats=club_data.get('stats', {}),
+        logo_url=club_data.get('logo_url'),
+        banner_url=club_data.get('banner_url'),
+        media_urls=club_data.get('media_urls', []),
+        created_at=club_data.get('created_at'),
+        updated_at=club_data.get('updated_at'),
+        is_active=club_data.get('is_active', True)
+    )
+
+
+@router.post("", response_model=Club, status_code=status.HTTP_201_CREATED)
+async def create_club(
+    club_data: ClubCreate,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    동아리 생성
+    
+    - 관리자 전용
+    """
+    club_id = str(uuid.uuid4())
+    
+    created_club = await club_service.create_club(
+        club_id=club_id,
+        name=club_data.name,
+        description=club_data.description,
+        categories=club_data.categories,
+        activity_type=club_data.activity_type,
+        tagline=club_data.tagline,
+        tags=club_data.tags,
+        meeting_schedule=club_data.meeting_schedule.dict() if club_data.meeting_schedule else None,
+        contact_email=club_data.contact_email
+    )
+    
+    return Club(
+        id=created_club['id'],
+        name=created_club['name'],
+        description=created_club['description'],
+        tagline=created_club.get('tagline'),
+        categories=created_club['categories'],
+        tags=created_club.get('tags', []),
+        activity_type=created_club['activity_type'],
+        meeting_schedule=created_club.get('meeting_schedule'),
+        leaders=created_club.get('leaders', []),
+        contact_email=created_club.get('contact_email'),
+        stats=created_club.get('stats', {}),
+        logo_url=created_club.get('logo_url'),
+        banner_url=created_club.get('banner_url'),
+        media_urls=created_club.get('media_urls', []),
+        created_at=created_club.get('created_at'),
+        updated_at=created_club.get('updated_at'),
+        is_active=created_club.get('is_active', True)
+    )
+
+
+@router.put("/{club_id}", response_model=Club)
+async def update_club(
+    club_id: str,
+    club_update: ClubUpdate,
+    current_user: dict = Depends(require_club_leader)
+):
+    """
+    동아리 정보 수정
+    
+    - 동아리 리더 또는 관리자만 가능
+    - TODO: 리더 권한 확인 (자신의 동아리만 수정 가능)
+    """
+    existing_club = await club_service.get_club(club_id)
+    
+    if not existing_club:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Club not found"
+        )
+    
+    update_data = club_update.dict(exclude_unset=True)
+    
+    if 'meeting_schedule' in update_data and update_data['meeting_schedule']:
+        update_data['meeting_schedule'] = update_data['meeting_schedule']
+    
+    updated_club = await club_service.update_club(club_id, update_data)
+    
+    return Club(
+        id=updated_club['id'],
+        name=updated_club['name'],
+        description=updated_club['description'],
+        tagline=updated_club.get('tagline'),
+        categories=updated_club['categories'],
+        tags=updated_club.get('tags', []),
+        activity_type=updated_club['activity_type'],
+        meeting_schedule=updated_club.get('meeting_schedule'),
+        leaders=updated_club.get('leaders', []),
+        contact_email=updated_club.get('contact_email'),
+        stats=updated_club.get('stats', {}),
+        logo_url=updated_club.get('logo_url'),
+        banner_url=updated_club.get('banner_url'),
+        media_urls=updated_club.get('media_urls', []),
+        created_at=updated_club.get('created_at'),
+        updated_at=updated_club.get('updated_at'),
+        is_active=updated_club.get('is_active', True)
+    )
+
+
+@router.get("/{club_id}/stats")
+async def get_club_stats(
+    club_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    동아리 통계 조회
+    
+    - 리더가 자신의 동아리 통계 확인
+    """
+    club_data = await club_service.get_club(club_id)
+    
+    if not club_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Club not found"
+        )
+    
+    return {
+        "club_id": club_id,
+        "stats": club_data.get('stats', {})
+    }
+

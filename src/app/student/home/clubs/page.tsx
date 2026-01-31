@@ -120,7 +120,7 @@ export default function BrowseClubsPage() {
             <Link href="/student/home" className={styles.navLink}>Home</Link>
             <Link href="/student/home/clubs" className={styles.navLinkActive}>Browse Clubs</Link>
             <Link href="/student/home/calendar" className={styles.navLink}>Calendar</Link>
-            <Link href="/student/home/recommendations" className={styles.navLink}>AI Recommendations</Link>
+            <Link href="/student/home/ai-recommendations" className={styles.navLink}>AI Recommendations</Link>
             <Link href="/student/home/mypage" className={styles.navLink}>My Page</Link>
           </nav>
 

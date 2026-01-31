@@ -70,7 +70,7 @@ export default function MyPagePage() {
             <Link href="/student/home" className={styles.navLink}>Home</Link>
             <Link href="/student/home/clubs" className={styles.navLink}>Browse Clubs</Link>
             <Link href="/student/home/calendar" className={styles.navLink}>Calendar</Link>
-            <Link href="#" className={styles.navLink}>AI Recommendations</Link>
+            <Link href="/student/home/ai-recommendations" className={styles.navLink}>AI Recommendations</Link>
             <Link href="/student/home/mypage" className={`${styles.navLink} ${styles.activeNavLink}`}>My Page</Link>
           </nav>
 

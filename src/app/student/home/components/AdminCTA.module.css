@@ -1,13 +1,13 @@
 .section {
   width: 100%;
-  padding: 70px 250px;
+  padding: 70px 60px;
   background: #eef7f1;
   box-sizing: border-box;
 }
 
 .container {
   position: relative;
-  max-width: 900px;
+  max-width: 1280px;
   height: 267px;
   margin: 0 auto;
   border-radius: 24px;
@@ -22,7 +22,7 @@
 .decorCircle1 {
   position: absolute;
   top: -128px;
-  right: -128px;
+  right: 132px;
   width: 256px;
   height: 256px;
   border-radius: 50%;
@@ -31,7 +31,7 @@
 
 .decorCircle2 {
   position: absolute;
-  bottom: -96px;
+  bottom: 75px;
   left: -96px;
   width: 192px;
   height: 192px;

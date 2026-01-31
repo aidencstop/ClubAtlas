@@ -25,11 +25,11 @@
 }
 
 .iconContainer.student {
-  background: linear-gradient(135deg, rgba(192, 251, 228, 1) 0%, rgba(89, 199, 115, 1) 100%);
+  background: linear-gradient(135deg, rgb(189, 241, 183) 0%, rgb(116, 184, 45) 100%);
 }
 
 .iconContainer.admin {
-  background: linear-gradient(135deg, rgba(189, 241, 183, 1) 0%, rgba(96, 156, 34, 1) 100%);
+  background: linear-gradient(135deg, rgb(189, 241, 183) 0%, rgb(116, 184, 45) 100%);
 }
 
 .icon {
@@ -102,6 +102,8 @@
   height: 20px;
   display: block;
 }
+
+
 
 
 

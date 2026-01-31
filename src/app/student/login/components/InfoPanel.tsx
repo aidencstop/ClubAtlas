@@ -10,7 +10,7 @@ export default function InfoPanel() {
       <div className={styles.content}>
         <div className={styles.iconContainer}>
           <img 
-            src="https://www.figma.com/api/mcp/asset/5009fc8a-5048-4d84-93c3-2f8de567f00c" 
+            src="https://www.figma.com/api/mcp/asset/044eed32-a3ed-4a6c-9092-a20a40317978" 
             alt="Student Portal"
             className={styles.icon}
           />
@@ -43,6 +43,8 @@ export default function InfoPanel() {
     </div>
   );
 }
+
+
 
 
 

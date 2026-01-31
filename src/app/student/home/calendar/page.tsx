@@ -108,7 +108,7 @@ export default function CalendarPage() {
             <Link href="/student/home" className={styles.navLink}>Home</Link>
             <Link href="/student/home/clubs" className={styles.navLink}>Browse Clubs</Link>
             <Link href="/student/home/calendar" className={styles.navLinkActive}>Calendar</Link>
-            <Link href="/student/home/recommendations" className={styles.navLink}>AI Recommendations</Link>
+            <Link href="/student/home/ai-recommendations" className={styles.navLink}>AI Recommendations</Link>
             <Link href="/student/home/mypage" className={styles.navLink}>My Page</Link>
           </nav>
 

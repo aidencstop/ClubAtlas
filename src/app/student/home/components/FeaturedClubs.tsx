@@ -4,11 +4,11 @@ import Link from 'next/link';
 import styles from './FeaturedClubs.module.css';
 import ClubCard from './ClubCard';
 
-const arrowIcon = "https://www.figma.com/api/mcp/asset/bbb23193-5526-4a19-8739-d5af769dba0d";
+const arrowIcon = "/images/icons/arrow-right.svg";
 
-const roboticsImage = "https://www.figma.com/api/mcp/asset/adbb5034-2eec-4094-a8b8-60c41e0f8e2c";
-const photographyImage = "https://www.figma.com/api/mcp/asset/22444cad-5b6b-4b96-a5c1-0a9e01453064";
-const dramaImage = "https://www.figma.com/api/mcp/asset/75f31f36-98bd-4a9c-ac01-9c77b1484f18";
+const roboticsImage = "/images/clubs/robotics.jpg";
+const photographyImage = "/images/clubs/photography.jpg";
+const dramaImage = "/images/clubs/drama.jpg";
 
 const clubs = [
   {

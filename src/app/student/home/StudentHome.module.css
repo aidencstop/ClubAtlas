@@ -11,7 +11,7 @@
 .background {
   position: relative;
   width: 100%;
-  max-width: 1400px;
+  min-height: 100vh;
   background: linear-gradient(124.75deg, rgba(241, 255, 246, 1) 0%, rgba(218, 237, 225, 1) 100%);
 }
 

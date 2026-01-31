@@ -16,6 +16,7 @@
   align-items: center;
   gap: 16px;
   padding: 24px;
+  box-sizing: border-box;
 }
 
 .dateBox {
@@ -25,9 +26,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 16px;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .day {
@@ -88,7 +90,11 @@
 }
 
 .detailsButton {
-  padding: 8px 16px;
+  width: 81.594px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #f3f4f6;
   border-radius: 10px;
   font-family: 'Inter', sans-serif;
@@ -125,6 +131,8 @@
     width: 100%;
   }
 }
+
+
 
 
 

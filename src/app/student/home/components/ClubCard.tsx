@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import styles from './ClubCard.module.css';
 
-const clockIcon = "https://www.figma.com/api/mcp/asset/62264ea9-b70b-4fc0-83fb-dab70c72f94b";
-const usersIcon = "https://www.figma.com/api/mcp/asset/3312bade-f549-489b-b914-68ff9c6483fc";
+const clockIcon = "/images/icons/clock.svg";
+const usersIcon = "/images/icons/users.svg";
 
 interface ClubCardProps {
   club: {

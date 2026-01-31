@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import styles from './Header.module.css';
 
-const logoIcon = "https://www.figma.com/api/mcp/asset/b379cb2b-fb4a-4ab2-bfb2-916edaa498ff";
-const searchIcon = "https://www.figma.com/api/mcp/asset/351c15c4-0715-4cb3-ac12-2fc82757c5a5";
-const bellIcon = "https://www.figma.com/api/mcp/asset/340e4d5e-2a59-468a-bccc-27081a701fd2";
-const profileIcon = "https://www.figma.com/api/mcp/asset/e00204ec-bd22-40f5-ad2c-8979aa723275";
+const logoIcon = "/images/icons/logo.svg";
+const searchIcon = "/images/icons/search.svg";
+const bellIcon = "/images/icons/bell.svg";
+const profileIcon = "/images/icons/profile.svg";
 
 export default function Header() {
   return (
@@ -26,7 +26,7 @@ export default function Header() {
           <Link href="/student/home/calendar" className={styles.navLink}>
             Calendar
           </Link>
-          <Link href="/student/home/recommendations" className={styles.navLink}>
+          <Link href="/student/home/ai-recommendations" className={styles.navLink}>
             AI Recommendations
           </Link>
           <Link href="/student/home/collaborations" className={styles.navLink}>

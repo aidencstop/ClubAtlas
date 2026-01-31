@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import styles from './HeroSection.module.css';
 
-const arrowIcon = "https://www.figma.com/api/mcp/asset/a6dd96f1-49f8-4b35-9d67-cde991ad7e57";
-const sparklesIcon = "https://www.figma.com/api/mcp/asset/c9458851-23cf-4bdc-b150-3074986ab2c4";
+const arrowIcon = "/images/icons/arrow-right.svg";
+const sparklesIcon = "/images/icons/sparkles.svg";
 
 export default function HeroSection() {
   return (
@@ -20,7 +20,7 @@ export default function HeroSection() {
             <span>Explore Clubs</span>
             <img src={arrowIcon} alt="" />
           </Link>
-          <Link href="/student/home/recommendations" className={styles.secondaryButton}>
+          <Link href="/student/home/ai-recommendations" className={styles.secondaryButton}>
             <img src={sparklesIcon} alt="" />
             <span>Get AI Recommendations</span>
           </Link>
