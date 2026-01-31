@@ -2,8 +2,8 @@
 
 import styles from './AboutSection.module.css';
 
-const clockIcon = "https://www.figma.com/api/mcp/asset/56650936-5e60-4f41-b0bf-da5eadfa8ac9";
-const locationIcon = "https://www.figma.com/api/mcp/asset/e36c4c75-c4a5-4787-a4f6-6386e71614f4";
+const clockIcon = "/images/icons/clubs/clock.svg";
+const locationIcon = "/images/icons/clubs/location.svg";
 
 interface AboutSectionProps {
   clubId: string;
@@ -51,6 +51,7 @@ export default function AboutSection({ clubId }: AboutSectionProps) {
     </section>
   );
 }
+
 
 
 

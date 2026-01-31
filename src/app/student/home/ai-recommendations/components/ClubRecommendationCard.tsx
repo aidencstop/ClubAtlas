@@ -131,4 +131,3 @@ export default function ClubRecommendationCard({ recommendation, clubData }: Pro
 }
 
 
-

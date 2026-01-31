@@ -440,4 +440,3 @@ class RecommendationService:
 recommendation_service = RecommendationService()
 
 
-

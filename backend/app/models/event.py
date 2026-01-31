@@ -54,4 +54,3 @@ class EventListResponse(BaseModel):
     total: int
 
 
-

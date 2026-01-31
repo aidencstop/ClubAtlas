@@ -34,4 +34,3 @@ class ActivityStatsResponse(BaseModel):
     clicked_clubs: list
 
 
-

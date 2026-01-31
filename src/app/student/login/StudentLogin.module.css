@@ -1,9 +1,9 @@
 .container {
   position: relative;
   width: 100%;
-  min-width: 1400px; /* Figma 디자인 기준 최소 너비 */
   min-height: 100vh;
   background: white;
+  overflow-x: hidden;
 }
 
 .background {
@@ -11,7 +11,6 @@
   top: 0;
   left: 0;
   width: 100%;
-  min-width: 1400px; /* Figma 디자인 기준 */
   height: 100%;
   background: linear-gradient(137.24deg, rgb(241, 255, 246) 0%, rgb(239, 246, 255) 50%, rgb(241, 255, 246) 100%);
   overflow: hidden;
@@ -22,7 +21,7 @@
   position: absolute;
   width: 287.692px;
   height: 287.692px;
-  left: 84.89px;
+  left: 6%;
   top: 65.53px;
   background: #a1d867;
   border-radius: 33554400px;
@@ -34,7 +33,7 @@
   position: absolute;
   width: 308.832px;
   height: 308.832px;
-  left: 1049.28px;
+  right: 15%;
   top: 113.42px;
   background: #d5faae;
   border-radius: 33554400px;
@@ -46,8 +45,9 @@
   position: absolute;
   width: 288px;
   height: 288px;
-  left: 703px;
+  left: 50%;
   top: 990px;
+  transform: translateX(-50%);
   background: #a8d479;
   border-radius: 33554400px;
   filter: blur(24px);
@@ -95,17 +95,9 @@
 }
 
 /* 반응형 디자인 */
-@media (max-width: 1400px) {
-  .container {
-    min-width: 100%;
-  }
-  
-  .background {
-    min-width: 100%;
-  }
-  
+@media (max-width: 1200px) {
   .content {
-    padding: 34.5px 64px;
+    padding: 40px 32px;
   }
   
   .loginCard {

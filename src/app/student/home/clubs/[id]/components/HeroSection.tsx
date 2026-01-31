@@ -2,8 +2,8 @@
 
 import styles from './HeroSection.module.css';
 
-const roboticsImage = "https://www.figma.com/api/mcp/asset/f19d250f-4777-4e93-a829-b8d8a3fb9731";
-const heartIcon = "https://www.figma.com/api/mcp/asset/59a88fd4-c704-48d4-bc84-9435d427da82";
+const roboticsImage = "https://www.figma.com/api/mcp/asset/f19d250f-4777-4e93-a829-b8d8a3fb9731"; // 클럽 썸네일 이미지
+const heartIcon = "/images/icons/clubs/heart.svg";
 
 interface HeroSectionProps {
   clubId: string;
@@ -47,6 +47,7 @@ export default function HeroSection({ clubId }: HeroSectionProps) {
     </div>
   );
 }
+
 
 
 

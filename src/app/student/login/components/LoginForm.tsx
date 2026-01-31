@@ -6,6 +6,8 @@ import Link from 'next/link';
 import styles from './LoginForm.module.css';
 import ForgotPasswordModal from './ForgotPasswordModal';
 
+const arrowIcon = "/images/icons/student-login/arrow.svg";
+
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -69,7 +71,7 @@ export default function LoginForm() {
 
         <button type="submit" className={styles.submitButton}>
           <img 
-            src="https://www.figma.com/api/mcp/asset/682111c2-69ee-4a27-a798-26ebe6c32264" 
+            src={arrowIcon} 
             alt="arrow"
             className={styles.arrowIcon}
           />

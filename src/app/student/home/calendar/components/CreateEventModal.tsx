@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import styles from './CreateEventModal.module.css';
 import DatePicker from './DatePicker';
 
-// Figma 아이콘 URLs
-const modalIconPlus = "https://www.figma.com/api/mcp/asset/d04e5d0b-4a76-4bd5-a32c-75786ba1ba09"; // imgIcon3 - 좌상단 + 아이콘
-const closeIcon = "https://www.figma.com/api/mcp/asset/59f79280-b953-4e14-bc7a-a8953c721bd9"; // imgIcon10 - 닫기 버튼 (X 아이콘)
-const calendarIconDate = "https://www.figma.com/api/mcp/asset/15be632c-2d66-4771-acbb-7f9f835abb83"; // imgVector2 - Date input 아이콘
-const locationIcon = "https://www.figma.com/api/mcp/asset/fd982fea-dd6d-4e71-ab50-1e5010701476"; // imgIcon11
+// 로컬 아이콘 경로
+const modalIconPlus = "/images/icons/calendar/create.svg"; // Create 아이콘 재사용
+const closeIcon = "/images/icons/calendar/close.svg";
+const calendarIconDate = "/images/icons/calendar/calendar-date.svg";
+const locationIcon = "/images/icons/calendar/location.svg";
 
 interface CreateEventModalProps {
   isOpen: boolean;

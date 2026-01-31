@@ -2,7 +2,7 @@
 
 import styles from './FilterSection.module.css';
 
-const chevronIcon = "https://www.figma.com/api/mcp/asset/be0b2b8b-a481-4b56-bdb5-dc45b8621589";
+// chevron 아이콘은 CSS로 구현 (저장하지 못함)
 
 interface FilterSectionProps {
   selectedCategory: string;
@@ -39,7 +39,6 @@ export default function FilterSection({
             <option value="Sports">Sports</option>
             <option value="Social">Social</option>
           </select>
-          <img src={chevronIcon} alt="" className={styles.chevronIcon} />
         </div>
       </div>
 
@@ -59,7 +58,6 @@ export default function FilterSection({
             <option value="Friday">Friday</option>
             <option value="Weekend">Weekend</option>
           </select>
-          <img src={chevronIcon} alt="" className={styles.chevronIcon} />
         </div>
       </div>
 
@@ -76,7 +74,6 @@ export default function FilterSection({
             <option value="Afternoon">Afternoon (12PM - 6PM)</option>
             <option value="Evening">Evening (6PM - 10PM)</option>
           </select>
-          <img src={chevronIcon} alt="" className={styles.chevronIcon} />
         </div>
       </div>
     </div>

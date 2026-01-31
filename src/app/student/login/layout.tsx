@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import './login-layout.css';
 
 export const metadata: Metadata = {
   title: "ClubAtlas - Student Login",
@@ -14,6 +15,7 @@ export default function StudentLoginLayout({
     </>
   );
 }
+
 
 
 

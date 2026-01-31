@@ -2,7 +2,7 @@
 
 import styles from './LeadershipSection.module.css';
 
-const profileIcon = "https://www.figma.com/api/mcp/asset/062f01fb-4f88-47ed-9471-b573b8ccb775";
+const profileIcon = "/images/icons/profile.svg"; // 공용 프로필 아이콘
 
 interface LeadershipSectionProps {
   clubId: string;
@@ -56,6 +56,7 @@ export default function LeadershipSection({ clubId }: LeadershipSectionProps) {
     </section>
   );
 }
+
 
 
 

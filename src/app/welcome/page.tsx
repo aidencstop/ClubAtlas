@@ -3,6 +3,13 @@ import Logo from './components/Logo';
 import AccessCard from './components/AccessCard';
 import FeatureCard from './components/FeatureCard';
 
+// Welcome 페이지 전용 아이콘
+const studentIcon = "/images/icons/welcome/student-icon.svg";
+const adminIcon = "/images/icons/welcome/admin-icon.svg";
+const clubDiscoveryIcon = "/images/icons/welcome/club-discovery.svg";
+const calendarIcon = "/images/icons/welcome/calendar.svg";
+const aiRecommendationsIcon = "/images/icons/welcome/ai-recommendations.svg";
+
 export default function WelcomePage() {
   return (
     <div className={styles.container}>
@@ -27,7 +34,7 @@ export default function WelcomePage() {
         <div className={styles.accessCards}>
           <AccessCard
             type="student"
-            iconSrc="https://www.figma.com/api/mcp/asset/26c79f35-6695-476f-a15c-2394b08bdf80"
+            iconSrc={studentIcon}
             title="Student Access"
             description="Browse clubs, discover events, get AI-powered recommendations, and manage your subscriptions"
             buttonText="Enter as Student"
@@ -35,7 +42,7 @@ export default function WelcomePage() {
           />
           <AccessCard
             type="admin"
-            iconSrc="https://www.figma.com/api/mcp/asset/7195aba8-4364-4064-bc08-a6476a8d2a9b"
+            iconSrc={adminIcon}
             title="Admin Access"
             description="Club leaders: Manage your club profile, events, announcements, and engage with subscribers"
             buttonText="Admin Login"
@@ -48,17 +55,17 @@ export default function WelcomePage() {
           <h2 className={styles.featuresTitle}>Platform Features</h2>
           <div className={styles.featuresGrid}>
             <FeatureCard
-              iconSrc="https://www.figma.com/api/mcp/asset/c961ed6d-e6eb-449a-a493-5c47e14eb7ff"
+              iconSrc={clubDiscoveryIcon}
               title="Club Discovery"
               description="Browse and search from all campus clubs with smart filters"
             />
             <FeatureCard
-              iconSrc="https://www.figma.com/api/mcp/asset/5e87c688-0fe2-4a6a-91e9-079d8794e8e1"
+              iconSrc={calendarIcon}
               title="Event Calendar"
               description="Track meetings and activities in one unified calendar"
             />
             <FeatureCard
-              iconSrc="https://www.figma.com/api/mcp/asset/ad8254c0-173d-4ddb-9ff1-471d65d75a15"
+              iconSrc={aiRecommendationsIcon}
               title="AI Recommendations"
               description="Get personalized club suggestions based on your interests"
             />

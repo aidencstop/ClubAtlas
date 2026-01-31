@@ -7,18 +7,18 @@ import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import WeekView from './components/WeekView';
 
-// Figma 아이콘 URLs
-const viewModeIcon = "https://www.figma.com/api/mcp/asset/4ccbdf07-9e6e-4836-899a-897f6a13495d";
-const monthViewIcon = "https://www.figma.com/api/mcp/asset/a74b0075-1e80-4681-b30a-f071fc1eb135";
-const weekViewIcon = "https://www.figma.com/api/mcp/asset/28907313-dca0-40e9-9965-e26d7b8a0944";
-const createIcon = "https://www.figma.com/api/mcp/asset/05991744-665a-4f90-a355-c7c7abdb34b3";
-const prevArrowIcon = "https://www.figma.com/api/mcp/asset/04bbf371-9db0-4da6-a18a-37ca8a388cee";
-const nextArrowIcon = "https://www.figma.com/api/mcp/asset/064a94e0-e2a7-4ea9-9403-36bf64393102";
-const upcomingIcon = "https://www.figma.com/api/mcp/asset/b0fd3af3-842f-45f9-90df-13986ecda470";
-const exportIcon = "https://www.figma.com/api/mcp/asset/ae2830b0-7758-4dff-9d2e-d351da2d5ae1";
-const logoIcon = "https://www.figma.com/api/mcp/asset/c8146d23-6bc3-4ce7-899e-8f68943269f8";
-const searchIcon = "https://www.figma.com/api/mcp/asset/6cd41af0-6e07-44c1-910f-e4cb5f899a02";
-const profileIcon = "https://www.figma.com/api/mcp/asset/d9b32683-9c48-4dc8-bea3-4661d6d4c2bc";
+// 로컬 아이콘 경로
+const viewModeIcon = "/images/icons/calendar/view-mode.svg";
+const monthViewIcon = "/images/icons/calendar/month-view.svg";
+const weekViewIcon = "/images/icons/calendar/week-view.svg";
+const createIcon = "/images/icons/calendar/create.svg";
+const prevArrowIcon = "/images/icons/calendar/arrow-left.svg";
+const nextArrowIcon = "/images/icons/calendar/arrow-right.svg";
+const upcomingIcon = "/images/icons/calendar/upcoming.svg";
+const exportIcon = "/images/icons/calendar/export.svg";
+const logoIcon = "/images/icons/logo.svg"; // 공용 로고
+const searchIcon = "/images/icons/search.svg"; // 공용 검색
+const profileIcon = "/images/icons/profile.svg"; // 공용 프로필
 
 // 이벤트 데이터
 const eventsData = [

@@ -58,4 +58,3 @@ class UserProfileResponse(BaseModel):
     updated_at: Optional[datetime]
 
 
-

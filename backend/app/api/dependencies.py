@@ -128,4 +128,3 @@ def require_club_leader(current_user: dict = Depends(get_current_user)) -> dict:
     return current_user
 
 
-

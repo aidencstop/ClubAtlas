@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import styles from './EventDetailModal.module.css';
 
-// Figma 아이콘 및 이미지 URLs
-const roboticsImage = "https://www.figma.com/api/mcp/asset/e4e2b0f4-0057-43dc-9d3f-e5ca513f6c4b";
-const closeIcon = "https://www.figma.com/api/mcp/asset/59f79280-b953-4e14-bc7a-a8953c721bd9"; // X 아이콘
-const clockIcon = "https://www.figma.com/api/mcp/asset/8304ff5c-d6fe-43aa-9316-b4e289ea10bd";
-const locationIcon = "https://www.figma.com/api/mcp/asset/dd63565b-be7e-4df1-901d-7fba6c4d7435";
-const usersIcon = "https://www.figma.com/api/mcp/asset/35da646b-9e92-4028-91a8-aee485c44fd9";
-const attendanceIcon = "https://www.figma.com/api/mcp/asset/f2c74636-21c1-4193-a03c-402ddc97add6";
-const bellIcon = "https://www.figma.com/api/mcp/asset/673eed96-414b-40b4-8570-c909d9469207";
+// 로컬 아이콘 및 이미지 경로
+const roboticsImage = "https://www.figma.com/api/mcp/asset/e4e2b0f4-0057-43dc-9d3f-e5ca513f6c4b"; // 클럽 썸네일 이미지 (Figma 유지)
+const closeIcon = "/images/icons/calendar/close.svg";
+const clockIcon = "/images/icons/calendar/clock.svg";
+const locationIcon = "/images/icons/calendar/location2.svg"; // EventDetailModal 전용
+const usersIcon = "/images/icons/calendar/users.svg";
+const attendanceIcon = "/images/icons/calendar/attendance.svg";
+const bellIcon = "/images/icons/calendar/bell.svg";
 
 interface EventDetailModalProps {
   onClose: () => void;

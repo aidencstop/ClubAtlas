@@ -4,18 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import styles from './BrowseClubs.module.css';
 
-// Figma 아이콘 URLs
-const searchIcon = "https://www.figma.com/api/mcp/asset/cf616c60-1d96-447c-99dd-29d26254ec15";
-const filterIcon = "https://www.figma.com/api/mcp/asset/4a5913b8-0de1-43ca-b978-5a8188a99d5f";
-const heartIcon = "https://www.figma.com/api/mcp/asset/283a9953-8f52-4d9d-a60d-85db1c00775b";
-const clockIcon = "https://www.figma.com/api/mcp/asset/2419b258-42ef-4955-aafb-cf372718b321";
-const locationIcon = "https://www.figma.com/api/mcp/asset/c6b45a67-a92b-43c6-a1b9-deaf8d644f8d";
-const usersIcon1 = "https://www.figma.com/api/mcp/asset/74b6077d-90b0-4cc3-b07a-ba93a5b40666"; // Robotics, Photography, Drama
-const usersIcon2 = "https://www.figma.com/api/mcp/asset/03b589cf-e0c0-4a5a-9d0f-36ed349e659c"; // Debate, Chess, Music
-const shareIcon = "https://www.figma.com/api/mcp/asset/dc6bf5a1-9aa5-4b5a-a791-f637cb35f0d1";
-const logoIcon = "https://www.figma.com/api/mcp/asset/8d173326-8aee-4c1b-b358-3653bc2ef74f";
-const headerSearchIcon = "https://www.figma.com/api/mcp/asset/7fd199bf-3919-427e-9446-df36a14a2a52";
-const profileIcon = "https://www.figma.com/api/mcp/asset/a7ef8c6d-f14c-455d-a499-e978fb6a696d";
+// 로컬 아이콘 경로
+const searchIcon = "/images/icons/clubs/search.svg";
+const filterIcon = "/images/icons/clubs/filter.svg";
+const heartIcon = "/images/icons/clubs/heart.svg";
+const clockIcon = "/images/icons/clubs/clock.svg";
+const locationIcon = "/images/icons/clubs/location.svg";
+const usersIcon1 = "/images/icons/clubs/users.svg"; // Robotics, Photography, Drama
+const usersIcon2 = "/images/icons/clubs/users.svg"; // Debate, Chess, Music (같은 아이콘 사용)
+const shareIcon = "/images/icons/clubs/share.svg";
+const logoIcon = "/images/icons/logo.svg"; // 공용 로고
+const headerSearchIcon = "/images/icons/search.svg"; // 공용 검색 아이콘
+const profileIcon = "/images/icons/profile.svg"; // 공용 프로필 아이콘
 
 const clubsData = [
   {

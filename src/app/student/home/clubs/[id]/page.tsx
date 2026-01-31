@@ -4,6 +4,29 @@ import { use } from 'react';
 import Link from 'next/link';
 import styles from './ClubProfile.module.css';
 
+// 로컬 아이콘 경로
+const logoIcon = "/images/icons/logo.svg"; // 공용 로고
+const backArrowIcon = "/images/icons/club-detail/back-arrow.svg";
+const usersIcon = "/images/icons/club-detail/users.svg";
+const calendarBadgeIcon = "/images/icons/club-detail/calendar-badge.svg";
+const shareIcon = "/images/icons/club-detail/share.svg";
+const subscribeIcon = "/images/icons/club-detail/subscribe.svg";
+const emailSmallIcon = "/images/icons/club-detail/email-small.svg";
+const calendarIcon = "/images/icons/club-detail/calendar.svg";
+const arrowRightIcon = "/images/icons/club-detail/arrow-right.svg";
+const locationIcon = "/images/icons/club-detail/location.svg";
+const mapIcon = "/images/icons/club-detail/map.svg";
+const attendeesIcon = "/images/icons/club-detail/attendees.svg";
+const usersRedIcon = "/images/icons/club-detail/users-red.svg";
+const clockBlueIcon = "/images/icons/club-detail/clock-blue.svg";
+const contactGreenIcon = "/images/icons/club-detail/contact-green.svg";
+const bellIcon = "/images/icons/club-detail/bell.svg";
+const emailIcon = "/images/icons/club-detail/email.svg";
+
+// 커멘트 섹션 아이콘 (Figma URL 유지 - 섹션 삭제 예정)
+const commentUserIcon = "https://www.figma.com/api/mcp/asset/f2f7159c-e58e-4d36-9276-0170acd5746e";
+const starIcon = "https://www.figma.com/api/mcp/asset/f83cd3b3-46b9-407f-8bd4-e88d6f0242e1";
+
 interface ClubProfilePageProps {
   params: Promise<{ id: string }>;
 }
@@ -17,13 +40,11 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.logo}>
-            <div className={styles.logoIcon}>🗺️</div>
+            <img src={logoIcon} alt="ClubAtlas" width="24" height="24" />
             <span className={styles.logoText}>ClubAtlas</span>
           </div>
           <Link href="/student/home/clubs" className={styles.backButton}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src={backArrowIcon} alt="" width="16" height="16" />
             Back to Browse
           </Link>
         </div>
@@ -54,17 +75,11 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                   <p className={styles.clubTagline}>Building the future, one robot at a time</p>
                   <div className={styles.quickMeta}>
                     <div className={styles.metaItem}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z"/>
-                        <path d="M10 12C4.477 12 0 14.015 0 16.5V20H20V16.5C20 14.015 15.523 12 10 12Z"/>
-                      </svg>
+                      <img src={usersIcon} alt="" width="20" height="20" />
                       <span>127 members</span>
                     </div>
                     <div className={styles.metaItem}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 0C4.477 0 0 4.477 0 10C0 15.523 4.477 20 10 20C15.523 20 20 15.523 20 10C20 4.477 15.523 0 10 0ZM10 18C5.589 18 2 14.411 2 10C2 5.589 5.589 2 10 2C14.411 2 18 5.589 18 10C18 14.411 14.411 18 10 18Z"/>
-                        <path d="M11 5H9V11L14 14L15 12.2L11 10V5Z"/>
-                      </svg>
+                      <img src={calendarBadgeIcon} alt="" width="20" height="20" />
                       <span>Est. Fall 2020</span>
                     </div>
                   </div>
@@ -72,14 +87,10 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
               </div>
               <div className={styles.heroActions}>
                 <button className={styles.shareButton}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M15 6C16.657 6 18 4.657 18 3C18 1.343 16.657 0 15 0C13.343 0 12 1.343 12 3C12 3.176 12.014 3.348 12.038 3.518L7.419 6.242C6.861 5.477 5.982 5 5 5C3.343 5 2 6.343 2 8C2 9.657 3.343 11 5 11C5.982 11 6.861 10.523 7.419 9.758L12.038 12.482C12.014 12.652 12 12.824 12 13C12 14.657 13.343 16 15 16C16.657 16 18 14.657 18 13C18 11.343 16.657 10 15 10C14.018 10 13.139 10.477 12.581 11.242L7.962 8.518C7.986 8.348 8 8.176 8 8C8 7.824 7.986 7.652 7.962 7.482L12.581 4.758C13.139 5.523 14.018 6 15 6Z"/>
-                  </svg>
+                  <img src={shareIcon} alt="" width="20" height="20" />
                 </button>
                 <button className={styles.subscribeButton}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M2 4C2 2.895 2.895 2 4 2H16C17.105 2 18 2.895 18 4V6H2V4ZM2 8H18V16C18 17.105 17.105 18 16 18H4C2.895 18 2 17.105 2 16V8Z"/>
-                  </svg>
+                  <img src={subscribeIcon} alt="" width="20" height="20" />
                   Subscribe
                 </button>
               </div>
@@ -127,10 +138,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                           <div className={styles.leaderRole}>{leader.role}</div>
                           <p className={styles.leaderBio}>{leader.bio}</p>
                           <div className={styles.leaderEmail}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                              <path d="M2 2H10C10.55 2 11 2.45 11 3V9C11 9.55 10.55 10 10 10H2C1.45 10 1 9.55 1 9V3C1 2.45 1.45 2 2 2Z"/>
-                              <path d="M11 3L6 6.5L1 3" stroke="white" strokeWidth="0.5"/>
-                            </svg>
+                            <img src={emailSmallIcon} alt="" width="12" height="12" />
                             {leader.email}
                           </div>
                         </div>
@@ -148,9 +156,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                 <div className={styles.meetingCards}>
                   <div className={styles.meetingCardBlue}>
                     <h3 className={styles.meetingCardTitle}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M5 2C4.448 2 4 2.448 4 3V4H3C1.895 4 1 4.895 1 6V16C1 17.105 1.895 18 3 18H17C18.105 18 19 17.105 19 16V6C19 4.895 18.105 4 17 4H16V3C16 2.448 15.552 2 15 2C14.448 2 14 2.448 14 3V4H6V3C6 2.448 5.552 2 5 2Z"/>
-                      </svg>
+                      <img src={calendarIcon} alt="" width="20" height="20" />
                       Regular Schedule
                     </h3>
                     <div className={styles.meetingInfo}>
@@ -169,17 +175,13 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                     </div>
                     <button className={styles.meetingButton}>
                       View on Calendar
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M9 4L13 8L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
+                      <img src={arrowRightIcon} alt="" width="16" height="16" />
                     </button>
                   </div>
 
                   <div className={styles.meetingCardGreen}>
                     <h3 className={styles.meetingCardTitle}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 2C6.134 2 3 5.134 3 9C3 13.388 10 20 10 20C10 20 17 13.388 17 9C17 5.134 13.866 2 10 2ZM10 11.5C8.619 11.5 7.5 10.381 7.5 9C7.5 7.619 8.619 6.5 10 6.5C11.381 6.5 12.5 7.619 12.5 9C12.5 10.381 11.381 11.5 10 11.5Z"/>
-                      </svg>
+                      <img src={locationIcon} alt="" width="20" height="20" />
                       Meeting Location
                     </h3>
                     <div className={styles.meetingInfo}>
@@ -197,9 +199,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                       </div>
                     </div>
                     <button className={styles.meetingButtonGreen}>
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M8 2C4.686 2 2 4.686 2 8C2 11.314 4.686 14 8 14C11.314 14 14 11.314 14 8C14 4.686 11.314 2 8 2Z"/>
-                      </svg>
+                      <img src={mapIcon} alt="" width="16" height="16" />
                       View on Campus Map
                     </button>
                   </div>
@@ -225,10 +225,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                         <h4 className={styles.activityTitle}>{activity.title}</h4>
                         <p className={styles.activityDescription}>{activity.description}</p>
                         <div className={styles.activityAttendees}>
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M8 8C10.21 8 12 6.21 12 4C12 1.79 10.21 0 8 0C5.79 0 4 1.79 4 4C4 6.21 5.79 8 8 8Z"/>
-                            <path d="M8 10C3.582 10 0 11.79 0 14V16H16V14C16 11.79 12.418 10 8 10Z"/>
-                          </svg>
+                          <img src={attendeesIcon} alt="" width="16" height="16" />
                           {activity.attendees}
                         </div>
                       </div>
@@ -263,9 +260,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                 <div className={styles.quickInfoList}>
                   <div className={styles.quickInfoItem}>
                     <div className={styles.quickInfoIconRed}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 10C12.76 10 15 7.76 15 5C15 2.24 12.76 0 10 0C7.24 0 5 2.24 5 5C5 7.76 7.24 10 10 10ZM10 12C4.477 12 0 14.015 0 16.5V20H20V16.5C20 14.015 15.523 12 10 12Z"/>
-                      </svg>
+                      <img src={usersRedIcon} alt="" width="20" height="20" />
                     </div>
                     <div className={styles.quickInfoContent}>
                       <div className={styles.quickInfoLabel}>Members</div>
@@ -274,10 +269,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                   </div>
                   <div className={styles.quickInfoItem}>
                     <div className={styles.quickInfoIconBlue}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 0C4.477 0 0 4.477 0 10C0 15.523 4.477 20 10 20C15.523 20 20 15.523 20 10C20 4.477 15.523 0 10 0Z"/>
-                        <path d="M11 5H9V11L14 14L15 12.2L11 10V5Z" fill="white"/>
-                      </svg>
+                      <img src={clockBlueIcon} alt="" width="20" height="20" />
                     </div>
                     <div className={styles.quickInfoContent}>
                       <div className={styles.quickInfoLabel}>Established</div>
@@ -286,9 +278,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                   </div>
                   <div className={styles.quickInfoItem}>
                     <div className={styles.quickInfoIconGreen}>
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M2 4C2 2.895 2.895 2 4 2H16C17.105 2 18 2.895 18 4V6H2V4ZM2 8H18V16C18 17.105 17.105 18 16 18H4C2.895 18 2 17.105 2 16V8Z"/>
-                      </svg>
+                      <img src={contactGreenIcon} alt="" width="20" height="20" />
                     </div>
                     <div className={styles.quickInfoContent}>
                       <div className={styles.quickInfoLabel}>Contact</div>
@@ -301,9 +291,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
               {/* Get Updates */}
               <div className={styles.updatesCard}>
                 <div className={styles.updatesHeader}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M2 4C2 2.895 2.895 2 4 2H16C17.105 2 18 2.895 18 4V6H2V4ZM2 8H18V16C18 17.105 17.105 18 16 18H4C2.895 18 2 17.105 2 16V8Z"/>
-                  </svg>
+                  <img src={bellIcon} alt="" width="20" height="20" />
                   Get Updates
                 </div>
                 <div className={styles.updatesContent}>
@@ -318,9 +306,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                       className={styles.emailInput}
                     />
                     <button className={styles.subscribeButtonSidebar}>
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M2 3H14C14.55 3 15 3.45 15 4V12C15 12.55 14.55 13 14 13H2C1.45 13 1 12.55 1 12V4C1 3.45 1.45 3 2 3Z"/>
-                      </svg>
+                      <img src={emailIcon} alt="" width="16" height="16" />
                       Subscribe to Updates
                     </button>
                   </div>
@@ -366,9 +352,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                       <div className={styles.commentActions}>
                         <button className={styles.commentAction}>Reply</button>
                         <button className={styles.commentAction}>
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                            <path d="M6 1L7.5 4.5L11 5L8.5 7.5L9 11L6 9L3 11L3.5 7.5L1 5L4.5 4.5L6 1Z"/>
-                          </svg>
+                          <img src={starIcon} alt="" width="12" height="12" />
                           Mark as Helpful
                         </button>
                         <button className={styles.commentActionReport}>Report</button>

@@ -1,5 +1,7 @@
 import styles from './InfoPanel.module.css';
 
+const studentPortalIcon = "/images/icons/student-login/student-portal.svg";
+
 export default function InfoPanel() {
   return (
     <div className={styles.panel}>
@@ -10,7 +12,7 @@ export default function InfoPanel() {
       <div className={styles.content}>
         <div className={styles.iconContainer}>
           <img 
-            src="https://www.figma.com/api/mcp/asset/044eed32-a3ed-4a6c-9092-a20a40317978" 
+            src={studentPortalIcon} 
             alt="Student Portal"
             className={styles.icon}
           />

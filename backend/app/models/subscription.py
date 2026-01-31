@@ -42,4 +42,3 @@ class SubscriptionListResponse(BaseModel):
     total: int
 
 
-
