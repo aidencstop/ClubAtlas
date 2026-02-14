@@ -573,3 +573,39 @@
   line-height: 20px;
 }
 
+/* Loading, Error, Empty States */
+.loading,
+.error {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 16px;
+  color: #6b7280;
+  background: white;
+  border-radius: 20px;
+  margin: 20px 0;
+}
+
+.error {
+  color: #ef4444;
+}
+
+.emptyUpcoming {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.moreEvents {
+  font-size: 11px;
+  color: #6b7280;
+  padding: 2px 4px;
+  margin-top: 2px;
+}
+
+.eventLocation {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+

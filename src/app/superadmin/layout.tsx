@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
-import './superadmin.css';
+'use client';
 
-export const metadata: Metadata = {
-  title: "ClubAtlas - Super Admin",
-  description: "System administration and platform management",
-};
+import ProtectedRoute from '@/components/ProtectedRoute';
+import './superadmin.css';
 
 export default function SuperAdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <>{children}</>;
+  return (
+    <ProtectedRoute requireAuth={true} requiredRole="super-admin">
+      {children}
+    </ProtectedRoute>
+  );
 }
 
 

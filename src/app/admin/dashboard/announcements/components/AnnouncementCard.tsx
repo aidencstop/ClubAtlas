@@ -18,15 +18,18 @@ interface Announcement {
 
 interface AnnouncementCardProps {
   announcement: Announcement;
+  onDelete?: (id: string) => void;
 }
 
-export default function AnnouncementCard({ announcement }: AnnouncementCardProps) {
+export default function AnnouncementCard({ announcement, onDelete }: AnnouncementCardProps) {
   const handleEdit = () => {
     console.log('Edit announcement:', announcement.id);
   };
 
   const handleDelete = () => {
-    console.log('Delete announcement:', announcement.id);
+    if (onDelete) {
+      onDelete(announcement.id);
+    }
   };
 
   return (

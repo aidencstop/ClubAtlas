@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './Calendar.module.css';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import WeekView from './components/WeekView';
+import { useAuth } from '@/contexts/AuthContext';
+import { getMyCalendarEvents, Event as ApiEvent } from '@/lib/api';
 
 // 로컬 아이콘 경로
 const viewModeIcon = "/images/icons/calendar/view-mode.svg";
@@ -20,76 +22,203 @@ const logoIcon = "/images/icons/logo.svg"; // 공용 로고
 const searchIcon = "/images/icons/search.svg"; // 공용 검색
 const profileIcon = "/images/icons/profile.svg"; // 공용 프로필
 
-// 이벤트 데이터
-const eventsData = [
-  {
-    date: 11,
-    time: '2:00',
-    title: 'Coding',
-    color: '#615fff'
-  },
-  {
-    date: 12,
-    time: '3:00',
-    title: 'Practice Session',
-    color: '#00c950'
-  },
-  {
-    date: 12,
-    time: '4:00',
-    title: 'Weekly Meeting',
-    color: '#2b7fff'
-  },
-  {
-    date: 13,
-    time: '5:30',
-    title: 'Auditions',
-    color: '#ad46ff'
-  }
-];
+interface CalendarEvent {
+  id: string;
+  date: number;
+  time: string;
+  title: string;
+  color: string;
+  club_id: string;
+  description: string;
+  location: string;
+  start_datetime: Date;
+}
 
-const upcomingEvents = [
-  {
-    date: 'Feb 13',
-    time: '3:00 PM',
-    club: 'Soccer Club',
-    event: 'Practice Session',
-    category: 'sports',
-    categoryColor: 'linear-gradient(135deg, #4ec27d 0%, #67b89d 100%)'
-  },
-  {
-    date: 'Feb 13',
-    time: '4:00 PM',
-    club: 'Robotics Club',
-    event: 'Weekly Meeting',
-    category: 'academic',
-    categoryColor: 'linear-gradient(135deg, #7aa4e5 0%, #7f72e4 100%)'
-  },
-  {
-    date: 'Feb 14',
-    time: '5:30 PM',
-    club: 'Drama Society',
-    event: 'Auditions',
-    category: 'arts',
-    categoryColor: 'linear-gradient(135deg, #a679c6 0%, #db7bb0 100%)'
-  }
-];
+interface UpcomingEvent {
+  id: string;
+  date: string;
+  time: string;
+  club: string;
+  event: string;
+  category: string;
+  categoryColor: string;
+  club_id: string;
+  location: string;
+}
+
+const categoryColors: { [key: string]: string } = {
+  'sports': 'linear-gradient(135deg, #4ec27d 0%, #67b89d 100%)',
+  'academic': 'linear-gradient(135deg, #7aa4e5 0%, #7f72e4 100%)',
+  'arts': 'linear-gradient(135deg, #a679c6 0%, #db7bb0 100%)',
+  'social': 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+  'default': 'linear-gradient(135deg, #6b7280 0%, #9ca3af 100%)'
+};
+
+const eventColors = ['#615fff', '#00c950', '#2b7fff', '#ad46ff', '#f59e0b', '#ef4444'];
 
 export default function CalendarPage() {
+  const { isAuthenticated, userProfile } = useAuth();
+  const isClubLeader = userProfile?.role === 'club-leader' || userProfile?.role === 'admin';
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
-  const [currentMonth, setCurrentMonth] = useState('February 2026');
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEventDetailModalOpen, setIsEventDetailModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const daysInMonth = Array.from({ length: 28 }, (_, i) => i + 1);
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadEvents();
+    }
+  }, [isAuthenticated, currentDate]);
 
-  const getEventsForDate = (date: number) => {
-    return eventsData.filter(event => event.date === date);
+  const loadEvents = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0);
+
+      const response = await getMyCalendarEvents({
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString()
+      });
+
+      if (response.data) {
+        const calendarEvents: CalendarEvent[] = response.data.events.map((apiEvent: ApiEvent, idx: number) => {
+          const startDate = new Date(apiEvent.start_datetime);
+          return {
+            id: apiEvent.id || '',
+            date: startDate.getDate(),
+            time: startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }),
+            title: apiEvent.title,
+            color: eventColors[idx % eventColors.length],
+            club_id: apiEvent.club_id,
+            description: apiEvent.description,
+            location: apiEvent.location,
+            start_datetime: startDate
+          };
+        });
+
+        setEvents(calendarEvents);
+
+        const now = new Date();
+        const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const upcoming = calendarEvents
+          .filter(event => event.start_datetime >= now && event.start_datetime <= weekLater)
+          .slice(0, 5)
+          .map(event => ({
+            id: event.id,
+            date: event.start_datetime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            time: event.start_datetime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+            club: 'Club',
+            event: event.title,
+            category: 'academic',
+            categoryColor: categoryColors['academic'],
+            club_id: event.club_id,
+            location: event.location
+          }));
+
+        setUpcomingEvents(upcoming);
+      }
+    } catch (err) {
+      console.error('Failed to load events:', err);
+      setError('Failed to load calendar events');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleEventClick = () => {
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const getEventsForDate = (date: number) => {
+    return events.filter(event => event.date === date);
+  };
+
+  const handleEventClick = (event?: CalendarEvent) => {
+    if (event) {
+      setSelectedEvent(event);
+    }
     setIsEventDetailModalOpen(true);
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const handleExportCalendar = () => {
+    if (events.length === 0) {
+      alert('No events to export');
+      return;
+    }
+
+    const icalContent = generateICalContent(events);
+    const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `club-calendar-${monthName.replace(' ', '-')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const generateICalContent = (events: CalendarEvent[]): string => {
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ClubAtlas//Student Calendar//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:ClubAtlas Events',
+      'X-WR-TIMEZONE:America/New_York',
+    ];
+
+    events.forEach((event) => {
+      const start = new Date(event.start_datetime);
+      const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+      const formatDateForICal = (date: Date): string => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      lines.push('BEGIN:VEVENT');
+      lines.push(`UID:${event.id}@clubatlas.com`);
+      lines.push(`DTSTAMP:${formatDateForICal(new Date())}`);
+      lines.push(`DTSTART:${formatDateForICal(start)}`);
+      lines.push(`DTEND:${formatDateForICal(end)}`);
+      lines.push(`SUMMARY:${event.title}`);
+      
+      if (event.location) {
+        lines.push(`LOCATION:${event.location}`);
+      }
+      
+      if (event.description) {
+        lines.push(`DESCRIPTION:${event.description.replace(/\n/g, '\\n')}`);
+      }
+      
+      lines.push('END:VEVENT');
+    });
+
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
   };
 
   return (
@@ -158,15 +287,17 @@ export default function CalendarPage() {
                     <img src={weekViewIcon} alt="" width="16" height="16" />
                     Week View
                   </button>
-                  <button className={styles.createButton} onClick={() => setIsModalOpen(true)}>
-                    <img src={createIcon} alt="" width="20" height="20" />
-                    Create
-                  </button>
+                  {isClubLeader && (
+                    <button className={styles.createButton} onClick={() => setIsModalOpen(true)}>
+                      <img src={createIcon} alt="" width="20" height="20" />
+                      Create
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Export Calendar Button */}
-              <button className={styles.exportButton}>
+              <button className={styles.exportButton} onClick={handleExportCalendar}>
                 <img src={exportIcon} alt="" width="20" height="20" />
                 Export Calendar
               </button>
@@ -181,91 +312,121 @@ export default function CalendarPage() {
             <div className={styles.calendarArea}>
               {/* Month Navigation */}
               <div className={styles.monthNavigation}>
-                <button className={styles.navButton}>
+                <button className={styles.navButton} onClick={handlePrevMonth}>
                   <img src={prevArrowIcon} alt="Previous" width="24" height="24" />
                 </button>
-                <h2 className={styles.monthTitle}>{currentMonth}</h2>
-                <button className={styles.navButton}>
+                <h2 className={styles.monthTitle}>{monthName}</h2>
+                <button className={styles.navButton} onClick={handleNextMonth}>
                   <img src={nextArrowIcon} alt="Next" width="24" height="24" />
                 </button>
               </div>
 
-              {/* Calendar Grid - Conditional Rendering */}
-              {viewMode === 'month' ? (
-                <div className={styles.calendarCard}>
-                  <div className={styles.calendarHeader}>
-                    {daysOfWeek.map(day => (
-                      <div key={day} className={styles.dayHeader}>{day}</div>
-                    ))}
-                  </div>
-                  <div className={styles.calendarBody}>
-                    {daysInMonth.map(date => {
-                      const events = getEventsForDate(date);
-                      const isToday = date === 12;
-                      
-                      return (
-                        <div 
-                          key={date} 
-                          className={`${styles.calendarDay} ${date > 28 ? styles.otherMonth : ''}`}
-                        >
-                          {isToday ? (
-                            <div className={styles.todayBadge}>{date}</div>
-                          ) : (
-                            <span className={styles.dayNumber}>{date}</span>
-                          )}
-                          <div className={styles.eventsContainer}>
-                            {events.map((event, idx) => (
-                              <div 
-                                key={idx} 
-                                className={styles.eventTag}
-                                style={{ backgroundColor: event.color }}
-                                onClick={handleEventClick}
-                              >
-                                {event.time} {event.title}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+              {isLoading ? (
+                <div className={styles.loading}>Loading calendar events...</div>
+              ) : error ? (
+                <div className={styles.error}>{error}</div>
               ) : (
-                <WeekView onEventClick={handleEventClick} />
+                <>
+                  {/* Calendar Grid - Conditional Rendering */}
+                  {viewMode === 'month' ? (
+                    <div className={styles.calendarCard}>
+                      <div className={styles.calendarHeader}>
+                        {daysOfWeek.map(day => (
+                          <div key={day} className={styles.dayHeader}>{day}</div>
+                        ))}
+                      </div>
+                      <div className={styles.calendarBody}>
+                        {Array.from({ length: firstDayOfMonth }).map((_, idx) => (
+                          <div key={`empty-${idx}`} className={`${styles.calendarDay} ${styles.otherMonth}`} />
+                        ))}
+                        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(date => {
+                          const dayEvents = getEventsForDate(date);
+                          const today = new Date();
+                          const isToday = date === today.getDate() && 
+                                          month === today.getMonth() && 
+                                          year === today.getFullYear();
+                          
+                          return (
+                            <div 
+                              key={date} 
+                              className={styles.calendarDay}
+                            >
+                              {isToday ? (
+                                <div className={styles.todayBadge}>{date}</div>
+                              ) : (
+                                <span className={styles.dayNumber}>{date}</span>
+                              )}
+                              <div className={styles.eventsContainer}>
+                                {dayEvents.slice(0, 3).map((event) => (
+                                  <div 
+                                    key={event.id} 
+                                    className={styles.eventTag}
+                                    style={{ backgroundColor: event.color }}
+                                    onClick={() => handleEventClick(event)}
+                                  >
+                                    {event.time} {event.title}
+                                  </div>
+                                ))}
+                                {dayEvents.length > 3 && (
+                                  <div className={styles.moreEvents}>
+                                    +{dayEvents.length - 3} more
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <WeekView onEventClick={() => handleEventClick()} />
+                  )}
+                </>
               )}
 
               {/* Upcoming Events */}
-              <div className={styles.upcomingCard}>
-                <div className={styles.upcomingHeader}>
-                  <img src={upcomingIcon} alt="" width="24" height="24" />
-                  <h3>Upcoming This Week</h3>
-                </div>
-                <div className={styles.upcomingList}>
-                  {upcomingEvents.map((event, idx) => (
-                    <div key={idx} className={styles.upcomingItem}>
-                      <div 
-                        className={styles.eventBar}
-                        style={{ background: event.categoryColor }}
-                      />
-                      <div className={styles.eventInfo}>
-                        <div className={styles.eventDateTime}>
-                          <span className={styles.eventDate}>{event.date}</span>
-                          <span className={styles.eventTime}>{event.time}</span>
-                        </div>
-                        <h4 className={styles.eventClub}>{event.club}</h4>
-                        <p className={styles.eventName}>{event.event}</p>
-                      </div>
-                      <div 
-                        className={styles.categoryBadge}
-                        style={{ background: event.categoryColor }}
-                      >
-                        {event.category}
-                      </div>
-                      <button className={styles.viewClubButton}>View Club</button>
+              {!isLoading && !error && (
+                <div className={styles.upcomingCard}>
+                  <div className={styles.upcomingHeader}>
+                    <img src={upcomingIcon} alt="" width="24" height="24" />
+                    <h3>Upcoming This Week</h3>
+                  </div>
+                  {upcomingEvents.length === 0 ? (
+                    <div className={styles.emptyUpcoming}>
+                      No upcoming events this week. Check out clubs to find events!
                     </div>
-                  ))}
+                  ) : (
+                    <div className={styles.upcomingList}>
+                      {upcomingEvents.map((event) => (
+                        <div key={event.id} className={styles.upcomingItem}>
+                          <div 
+                            className={styles.eventBar}
+                            style={{ background: event.categoryColor }}
+                          />
+                          <div className={styles.eventInfo}>
+                            <div className={styles.eventDateTime}>
+                              <span className={styles.eventDate}>{event.date}</span>
+                              <span className={styles.eventTime}>{event.time}</span>
+                            </div>
+                            <h4 className={styles.eventClub}>{event.club}</h4>
+                            <p className={styles.eventName}>{event.event}</p>
+                            <p className={styles.eventLocation}>📍 {event.location}</p>
+                          </div>
+                          <div 
+                            className={styles.categoryBadge}
+                            style={{ background: event.categoryColor }}
+                          >
+                            {event.category}
+                          </div>
+                          <Link href={`/student/home/clubs?club=${event.club_id}`} className={styles.viewClubButton}>
+                            View Club
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -279,11 +440,21 @@ export default function CalendarPage() {
       </footer>
 
       {/* Create Event Modal */}
-      <CreateEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <CreateEventModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={loadEvents}
+      />
 
       {/* Event Detail Modal */}
-      {isEventDetailModalOpen && (
-        <EventDetailModal onClose={() => setIsEventDetailModalOpen(false)} />
+      {isEventDetailModalOpen && selectedEvent && (
+        <EventDetailModal 
+          onClose={() => {
+            setIsEventDetailModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          event={selectedEvent}
+        />
       )}
     </div>
   );

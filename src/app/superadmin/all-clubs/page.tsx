@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getIdToken } from '@/lib/firebase/auth';
 import styles from './AllClubs.module.css';
 import SuperAdminHeader from '../dashboard/components/SuperAdminHeader';
 import SuperAdminSidebar from '../dashboard/components/SuperAdminSidebar';
@@ -9,12 +11,48 @@ import ClubStats from './components/ClubStats';
 import CreateClubModal, { ClubFormData } from './components/CreateClubModal';
 
 export default function AllClubsPage() {
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleCreateClub = (data: ClubFormData) => {
-    console.log('Creating club:', data);
-    // TODO: API 호출로 클럽 생성
-    setIsModalOpen(false);
+  const handleCreateClub = async (data: ClubFormData) => {
+    if (!user) return;
+
+    try {
+      const token = await getIdToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/clubs`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: data.name,
+            description: data.description,
+            categories: [data.category],
+            activity_type: data.category,
+            leader_email: data.leader,
+            tagline: '',
+          }),
+        }
+      );
+
+      if (response.ok) {
+        alert('Club created successfully!');
+        setIsModalOpen(false);
+        setRefreshKey(prev => prev + 1);
+      } else {
+        const error = await response.json();
+        alert(`Failed to create club: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Failed to create club:', error);
+      alert('Failed to create club');
+    }
   };
 
   return (
@@ -38,9 +76,9 @@ export default function AllClubsPage() {
             </button>
           </div>
 
-          <AllClubsTable />
+          <AllClubsTable key={refreshKey} />
           
-          <ClubStats />
+          <ClubStats key={`stats-${refreshKey}`} />
         </div>
       </div>
 

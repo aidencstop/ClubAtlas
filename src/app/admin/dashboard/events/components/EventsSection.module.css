@@ -105,6 +105,24 @@
   gap: 16px;
 }
 
+.loading,
+.error,
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.error {
+  color: #ef4444;
+}
+
+.empty {
+  color: #9ca3af;
+}
+
 
 
 

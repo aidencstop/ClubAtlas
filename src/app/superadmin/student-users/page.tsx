@@ -1,12 +1,57 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getIdToken } from '@/lib/firebase/auth';
 import styles from './StudentUsers.module.css';
 import SuperAdminHeader from '../dashboard/components/SuperAdminHeader';
 import SuperAdminSidebar from '../dashboard/components/SuperAdminSidebar';
 import StatCard from './components/StatCard';
 import ActivityChart from './components/ActivityChart';
 
+interface StudentStats {
+  total_users: number;
+  active_this_month: number;
+  new_this_week: number;
+  avg_subscriptions: number;
+}
+
 export default function StudentUsersPage() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<StudentStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadStatistics();
+  }, []);
+
+  const loadStatistics = async () => {
+    if (!user) return;
+
+    try {
+      const token = await getIdToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/students/statistics`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Failed to load student statistics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={`${styles.container} superadmin-layout`}>
       <SuperAdminHeader />
@@ -19,25 +64,25 @@ export default function StudentUsersPage() {
 
           <div className={styles.statsGrid}>
             <StatCard
-              value="1,234"
+              value={loading ? "..." : stats?.total_users.toLocaleString() || "0"}
               label="Total Users"
-              subtext="+89 this week"
+              subtext={loading ? "" : `+${stats?.new_this_week || 0} this week`}
               subtextColor="green"
             />
             <StatCard
-              value="892"
+              value={loading ? "..." : stats?.active_this_month.toLocaleString() || "0"}
               label="Active This Month"
-              subtext="72% of total"
+              subtext={loading ? "" : stats ? `${Math.round((stats.active_this_month / stats.total_users) * 100)}% of total` : ""}
               subtextColor="gray"
             />
             <StatCard
-              value="89"
+              value={loading ? "..." : stats?.new_this_week.toString() || "0"}
               label="New This Week"
-              subtext="+15% vs last week"
+              subtext=""
               subtextColor="green"
             />
             <StatCard
-              value="3.2"
+              value={loading ? "..." : stats?.avg_subscriptions.toString() || "0"}
               label="Avg Subscriptions"
               subtext="Per user"
               subtextColor="gray"

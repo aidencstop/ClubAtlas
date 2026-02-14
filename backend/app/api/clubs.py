@@ -10,7 +10,7 @@ from app.models.club import (
     ClubListResponse
 )
 from app.api.dependencies import get_current_user, require_admin, require_club_leader, get_current_user_optional
-from app.services.firestore_service import club_service
+from app.services.firestore_service import club_service, user_service
 import uuid
 
 router = APIRouter(prefix="/api/clubs", tags=["clubs"])
@@ -182,15 +182,27 @@ async def update_club(
     """
     동아리 정보 수정
     
-    - 동아리 리더 또는 관리자만 가능
-    - TODO: 리더 권한 확인 (자신의 동아리만 수정 가능)
+    - 동아리 리더 전용
+    - 자신이 관리하는 동아리만 수정 가능
     """
+    user_id = current_user['uid']
+    
     existing_club = await club_service.get_club(club_id)
     
     if not existing_club:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Club not found"
+        )
+    
+    # 권한 확인
+    user_profile = await user_service.get_user_profile(user_id)
+    managed_clubs = user_profile.get('managed_club_ids', [])
+    
+    if club_id not in managed_clubs and current_user.get('role') != 'super-admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only update clubs you manage"
         )
     
     update_data = club_update.dict(exclude_unset=True)
@@ -219,6 +231,66 @@ async def update_club(
         updated_at=updated_club.get('updated_at'),
         is_active=updated_club.get('is_active', True)
     )
+
+
+@router.get("/my/managed", response_model=Club)
+async def get_my_managed_club(
+    current_user: dict = Depends(require_club_leader)
+):
+    """
+    내가 관리하는 동아리 조회
+    
+    - 동아리 리더 전용
+    - 자신이 관리하는 첫 번째 동아리 반환
+    """
+    user_id = current_user['uid']
+    
+    try:
+        user_profile = await user_service.get_user_profile(user_id)
+        managed_clubs = user_profile.get('managed_club_ids', [])
+        
+        if not managed_clubs:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No managed clubs found"
+            )
+        
+        club_id = managed_clubs[0]
+        club_data = await club_service.get_club(club_id)
+        
+        if not club_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Club not found"
+            )
+        
+        return Club(
+            id=club_data['id'],
+            name=club_data['name'],
+            description=club_data['description'],
+            tagline=club_data.get('tagline'),
+            categories=club_data['categories'],
+            tags=club_data.get('tags', []),
+            activity_type=club_data['activity_type'],
+            meeting_schedule=club_data.get('meeting_schedule'),
+            leaders=club_data.get('leaders', []),
+            contact_email=club_data.get('contact_email'),
+            stats=club_data.get('stats', {}),
+            logo_url=club_data.get('logo_url'),
+            banner_url=club_data.get('banner_url'),
+            media_urls=club_data.get('media_urls', []),
+            created_at=club_data.get('created_at'),
+            updated_at=club_data.get('updated_at'),
+            is_active=club_data.get('is_active', True)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Get managed club error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get managed club"
+        )
 
 
 @router.get("/{club_id}/stats")

@@ -194,3 +194,39 @@ ClubAtlas는 분산되고 마지막 순간에 이루어지는 동아리 소통(�
 - 기존 기능을 조용히 변경하거나 삭제하지 않음
 - 위의 프로젝트 개요 또는 기능 목록을 무시하지 않음
 - 이 프로젝트에 대한 명확한 이점 없이 과도하게 설계하지 않음 (거대한 추상화 구축)
+
+---
+
+## 📚 Documentation
+
+- [DEVELOPMENT.md](./DEVELOPMENT.md) - Development workflow and guidelines
+- [TESTING.md](./TESTING.md) - Testing procedures and troubleshooting
+- [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) - 구현 완료 및 미구현 기능 상태
+- [AUTHENTICATION_DESIGN.md](./AUTHENTICATION_DESIGN.md) - 인증 시스템 상세 설계
+- [ICON_REFERENCE.md](./ICON_REFERENCE.md) - Icon usage guidelines
+
+---
+
+## 🎯 Current Status (2026-01-31)
+
+### ✅ Completed Features
+- **3-Role Authentication System** (Student, ClubLeader, SuperAdmin)
+- **Role-Based Access Control (RBAC)**
+- **Login/Signup for all roles**
+- **Leader Access Request System**
+- **SuperAdmin Management UI** (Pending Requests approval/rejection)
+- **Profile Editing** (all roles)
+- **Logout Functionality** (all roles)
+
+### 🚧 In Progress
+- None (All planned authentication features completed)
+
+### ⏸️ Pending Features
+- Password Reset (Forgot Password)
+- Event Management System
+- Subscription System
+- AI Recommendations Frontend Integration
+- File Upload (Firebase Storage)
+- Real-time Notifications
+
+**자세한 구현 상태는 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)를 참조하세요.**

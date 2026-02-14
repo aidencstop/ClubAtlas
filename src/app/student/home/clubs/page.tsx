@@ -1,108 +1,213 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './BrowseClubs.module.css';
+import { getClubs, Club, MeetingSchedule } from '@/lib/api/clubs';
+import { subscribeToClub, unsubscribeFromClub, getMySubscriptions } from '@/lib/api/subscriptions';
 
-// 로컬 아이콘 경로
 const searchIcon = "/images/icons/clubs/search.svg";
 const filterIcon = "/images/icons/clubs/filter.svg";
 const heartIcon = "/images/icons/clubs/heart.svg";
 const clockIcon = "/images/icons/clubs/clock.svg";
 const locationIcon = "/images/icons/clubs/location.svg";
-const usersIcon1 = "/images/icons/clubs/users.svg"; // Robotics, Photography, Drama
-const usersIcon2 = "/images/icons/clubs/users.svg"; // Debate, Chess, Music (같은 아이콘 사용)
+const usersIcon1 = "/images/icons/clubs/users.svg";
+const usersIcon2 = "/images/icons/clubs/users.svg";
 const shareIcon = "/images/icons/clubs/share.svg";
-const logoIcon = "/images/icons/logo.svg"; // 공용 로고
-const headerSearchIcon = "/images/icons/search.svg"; // 공용 검색 아이콘
-const profileIcon = "/images/icons/profile.svg"; // 공용 프로필 아이콘
-
-const clubsData = [
-  {
-    id: 1,
-    name: 'Robotics Club',
-    category: 'STEM',
-    description: 'Building the future with cutting-edge robotics and automation projects',
-    day: 'Monday',
-    time: '4:00 PM',
-    location: 'Engineering Building, Room 201',
-    members: 127,
-    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=192&fit=crop'
-  },
-  {
-    id: 2,
-    name: 'Photography Club',
-    category: 'Arts',
-    description: 'Capture moments, develop skills, and share your creative vision with peers',
-    day: 'Thursday',
-    time: '6:00 PM',
-    location: 'Arts Center, Studio 3',
-    members: 89,
-    image: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=192&fit=crop'
-  },
-  {
-    id: 3,
-    name: 'Drama Society',
-    category: 'Performance',
-    description: 'Express yourself through theater, acting, and stage production',
-    day: 'Tuesday',
-    time: '5:30 PM',
-    location: 'Theater Hall',
-    members: 156,
-    image: 'https://images.unsplash.com/photo-1503095396549-807759245b35?w=400&h=192&fit=crop'
-  },
-  {
-    id: 4,
-    name: 'Debate Team',
-    category: 'Academic',
-    description: 'Sharpen your critical thinking and public speaking through competitive debates',
-    day: 'Wednesday',
-    time: '3:00 PM',
-    location: 'Student Center, Room 105',
-    members: 45,
-    image: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=400&h=192&fit=crop'
-  },
-  {
-    id: 5,
-    name: 'Chess Club',
-    category: 'Strategy',
-    description: 'Master the game of kings through practice, tournaments, and friendly matches',
-    day: 'Friday',
-    time: '4:30 PM',
-    location: 'Library Lounge',
-    members: 34,
-    image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=400&h=192&fit=crop'
-  },
-  {
-    id: 6,
-    name: 'Music Ensemble',
-    category: 'Arts',
-    description: 'Create beautiful music together through instrumental and vocal performances',
-    day: 'Monday',
-    time: '7:00 PM',
-    location: 'Music Hall',
-    members: 78,
-    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=192&fit=crop'
-  }
-];
+const logoIcon = "/images/icons/logo.svg";
+const headerSearchIcon = "/images/icons/search.svg";
+const profileIcon = "/images/icons/profile.svg";
 
 export default function BrowseClubsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedActivityType, setSelectedActivityType] = useState('All');
   const [selectedDay, setSelectedDay] = useState('All');
   const [selectedTime, setSelectedTime] = useState('All');
   const [selectedCommitment, setSelectedCommitment] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
+  
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [totalClubs, setTotalClubs] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [subscribedClubIds, setSubscribedClubIds] = useState<Set<string>>(new Set());
+  const [subscribingClubId, setSubscribingClubId] = useState<string | null>(null);
+  
+  const PAGE_SIZE = 20;
 
-  const filteredClubs = clubsData.filter(club => {
-    const matchesSearch = club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         club.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         club.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || club.category === selectedCategory;
-    const matchesDay = selectedDay === 'All' || club.day === selectedDay;
+  useEffect(() => {
+    loadClubs(1, true);
+    loadSubscriptions();
+  }, [selectedCategory, selectedActivityType]);
+
+  const loadSubscriptions = async () => {
+    try {
+      const response = await getMySubscriptions();
+      if (response.data) {
+        const clubIds = new Set(
+          response.data.subscriptions.map(sub => sub.club_id)
+        );
+        setSubscribedClubIds(clubIds);
+      }
+    } catch (err) {
+      console.error('Failed to load subscriptions:', err);
+    }
+  };
+
+  const loadClubs = async (page: number, reset: boolean = false) => {
+    if (reset) {
+      setIsLoading(true);
+      setClubs([]);
+    } else {
+      setIsLoadingMore(true);
+    }
+    setError(null);
+
+    try {
+      const params: any = {
+        page,
+        page_size: PAGE_SIZE,
+      };
+
+      if (selectedCategory !== 'All') {
+        params.categories = selectedCategory;
+      }
+
+      if (selectedActivityType !== 'All') {
+        params.activity_type = selectedActivityType;
+      }
+
+      const response = await getClubs(params);
+
+      if (response.error) {
+        setError(response.error);
+        return;
+      }
+
+      if (response.data) {
+        if (reset) {
+          setClubs(response.data.clubs);
+        } else {
+          setClubs(prev => [...prev, ...response.data!.clubs]);
+        }
+        setTotalClubs(response.data.total);
+        setCurrentPage(page);
+      }
+    } catch (err) {
+      setError('Failed to load clubs. Please try again.');
+      console.error('Error loading clubs:', err);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    loadClubs(currentPage + 1, false);
+  };
+
+  const handleSubscribeToggle = async (clubId: string) => {
+    if (subscribingClubId) return;
     
-    return matchesSearch && matchesCategory && matchesDay;
+    setSubscribingClubId(clubId);
+    const isCurrentlySubscribed = subscribedClubIds.has(clubId);
+
+    try {
+      if (isCurrentlySubscribed) {
+        const response = await unsubscribeFromClub(clubId);
+        if (!response.error) {
+          setSubscribedClubIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(clubId);
+            return newSet;
+          });
+        } else {
+          alert(response.error || 'Failed to unsubscribe');
+        }
+      } else {
+        const response = await subscribeToClub(clubId);
+        if (!response.error) {
+          setSubscribedClubIds(prev => {
+            const newSet = new Set(prev);
+            newSet.add(clubId);
+            return newSet;
+          });
+        } else {
+          alert(response.error || 'Failed to subscribe');
+        }
+      }
+    } catch (err) {
+      console.error('Subscribe toggle error:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setSubscribingClubId(null);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSelectedActivityType('All');
+    setSelectedDay('All');
+    setSelectedTime('All');
+    setSelectedCommitment('All');
+  };
+
+  const hasActiveFilters = searchQuery !== '' || 
+                          selectedCategory !== 'All' || 
+                          selectedActivityType !== 'All' || 
+                          selectedDay !== 'All' || 
+                          selectedTime !== 'All' || 
+                          selectedCommitment !== 'All';
+
+  const filteredClubs = clubs.filter(club => {
+    // Search filter
+    const matchesSearch = searchQuery === '' || 
+                         club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         club.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         club.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Day filter
+    let matchesDay = true;
+    if (selectedDay !== 'All' && club.meeting_schedule && club.meeting_schedule.length > 0) {
+      matchesDay = club.meeting_schedule.some(schedule => schedule.day === selectedDay);
+    }
+    
+    // Time filter
+    let matchesTime = true;
+    if (selectedTime !== 'All' && club.meeting_schedule && club.meeting_schedule.length > 0) {
+      matchesTime = club.meeting_schedule.some(schedule => {
+        if (schedule.time_slots && schedule.time_slots.length > 0) {
+          const timeSlot = schedule.time_slots[0];
+          const hour = parseInt(timeSlot.split(':')[0]);
+          
+          if (selectedTime === 'Morning') return hour >= 6 && hour < 12;
+          if (selectedTime === 'Afternoon') return hour >= 12 && hour < 17;
+          if (selectedTime === 'Evening') return hour >= 17 && hour < 23;
+        }
+        return false;
+      });
+    }
+    
+    return matchesSearch && matchesDay && matchesTime;
   });
+
+  const hasMore = clubs.length < totalClubs;
+
+  const getMeetingInfo = (club: Club) => {
+    if (club.meeting_schedule && club.meeting_schedule.length > 0) {
+      const schedule = club.meeting_schedule[0];
+      return {
+        day: schedule.day || 'TBD',
+        time: schedule.time_slots && schedule.time_slots.length > 0 ? schedule.time_slots[0] : 'TBD',
+        location: schedule.location || 'TBD'
+      };
+    }
+    return { day: 'TBD', time: 'TBD', location: 'TBD' };
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -142,7 +247,7 @@ export default function BrowseClubsPage() {
           <div className={styles.titleSection}>
             <h1 className={styles.title}>Browse Clubs</h1>
             <p className={styles.subtitle}>
-              Discover your perfect campus community from {clubsData.length} amazing clubs
+              Discover your perfect campus community from {totalClubs} amazing clubs
             </p>
           </div>
 
@@ -169,73 +274,89 @@ export default function BrowseClubsPage() {
             </div>
 
             {showFilters && (
-              <div className={styles.filterGrid}>
-                <div className={styles.filterItem}>
-                  <label className={styles.filterLabel}>Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className={styles.filterSelect}
-                  >
-                    <option value="All">All Categories</option>
-                    <option value="STEM">STEM</option>
-                    <option value="Arts">Arts</option>
-                    <option value="Performance">Performance</option>
-                    <option value="Academic">Academic</option>
-                    <option value="Strategy">Strategy</option>
-                  </select>
-                </div>
+              <>
+                <div className={styles.filterGrid}>
+                  <div className={styles.filterItem}>
+                    <label className={styles.filterLabel}>Category</label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className={styles.filterSelect}
+                    >
+                      <option value="All">All Categories</option>
+                      <option value="STEM">STEM</option>
+                      <option value="Arts">Arts</option>
+                      <option value="Performance">Performance</option>
+                      <option value="Academic">Academic</option>
+                      <option value="Strategy">Strategy</option>
+                    </select>
+                  </div>
 
-                <div className={styles.filterItem}>
-                  <label className={styles.filterLabel}>Meeting Day</label>
-                  <select
-                    value={selectedDay}
-                    onChange={(e) => setSelectedDay(e.target.value)}
-                    className={styles.filterSelectHighlight}
-                  >
-                    <option value="All">All Days</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                  </select>
-                </div>
+                  <div className={styles.filterItem}>
+                    <label className={styles.filterLabel}>Activity Type</label>
+                    <select
+                      value={selectedActivityType}
+                      onChange={(e) => setSelectedActivityType(e.target.value)}
+                      className={styles.filterSelectHighlight}
+                    >
+                      <option value="All">All Types</option>
+                      <option value="Online">Online</option>
+                      <option value="On-Campus">On-Campus</option>
+                      <option value="Off-Campus">Off-Campus</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
+                  </div>
 
-                <div className={styles.filterItem}>
-                  <label className={styles.filterLabel}>Time</label>
-                  <select
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    className={styles.filterSelect}
-                  >
-                    <option value="All">All Times</option>
-                    <option value="Morning">Morning</option>
-                    <option value="Afternoon">Afternoon</option>
-                    <option value="Evening">Evening</option>
-                  </select>
-                </div>
+                  <div className={styles.filterItem}>
+                    <label className={styles.filterLabel}>Meeting Day</label>
+                    <select
+                      value={selectedDay}
+                      onChange={(e) => setSelectedDay(e.target.value)}
+                      className={styles.filterSelect}
+                    >
+                      <option value="All">All Days</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                    </select>
+                  </div>
 
-                <div className={styles.filterItem}>
-                  <label className={styles.filterLabel}>Commitment Level</label>
-                  <select
-                    value={selectedCommitment}
-                    onChange={(e) => setSelectedCommitment(e.target.value)}
-                    className={styles.filterSelect}
-                  >
-                    <option value="All">All Levels</option>
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                  </select>
+                  <div className={styles.filterItem}>
+                    <label className={styles.filterLabel}>Time</label>
+                    <select
+                      value={selectedTime}
+                      onChange={(e) => setSelectedTime(e.target.value)}
+                      className={styles.filterSelect}
+                    >
+                      <option value="All">All Times</option>
+                      <option value="Morning">Morning (6AM-12PM)</option>
+                      <option value="Afternoon">Afternoon (12PM-5PM)</option>
+                      <option value="Evening">Evening (5PM-11PM)</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
+                
+                {hasActiveFilters && (
+                  <div className={styles.filterActions}>
+                    <button 
+                      className={styles.clearFiltersButton}
+                      onClick={handleClearFilters}
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
           {/* Results Header */}
           <div className={styles.resultsHeader}>
-            <p className={styles.resultsCount}>{filteredClubs.length} clubs found</p>
+            <p className={styles.resultsCount}>
+              {isLoading ? 'Loading...' : `${filteredClubs.length} clubs found`}
+            </p>
             <select className={styles.sortSelect}>
               <option>Sort by: Relevance</option>
               <option>Sort by: Name</option>
@@ -244,55 +365,130 @@ export default function BrowseClubsPage() {
             </select>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div style={{ 
+              padding: '20px', 
+              textAlign: 'center', 
+              color: '#ef4444',
+              backgroundColor: '#fee',
+              borderRadius: '8px',
+              margin: '20px 0'
+            }}>
+              {error}
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && (
+            <div style={{ 
+              padding: '60px 20px', 
+              textAlign: 'center',
+              color: '#666'
+            }}>
+              Loading clubs...
+            </div>
+          )}
+
           {/* Clubs Grid */}
-          <div className={styles.clubsGrid}>
-            {filteredClubs.map((club) => (
-              <div key={club.id} className={styles.clubCard}>
-                <div className={styles.clubImageWrapper}>
-                  <img src={club.image} alt={club.name} className={styles.clubImage} />
-                  <div className={styles.clubImageOverlay}></div>
-                  <span className={styles.clubCategory}>{club.category}</span>
-                  <button className={styles.favoriteButton}>
-                    <img src={heartIcon} alt="" width="20" height="20" />
-                  </button>
-                  <h3 className={styles.clubName}>{club.name}</h3>
-                </div>
+          {!isLoading && !error && (
+            <div className={styles.clubsGrid}>
+              {filteredClubs.map((club) => {
+                const meetingInfo = getMeetingInfo(club);
+                const displayImage = club.banner_url || club.logo_url || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=192&fit=crop';
+                const mainCategory = club.categories && club.categories.length > 0 ? club.categories[0] : 'General';
+                const memberCount = club.stats?.total_members || 0;
+                const isSubscribed = subscribedClubIds.has(club.id);
+                const isSubscribing = subscribingClubId === club.id;
 
-                <div className={styles.clubContent}>
-                  <p className={styles.clubDescription}>{club.description}</p>
+                return (
+                  <div key={club.id} className={styles.clubCard}>
+                    <div className={styles.clubImageWrapper}>
+                      <img src={displayImage} alt={club.name} className={styles.clubImage} />
+                      <div className={styles.clubImageOverlay}></div>
+                      <span className={styles.clubCategory}>{mainCategory}</span>
+                      <button 
+                        className={styles.favoriteButton}
+                        onClick={() => handleSubscribeToggle(club.id)}
+                        disabled={isSubscribing}
+                        style={{
+                          opacity: isSubscribing ? 0.5 : 1,
+                          backgroundColor: isSubscribed ? '#ff4444' : 'rgba(255,255,255,0.9)',
+                          cursor: isSubscribing ? 'not-allowed' : 'pointer'
+                        }}
+                        title={isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                      >
+                        <img 
+                          src={heartIcon} 
+                          alt={isSubscribed ? 'Subscribed' : 'Subscribe'} 
+                          width="20" 
+                          height="20"
+                          style={{
+                            filter: isSubscribed ? 'brightness(0) invert(1)' : 'none'
+                          }}
+                        />
+                      </button>
+                      <h3 className={styles.clubName}>{club.name}</h3>
+                    </div>
 
-                  <div className={styles.clubMeta}>
-                    <div className={styles.metaRow}>
-                      <img src={clockIcon} alt="" width="16" height="16" />
-                      <span>{club.day}, {club.time}</span>
-                    </div>
-                    <div className={styles.metaRow}>
-                      <img src={locationIcon} alt="" width="16" height="16" />
-                      <span>{club.location}</span>
-                    </div>
-                    <div className={styles.metaRow}>
-                      <img src={club.id <= 3 ? usersIcon1 : usersIcon2} alt="" width="16" height="16" />
-                      <span>{club.members} members</span>
+                    <div className={styles.clubContent}>
+                      <p className={styles.clubDescription}>
+                        {club.tagline || club.description}
+                      </p>
+
+                      <div className={styles.clubMeta}>
+                        <div className={styles.metaRow}>
+                          <img src={clockIcon} alt="" width="16" height="16" />
+                          <span>{meetingInfo.day}, {meetingInfo.time}</span>
+                        </div>
+                        <div className={styles.metaRow}>
+                          <img src={locationIcon} alt="" width="16" height="16" />
+                          <span>{meetingInfo.location}</span>
+                        </div>
+                        <div className={styles.metaRow}>
+                          <img src={usersIcon1} alt="" width="16" height="16" />
+                          <span>{memberCount} members</span>
+                        </div>
+                      </div>
+
+                      <div className={styles.clubActions}>
+                        <Link href={`/student/home/clubs/${club.id}`} className={styles.viewButton}>
+                          View Profile
+                        </Link>
+                        <button className={styles.shareButton}>
+                          <img src={shareIcon} alt="Share" width="20" height="20" />
+                        </button>
+                      </div>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+          )}
 
-                  <div className={styles.clubActions}>
-                    <Link href={`/student/home/clubs/${club.id}`} className={styles.viewButton}>
-                      View Profile
-                    </Link>
-                    <button className={styles.shareButton}>
-                      <img src={shareIcon} alt="Share" width="20" height="20" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Empty State */}
+          {!isLoading && !error && filteredClubs.length === 0 && (
+            <div style={{ 
+              padding: '60px 20px', 
+              textAlign: 'center',
+              color: '#666'
+            }}>
+              No clubs found. Try adjusting your filters.
+            </div>
+          )}
 
           {/* Load More Button */}
-          <div className={styles.loadMoreWrapper}>
-            <button className={styles.loadMoreButton}>Load More Clubs</button>
-          </div>
+          {!isLoading && !error && hasMore && filteredClubs.length > 0 && (
+            <div className={styles.loadMoreWrapper}>
+              <button 
+                className={styles.loadMoreButton}
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? 'Loading...' : 'Load More Clubs'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

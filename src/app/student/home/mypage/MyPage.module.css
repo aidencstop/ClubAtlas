@@ -642,6 +642,10 @@
   background: #58931a;
   border: none;
   border-radius: 10px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
   font-size: 14px;
   line-height: 20px;

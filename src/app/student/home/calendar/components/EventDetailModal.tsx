@@ -12,11 +12,24 @@ const usersIcon = "/images/icons/calendar/users.svg";
 const attendanceIcon = "/images/icons/calendar/attendance.svg";
 const bellIcon = "/images/icons/calendar/bell.svg";
 
-interface EventDetailModalProps {
-  onClose: () => void;
+interface CalendarEvent {
+  id: string;
+  date: number;
+  time: string;
+  title: string;
+  color: string;
+  club_id: string;
+  description: string;
+  location: string;
+  start_datetime: Date;
 }
 
-export default function EventDetailModal({ onClose }: EventDetailModalProps) {
+interface EventDetailModalProps {
+  onClose: () => void;
+  event: CalendarEvent;
+}
+
+export default function EventDetailModal({ onClose, event }: EventDetailModalProps) {
   const [attendanceStatus, setAttendanceStatus] = useState<'planning' | 'checked-in' | 'cannot'>('planning');
   const [showSavedNotification, setShowSavedNotification] = useState(false);
 
@@ -48,10 +61,7 @@ export default function EventDetailModal({ onClose }: EventDetailModalProps) {
         {/* 콘텐츠 */}
         <div className={styles.contentSection}>
           {/* 제목 */}
-          <h1 className={styles.eventTitle}>Robotics Club</h1>
-          <button className={styles.relatedLink}>
-            Soccer Team →
-          </button>
+          <h1 className={styles.eventTitle}>{event.title}</h1>
 
           {/* 이벤트 정보 */}
           <div className={styles.infoSection}>
@@ -61,7 +71,15 @@ export default function EventDetailModal({ onClose }: EventDetailModalProps) {
               </div>
               <div className={styles.infoText}>
                 <div className={styles.infoLabel}>Time</div>
-                <div className={styles.infoValue}>Feb 15, 4:00 PM – 5:00 PM</div>
+                <div className={styles.infoValue}>
+                  {event.start_datetime.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  })}
+                </div>
               </div>
             </div>
 
@@ -71,7 +89,7 @@ export default function EventDetailModal({ onClose }: EventDetailModalProps) {
               </div>
               <div className={styles.infoText}>
                 <div className={styles.infoLabel}>Location</div>
-                <div className={styles.infoValue}>502 Classroom</div>
+                <div className={styles.infoValue}>{event.location}</div>
               </div>
             </div>
 
@@ -81,7 +99,7 @@ export default function EventDetailModal({ onClose }: EventDetailModalProps) {
               </div>
               <div className={styles.infoText}>
                 <div className={styles.infoLabel}>Attendees</div>
-                <div className={styles.infoValue}>13 students attending</div>
+                <div className={styles.infoValue}>Check attendance status</div>
               </div>
             </div>
           </div>
@@ -89,7 +107,7 @@ export default function EventDetailModal({ onClose }: EventDetailModalProps) {
           {/* About this event */}
           <div className={styles.aboutSection}>
             <h3 className={styles.sectionTitle}>About this event</h3>
-            <p className={styles.description}>Morning training session.</p>
+            <p className={styles.description}>{event.description}</p>
           </div>
 
           {/* Your Attendance */}

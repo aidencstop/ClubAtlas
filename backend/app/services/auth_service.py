@@ -67,6 +67,67 @@ async def set_custom_user_claims(uid: str, claims: dict) -> bool:
         return False
 
 
+async def set_user_role(uid: str, role: str) -> bool:
+    """
+    사용자 역할 설정 (Firebase Custom Claims + Firestore 동기화)
+    
+    Args:
+        uid: Firebase 사용자 UID
+        role: 역할 (student, club-leader, admin, super-admin)
+        
+    Returns:
+        성공 여부
+    """
+    try:
+        from app.services.firestore_service import user_service
+        
+        # Firebase Custom Claims 설정
+        auth_client = get_auth()
+        auth_client.set_custom_user_claims(uid, {"role": role})
+        
+        # Firestore 프로필 업데이트 (문서가 없으면 생성)
+        await user_service.set_document(
+            user_service.COLLECTION,
+            uid,
+            {"role": role},
+            merge=True
+        )
+        
+        return True
+    except Exception as e:
+        print(f"Error setting user role: {e}")
+        return False
+
+
+async def create_firebase_user(email: str, password: str, display_name: str) -> Optional[dict]:
+    """
+    Firebase Authentication에 사용자 생성
+    
+    Args:
+        email: 이메일
+        password: 비밀번호
+        display_name: 표시 이름
+        
+    Returns:
+        생성된 사용자 정보 또는 None
+    """
+    try:
+        auth_client = get_auth()
+        user = auth_client.create_user(
+            email=email,
+            password=password,
+            display_name=display_name
+        )
+        return {
+            "uid": user.uid,
+            "email": user.email,
+            "display_name": user.display_name
+        }
+    except Exception as e:
+        print(f"Error creating Firebase user: {e}")
+        return None
+
+
 
 
 

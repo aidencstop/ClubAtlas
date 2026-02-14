@@ -42,3 +42,21 @@ class SubscriptionListResponse(BaseModel):
     total: int
 
 
+class SubscriberResponse(BaseModel):
+    """구독자 정보 응답 (관리자용 - 사용자 정보 포함)"""
+    id: str
+    user_id: str
+    user_email: Optional[str] = None
+    user_display_name: Optional[str] = None
+    club_id: str
+    subscribed_at: datetime
+    is_active: bool
+    notification_enabled: bool
+
+
+class SubscriberListResponse(BaseModel):
+    """구독자 목록 응답 (관리자용)"""
+    subscribers: List[SubscriberResponse]
+    total: int
+
+

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import styles from './EditLeaderModal.module.css';
+import { getClubs, Club } from '@/lib/api/clubs';
+import { updateClubLeader } from '@/lib/api/superadmin';
 
 const imgIconClose = "https://www.figma.com/api/mcp/asset/a7fa1ae8-ccbb-49fd-a934-d777d40b49ff";
 const imgIconInfo = "https://www.figma.com/api/mcp/asset/628cde68-3afd-40bb-8ce1-5eace05e0dc5";
@@ -20,38 +22,92 @@ interface EditLeaderModalProps {
   isOpen: boolean;
   onClose: () => void;
   leader: Leader | null;
-  onSave: (updatedLeader: Leader) => void;
+  onSuccess: () => void;
 }
 
-export default function EditLeaderModal({ isOpen, onClose, leader, onSave }: EditLeaderModalProps) {
+export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: EditLeaderModalProps) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [club, setClub] = useState('');
-  const [role, setRole] = useState('');
-  const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
+  const [selectedClubId, setSelectedClubId] = useState('');
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [clubIdMap, setClubIdMap] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (leader) {
-      setName(leader.name);
-      setEmail(leader.email);
-      setClub(leader.club);
-      setRole(leader.role);
-      setStatus(leader.status);
+    if (isOpen) {
+      loadClubs();
     }
-  }, [leader]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (leader && clubs.length > 0) {
+      setName(leader.name);
+      
+      const foundClub = clubs.find(c => c.name === leader.club);
+      if (foundClub) {
+        setSelectedClubId(foundClub.id);
+      }
+    }
+  }, [leader, clubs]);
+
+  const loadClubs = async () => {
+    try {
+      const response = await getClubs({ page_size: 100 });
+      if (response.data && !response.error) {
+        setClubs(response.data.clubs);
+        
+        const idMap: { [key: string]: string } = {};
+        response.data.clubs.forEach(club => {
+          idMap[club.name] = club.id;
+        });
+        setClubIdMap(idMap);
+      }
+    } catch (err) {
+      console.error('Failed to load clubs:', err);
+    }
+  };
 
   if (!isOpen || !leader) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...leader,
-      name,
-      email,
-      club,
-      role,
-      status
-    });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const updateData: { display_name?: string; club_id?: string } = {};
+      
+      if (name !== leader.name) {
+        updateData.display_name = name;
+      }
+      
+      const originalClubId = clubIdMap[leader.club];
+      if (selectedClubId !== originalClubId) {
+        updateData.club_id = selectedClubId;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        alert('No changes detected');
+        onClose();
+        return;
+      }
+
+      const response = await updateClubLeader(leader.id, updateData);
+
+      if (response.error) {
+        setError(response.error);
+        return;
+      }
+
+      alert('Leader updated successfully');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error('Failed to update leader:', err);
+      setError(err.message || 'Failed to update leader');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -65,6 +121,20 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSave }: Edi
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ 
+              padding: '12px', 
+              background: '#fee2e2', 
+              border: '1px solid #ef4444',
+              borderRadius: '8px', 
+              color: '#991b1b',
+              marginBottom: '16px',
+              fontSize: '14px'
+            }}>
+              {error}
+            </div>
+          )}
+
           <div className={styles.formGroup}>
             <label htmlFor="leaderName" className={styles.label}>Leader Name</label>
             <input
@@ -74,6 +144,7 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSave }: Edi
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -83,10 +154,13 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSave }: Edi
               type="email"
               id="email"
               className={styles.input}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              value={leader.email}
+              disabled
+              style={{ background: '#f3f4f6', cursor: 'not-allowed' }}
             />
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+              Email cannot be changed
+            </p>
           </div>
 
           <div className={styles.formGroup}>
@@ -94,47 +168,17 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSave }: Edi
             <select
               id="clubAssignment"
               className={styles.dropdown}
-              value={club}
-              onChange={(e) => setClub(e.target.value)}
+              value={selectedClubId}
+              onChange={(e) => setSelectedClubId(e.target.value)}
               required
+              disabled={isLoading}
             >
               <option value="">Select a club</option>
-              <option value="Robotics Club">Robotics Club</option>
-              <option value="Photography Club">Photography Club</option>
-              <option value="Drama Society">Drama Society</option>
-              <option value="STEM Club">STEM Club</option>
-              <option value="Arts Club">Arts Club</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="rolePosition" className={styles.label}>Role / Position</label>
-            <select
-              id="rolePosition"
-              className={styles.dropdown}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              required
-            >
-              <option value="">Select a role</option>
-              <option value="President">President</option>
-              <option value="Vice President">Vice President</option>
-              <option value="Secretary">Secretary</option>
-              <option value="Treasurer">Treasurer</option>
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="status" className={styles.label}>Status</label>
-            <select
-              id="status"
-              className={styles.dropdown}
-              value={status}
-              onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'INACTIVE')}
-              required
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
+              {clubs.map((club) => (
+                <option key={club.id} value={club.id}>
+                  {club.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -144,19 +188,19 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSave }: Edi
               <p className={styles.infoTitle}>Important Notes:</p>
               <ul className={styles.infoList}>
                 <li>Changes will be applied immediately</li>
-                <li>The leader will receive an email notification</li>
-                <li>Club members will be notified of leadership changes</li>
+                <li>Only name and club assignment can be edited</li>
+                <li>To change email, create a new leader account</li>
               </ul>
             </div>
           </div>
 
           <div className={styles.actions}>
-            <button type="button" className={styles.cancelButton} onClick={onClose}>
+            <button type="button" className={styles.cancelButton} onClick={onClose} disabled={isLoading}>
               Cancel
             </button>
-            <button type="submit" className={styles.saveButton}>
+            <button type="submit" className={styles.saveButton} disabled={isLoading}>
               <img src={imgIconCheck} alt="Save" className={styles.checkIcon} />
-              Save Changes
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

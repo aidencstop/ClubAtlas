@@ -1,5 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getIdToken } from '@/lib/firebase/auth';
 import styles from './Analytics.module.css';
 import SuperAdminHeader from '../dashboard/components/SuperAdminHeader';
 import SuperAdminSidebar from '../dashboard/components/SuperAdminSidebar';
@@ -7,7 +10,49 @@ import AnalyticsCard from './components/AnalyticsCard';
 import TrafficChart from './components/TrafficChart';
 import PopularClubs from './components/PopularClubs';
 
+interface AnalyticsOverview {
+  total_page_views: number;
+  club_profile_views: number;
+  avg_engagement: number;
+  avg_session_time: number;
+}
+
 export default function AnalyticsPage() {
+  const { user } = useAuth();
+  const [analytics, setAnalytics] = useState<AnalyticsOverview | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
+
+  const loadAnalytics = async () => {
+    if (!user) return;
+
+    try {
+      const token = await getIdToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/analytics/overview`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAnalytics(data);
+      }
+    } catch (error) {
+      console.error('Failed to load analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={`${styles.container} superadmin-layout`}>
       <SuperAdminHeader />
@@ -20,24 +65,24 @@ export default function AnalyticsPage() {
 
           <div className={styles.statsGrid}>
             <AnalyticsCard
-              value="23,456"
+              value={loading ? "..." : analytics?.total_page_views.toLocaleString() || "0"}
               label="Total Page Views"
-              subtext="+12% vs last month"
+              subtext=""
             />
             <AnalyticsCard
-              value="8,234"
+              value={loading ? "..." : analytics?.club_profile_views.toLocaleString() || "0"}
               label="Club Profile Views"
-              subtext="+8% vs last month"
+              subtext=""
             />
             <AnalyticsCard
-              value="67%"
+              value={loading ? "..." : analytics ? `${analytics.avg_engagement.toFixed(1)}%` : "0%"}
               label="Avg Engagement"
-              subtext="+3% vs last month"
+              subtext=""
             />
             <AnalyticsCard
-              value="4.2 min"
+              value={loading ? "..." : analytics ? `${analytics.avg_session_time.toFixed(1)} min` : "0 min"}
               label="Session Time"
-              subtext="+5% vs last month"
+              subtext=""
             />
           </div>
 

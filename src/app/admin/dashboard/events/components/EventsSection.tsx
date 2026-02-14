@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './EventsSection.module.css';
 import EventCard from './EventCard';
 import CreateEventModal, { EventFormData } from './CreateEventModal';
 import EditEventModal from './EditEventModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { getEvents, createEvent, updateEvent, Event as ApiEvent } from '@/lib/api';
 
 const imgIconAdd = "https://www.figma.com/api/mcp/asset/a584c665-496e-46c9-8f42-c0a97ad35bb4";
 const imgIconSearch = "https://www.figma.com/api/mcp/asset/4c024de1-3263-4a46-ba23-8c294eadaff0";
@@ -54,10 +56,61 @@ const mockEvents: Event[] = [
 ];
 
 export default function EventsSection() {
+  const { userProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadEvents();
+  }, [userProfile]);
+
+  const loadEvents = async () => {
+    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+      setEvents([]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const clubId = userProfile.managed_club_ids[0];
+      const response = await getEvents({ club_id: clubId, limit: 100 });
+
+      if (response.data) {
+        const mappedEvents: Event[] = response.data.events.map((apiEvent: ApiEvent) => ({
+          id: apiEvent.id || '',
+          title: apiEvent.title,
+          status: apiEvent.status === 'active' ? 'upcoming' : apiEvent.status === 'completed' ? 'completed' : 'cancelled',
+          date: new Date(apiEvent.start_datetime).toLocaleString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }),
+          dateTime: new Date(apiEvent.start_datetime).toISOString().slice(0, 16),
+          location: apiEvent.location,
+          description: apiEvent.description,
+          notificationsSent: apiEvent.attendees?.length || 0,
+        }));
+
+        setEvents(mappedEvents);
+      }
+    } catch (err) {
+      console.error('Failed to load events:', err);
+      setError('Failed to load events');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCreateEvent = () => {
     setIsCreateModalOpen(true);
@@ -67,12 +120,38 @@ export default function EventsSection() {
     setIsCreateModalOpen(false);
   };
 
-  const handleEventCreate = (eventData: EventFormData) => {
-    // TODO: Implement actual event creation (API call)
-    console.log('Creating event:', eventData);
-    setIsCreateModalOpen(false);
-    // Here you would typically make an API call to create the event
-    // and update the events list
+  const handleEventCreate = async (eventData: EventFormData) => {
+    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+      alert('No managed clubs found');
+      return;
+    }
+
+    try {
+      const clubId = userProfile.managed_club_ids[0];
+      
+      const startDateTime = new Date(eventData.dateTime).toISOString();
+      const endDateTime = new Date(new Date(eventData.dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+
+      const response = await createEvent({
+        club_id: clubId,
+        title: eventData.title,
+        description: eventData.description,
+        event_type: 'meeting',
+        start_datetime: startDateTime,
+        end_datetime: endDateTime,
+        location: eventData.location,
+      });
+
+      if (response.data) {
+        setIsCreateModalOpen(false);
+        await loadEvents();
+      } else {
+        alert(response.error || 'Failed to create event');
+      }
+    } catch (err) {
+      console.error('Failed to create event:', err);
+      alert('Failed to create event');
+    }
   };
 
   const handleEditEvent = (event: Event) => {
@@ -85,16 +164,35 @@ export default function EventsSection() {
     setEditingEvent(null);
   };
 
-  const handleEventUpdate = (eventData: EventFormData) => {
-    // TODO: Implement actual event update (API call)
-    console.log('Updating event:', eventData);
-    setIsEditModalOpen(false);
-    setEditingEvent(null);
-    // Here you would typically make an API call to update the event
-    // and refresh the events list
+  const handleEventUpdate = async (eventData: EventFormData) => {
+    if (!editingEvent) return;
+
+    try {
+      const startDateTime = new Date(eventData.dateTime).toISOString();
+      const endDateTime = new Date(new Date(eventData.dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+
+      const response = await updateEvent(editingEvent.id, {
+        title: eventData.title,
+        description: eventData.description,
+        start_datetime: startDateTime,
+        end_datetime: endDateTime,
+        location: eventData.location,
+      });
+
+      if (response.data) {
+        setIsEditModalOpen(false);
+        setEditingEvent(null);
+        await loadEvents();
+      } else {
+        alert(response.error || 'Failed to update event');
+      }
+    } catch (err) {
+      console.error('Failed to update event:', err);
+      alert('Failed to update event');
+    }
   };
 
-  const filteredEvents = mockEvents.filter(event =>
+  const filteredEvents = events.filter(event =>
     event.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -122,11 +220,21 @@ export default function EventsSection() {
           </div>
         </div>
 
-        <div className={styles.eventsGrid}>
-          {filteredEvents.map((event) => (
-            <EventCard key={event.id} event={event} onEdit={handleEditEvent} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className={styles.loading}>Loading events...</div>
+        ) : error ? (
+          <div className={styles.error}>{error}</div>
+        ) : filteredEvents.length === 0 ? (
+          <div className={styles.empty}>
+            {searchQuery ? 'No events found matching your search' : 'No events yet. Create your first event!'}
+          </div>
+        ) : (
+          <div className={styles.eventsGrid}>
+            {filteredEvents.map((event) => (
+              <EventCard key={event.id} event={event} onEdit={handleEditEvent} />
+            ))}
+          </div>
+        )}
       </div>
 
       <CreateEventModal

@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './SignupForm.module.css';
+import { signIn } from '@/lib/firebase/auth';
+import { signupStudent } from '@/lib/api/auth';
 
 export default function SignupForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -15,6 +19,8 @@ export default function SignupForm() {
     confirmPassword: '',
     agreeToTerms: false,
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -24,10 +30,73 @@ export default function SignupForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return '비밀번호는 최소 8자 이상이어야 합니다.';
+    }
+    if (!/[a-z]/.test(password)) {
+      return '비밀번호에 소문자가 최소 1개 포함되어야 합니다.';
+    }
+    if (!/[A-Z]/.test(password)) {
+      return '비밀번호에 대문자가 최소 1개 포함되어야 합니다.';
+    }
+    if (!/\d/.test(password)) {
+      return '비밀번호에 숫자가 최소 1개 포함되어야 합니다.';
+    }
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 회원가입 로직 구현
-    console.log('Signup:', formData);
+    setError('');
+    
+    // 유효성 검사
+    if (formData.password !== formData.confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+    
+    if (!formData.agreeToTerms) {
+      setError('약관에 동의해주세요.');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // 백엔드 API로 회원가입 (Firebase 계정 생성 + Firestore 프로필 생성)
+      const displayName = `${formData.firstName} ${formData.lastName}`.trim();
+      
+      const response = await signupStudent({
+        email: formData.email,
+        password: formData.password,
+        display_name: displayName,
+        student_id: formData.studentId || undefined,
+        department: formData.department || undefined,
+      });
+      
+      if (response.error) {
+        setError(response.error);
+        setLoading(false);
+        return;
+      }
+      
+      // 회원가입 성공 - Firebase 로그인
+      await signIn(formData.email, formData.password);
+      
+      // 학생 홈으로 리다이렉트
+      router.push('/student/home');
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +107,20 @@ export default function SignupForm() {
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
+        {error && (
+          <div style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            borderRadius: '8px',
+            color: '#c33',
+            fontSize: '14px'
+          }}>
+            {error}
+          </div>
+        )}
+        
         {/* First Name & Last Name */}
         <div className={styles.nameFields}>
           <div className={styles.fieldGroup}>
@@ -178,13 +261,13 @@ export default function SignupForm() {
         </div>
 
         {/* Submit Button */}
-        <button type="submit" className={styles.submitButton}>
+        <button type="submit" className={styles.submitButton} disabled={loading}>
           <img 
             src="https://www.figma.com/api/mcp/asset/8ce620cf-a55a-4363-898d-8661cdb6c01d" 
             alt="user"
             className={styles.userIcon}
           />
-          <span>Create Student Account</span>
+          <span>{loading ? 'Creating Account...' : 'Create Student Account'}</span>
         </button>
       </form>
 

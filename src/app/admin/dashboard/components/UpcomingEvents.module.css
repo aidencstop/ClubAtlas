@@ -107,6 +107,16 @@
   letter-spacing: -0.1504px;
 }
 
+.emptyState {
+  padding: 40px 20px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
 @media (max-width: 1024px) {
   .eventsGrid {
     grid-template-columns: 1fr;

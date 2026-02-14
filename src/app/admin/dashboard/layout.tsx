@@ -1,17 +1,16 @@
-import type { Metadata } from "next";
+'use client';
 
-export const metadata: Metadata = {
-  title: "ClubAtlas - Leader Dashboard",
-  description: "Manage your club profile, events, announcements, and engage with subscribers",
-};
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="admin-layout">
-      {children}
-    </div>
+    <ProtectedRoute requireAuth={true} requiredRole="club-leader">
+      <div className="admin-layout">
+        {children}
+      </div>
+    </ProtectedRoute>
   );
 }
 

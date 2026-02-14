@@ -128,3 +128,16 @@ def require_club_leader(current_user: dict = Depends(get_current_user)) -> dict:
     return current_user
 
 
+def require_super_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """슈퍼 관리자 권한 필요"""
+    user_role = current_user.get('role') or current_user.get('custom_claims', {}).get('role')
+    
+    if user_role != 'super-admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin role required"
+        )
+    
+    return current_user
+
+

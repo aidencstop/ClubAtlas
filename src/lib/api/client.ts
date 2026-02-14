@@ -2,6 +2,7 @@
  * ClubAtlas API Client
  * 백엔드 API와 통신하기 위한 클라이언트 유틸리티
  */
+import { getIdToken } from '../firebase/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -14,18 +15,38 @@ export interface ApiResponse<T = any> {
 /**
  * API 요청 헬퍼 함수
  */
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
+    // FormData인 경우 Content-Type을 설정하지 않음 (브라우저가 자동 설정)
+    const isFormData = options.body instanceof FormData;
+    
+    const headers: HeadersInit = isFormData
+      ? { ...options.headers }
+      : {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        };
+    
+    // Authorization 헤더가 없고, 인증이 필요한 엔드포인트인 경우 자동으로 토큰 추가
+    if (!headers['Authorization' as keyof HeadersInit] && 
+        !endpoint.includes('/api/auth/signup')) {
+      try {
+        const token = await getIdToken();
+        if (token) {
+          (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+        }
+      } catch (err) {
+        // 토큰 가져오기 실패 시 무시 (공개 엔드포인트일 수 있음)
+      }
+    }
+
     const url = `${API_BASE_URL}${endpoint}`;
     const response = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
 
     const data = await response.json().catch(() => null);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import styles from './ForgotPasswordModal.module.css';
 
 interface ForgotPasswordModalProps {
@@ -10,13 +11,44 @@ interface ForgotPasswordModalProps {
 
 export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProps) {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 비밀번호 재설정 요청 로직 구현
-    console.log('Password reset request:', { email });
-    // 요청 성공 후 모달 닫기
-    onClose();
+    setIsLoading(true);
+    setSuccessMessage('');
+    setErrorMessage('');
+
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
+      
+      setSuccessMessage('Password reset email sent! Please check your inbox.');
+      setEmail('');
+      
+      setTimeout(() => {
+        onClose();
+        setSuccessMessage('');
+      }, 3000);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      
+      let errorMsg = 'Failed to send password reset email. Please try again.';
+      
+      if (error.code === 'auth/user-not-found') {
+        errorMsg = 'No account found with this email address.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMsg = 'Invalid email address format.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMsg = 'Too many requests. Please try again later.';
+      }
+      
+      setErrorMessage(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -65,6 +97,34 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
 
           {/* 폼 */}
           <form onSubmit={handleSubmit} className={styles.form}>
+            {successMessage && (
+              <div style={{ 
+                padding: '12px', 
+                background: '#d1fae5', 
+                border: '1px solid #10b981',
+                borderRadius: '8px', 
+                color: '#065f46',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}>
+                {successMessage}
+              </div>
+            )}
+            
+            {errorMessage && (
+              <div style={{ 
+                padding: '12px', 
+                background: '#fee2e2', 
+                border: '1px solid #ef4444',
+                borderRadius: '8px', 
+                color: '#991b1b',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}>
+                {errorMessage}
+              </div>
+            )}
+
             <div className={styles.fieldGroup}>
               <label htmlFor="reset-email" className={styles.label}>
                 Email Address
@@ -77,6 +137,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
               <p className={styles.hint}>
                 Enter the email address associated with your account
@@ -116,16 +177,27 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
 
             {/* 버튼 */}
             <div className={styles.buttons}>
-              <button type="button" onClick={onClose} className={styles.cancelButton}>
+              <button 
+                type="button" 
+                onClick={onClose} 
+                className={styles.cancelButton}
+                disabled={isLoading}
+              >
                 Cancel
               </button>
-              <button type="submit" className={styles.submitButton}>
-                <img 
-                  src="https://www.figma.com/api/mcp/asset/f6c25768-577e-4c08-9930-eeb13d68c65f" 
-                  alt="send"
-                  className={styles.sendIcon}
-                />
-                <span>Send Request</span>
+              <button 
+                type="submit" 
+                className={styles.submitButton}
+                disabled={isLoading}
+              >
+                {!isLoading && (
+                  <img 
+                    src="https://www.figma.com/api/mcp/asset/f6c25768-577e-4c08-9930-eeb13d68c65f" 
+                    alt="send"
+                    className={styles.sendIcon}
+                  />
+                )}
+                <span>{isLoading ? 'Sending...' : 'Send Request'}</span>
               </button>
             </div>
           </form>

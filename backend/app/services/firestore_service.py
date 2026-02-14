@@ -274,13 +274,18 @@ class ClubService(FirestoreService):
         
         filters.append(('is_active', '==', True))
         
-        return await self.query_documents(
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        clubs = await self.query_documents(
             self.COLLECTION,
             filters=filters,
-            order_by='name',
-            limit=limit,
-            offset=offset
+            limit=None
         )
+        
+        # Python에서 정렬 및 페이징
+        clubs.sort(key=lambda x: x.get('name', '').lower())
+        start_idx = offset
+        end_idx = offset + limit
+        return clubs[start_idx:end_idx]
     
     async def update_club(
         self,
@@ -299,8 +304,618 @@ class ClubService(FirestoreService):
         })
 
 
+class SubscriptionService(FirestoreService):
+    """구독 관련 Firestore 작업"""
+    
+    COLLECTION = 'subscriptions'
+    
+    async def subscribe_to_club(
+        self,
+        user_id: str,
+        club_id: str
+    ) -> Dict[str, Any]:
+        """동아리 구독"""
+        existing = await self.get_user_subscription(user_id, club_id)
+        
+        if existing:
+            if existing.get('is_active'):
+                raise ValueError("이미 구독 중입니다")
+            subscription_id = existing['id']
+            return await self.update_document(
+                self.COLLECTION,
+                subscription_id,
+                {'is_active': True, 'notification_enabled': True}
+            )
+        
+        subscription_id = f"{user_id}_{club_id}"
+        data = {
+            'user_id': user_id,
+            'club_id': club_id,
+            'is_active': True,
+            'notification_enabled': True,
+            'subscribed_at': firestore.SERVER_TIMESTAMP
+        }
+        
+        subscription = await self.create_document(self.COLLECTION, subscription_id, data)
+        
+        try:
+            db = self._get_db()
+            club_ref = db.collection('clubs').document(club_id)
+            club_ref.update({'stats.total_subscribers': firestore.Increment(1)})
+        except Exception as e:
+            print(f"Failed to update club subscriber count: {e}")
+        
+        return subscription
+    
+    async def unsubscribe_from_club(
+        self,
+        user_id: str,
+        club_id: str
+    ) -> bool:
+        """동아리 구독 취소"""
+        subscription = await self.get_user_subscription(user_id, club_id)
+        
+        if not subscription or not subscription.get('is_active'):
+            raise ValueError("구독 중이지 않습니다")
+        
+        subscription_id = subscription['id']
+        await self.update_document(
+            self.COLLECTION,
+            subscription_id,
+            {'is_active': False}
+        )
+        
+        try:
+            db = self._get_db()
+            club_ref = db.collection('clubs').document(club_id)
+            club_ref.update({'stats.total_subscribers': firestore.Increment(-1)})
+        except Exception as e:
+            print(f"Failed to update club subscriber count: {e}")
+        
+        return True
+    
+    async def get_user_subscription(
+        self,
+        user_id: str,
+        club_id: str
+    ) -> Optional[Dict[str, Any]]:
+        """특정 동아리에 대한 사용자 구독 조회"""
+        subscriptions = await self.query_documents(
+            self.COLLECTION,
+            filters=[
+                ('user_id', '==', user_id),
+                ('club_id', '==', club_id)
+            ],
+            limit=1
+        )
+        return subscriptions[0] if subscriptions else None
+    
+    async def get_user_subscriptions(
+        self,
+        user_id: str,
+        active_only: bool = True
+    ) -> List[Dict[str, Any]]:
+        """사용자의 모든 구독 조회"""
+        filters = [('user_id', '==', user_id)]
+        
+        if active_only:
+            filters.append(('is_active', '==', True))
+        
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        subscriptions = await self.query_documents(
+            self.COLLECTION,
+            filters=filters
+        )
+        
+        # Python에서 정렬
+        subscriptions.sort(key=lambda x: x.get('subscribed_at', ''), reverse=True)
+        return subscriptions
+    
+    async def get_club_subscribers(
+        self,
+        club_id: str,
+        active_only: bool = True
+    ) -> List[Dict[str, Any]]:
+        """동아리의 모든 구독자 조회"""
+        filters = [('club_id', '==', club_id)]
+        
+        if active_only:
+            filters.append(('is_active', '==', True))
+        
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        subscribers = await self.query_documents(
+            self.COLLECTION,
+            filters=filters
+        )
+        
+        # Python에서 정렬
+        subscribers.sort(key=lambda x: x.get('subscribed_at', ''), reverse=True)
+        return subscribers
+    
+    async def update_notification_settings(
+        self,
+        user_id: str,
+        club_id: str,
+        notification_enabled: bool
+    ) -> Dict[str, Any]:
+        """알림 설정 업데이트"""
+        subscription = await self.get_user_subscription(user_id, club_id)
+        
+        if not subscription:
+            raise ValueError("구독을 찾을 수 없습니다")
+        
+        subscription_id = subscription['id']
+        return await self.update_document(
+            self.COLLECTION,
+            subscription_id,
+            {'notification_enabled': notification_enabled}
+        )
+    
+    async def count_subscribers(
+        self,
+        club_id: str,
+        active_only: bool = True
+    ) -> int:
+        """동아리의 구독자 수 조회"""
+        return await self.count_documents(
+            self.COLLECTION,
+            filters=[
+                ('club_id', '==', club_id),
+                ('is_active', '==', True)
+            ] if active_only else [('club_id', '==', club_id)]
+        )
+
+
+class EventService(FirestoreService):
+    """이벤트 관련 Firestore 작업"""
+    
+    COLLECTION = 'events'
+    
+    async def create_event(
+        self,
+        event_id: str,
+        club_id: str,
+        title: str,
+        description: str,
+        start_datetime: datetime,
+        end_datetime: datetime,
+        location: str,
+        created_by: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """이벤트 생성"""
+        data = {
+            'club_id': club_id,
+            'title': title,
+            'description': description,
+            'event_type': kwargs.get('event_type', 'meeting'),
+            'start_datetime': start_datetime,
+            'end_datetime': end_datetime,
+            'location': location,
+            'max_attendees': kwargs.get('max_attendees'),
+            'attendees': [],
+            'status': 'active',
+            'created_by': created_by
+        }
+        
+        event = await self.create_document(self.COLLECTION, event_id, data)
+        
+        try:
+            db = self._get_db()
+            club_ref = db.collection('clubs').document(club_id)
+            club_ref.update({'stats.total_events': firestore.Increment(1)})
+        except Exception as e:
+            print(f"Failed to update club event count: {e}")
+        
+        return event
+    
+    async def get_event(self, event_id: str) -> Optional[Dict[str, Any]]:
+        """이벤트 조회"""
+        return await self.get_document(self.COLLECTION, event_id)
+    
+    async def get_events(
+        self,
+        club_id: Optional[str] = None,
+        status: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """이벤트 목록 조회"""
+        filters = []
+        
+        if club_id:
+            filters.append(('club_id', '==', club_id))
+        
+        if status:
+            filters.append(('status', '==', status))
+        
+        if start_date:
+            filters.append(('start_datetime', '>=', start_date))
+        
+        if end_date:
+            filters.append(('start_datetime', '<=', end_date))
+        
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        events = await self.query_documents(
+            self.COLLECTION,
+            filters=filters if filters else None,
+            limit=None
+        )
+        
+        # Python에서 정렬 및 페이징
+        events.sort(key=lambda x: x.get('start_datetime', datetime.min))
+        start_idx = offset
+        end_idx = offset + limit
+        return events[start_idx:end_idx]
+    
+    async def update_event(
+        self,
+        event_id: str,
+        data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """이벤트 업데이트"""
+        return await self.update_document(self.COLLECTION, event_id, data)
+    
+    async def delete_event(self, event_id: str) -> bool:
+        """이벤트 삭제 (soft delete)"""
+        await self.update_document(
+            self.COLLECTION,
+            event_id,
+            {'status': 'cancelled'}
+        )
+        return True
+    
+    async def add_attendee(self, event_id: str, user_id: str) -> Dict[str, Any]:
+        """이벤트 참석자 추가"""
+        event = await self.get_event(event_id)
+        
+        if not event:
+            raise ValueError("Event not found")
+        
+        attendees = event.get('attendees', [])
+        
+        if user_id in attendees:
+            raise ValueError("Already registered")
+        
+        max_attendees = event.get('max_attendees')
+        if max_attendees and len(attendees) >= max_attendees:
+            raise ValueError("Event is full")
+        
+        attendees.append(user_id)
+        
+        return await self.update_document(
+            self.COLLECTION,
+            event_id,
+            {'attendees': attendees}
+        )
+    
+    async def remove_attendee(self, event_id: str, user_id: str) -> Dict[str, Any]:
+        """이벤트 참석 취소"""
+        event = await self.get_event(event_id)
+        
+        if not event:
+            raise ValueError("Event not found")
+        
+        attendees = event.get('attendees', [])
+        
+        if user_id not in attendees:
+            raise ValueError("Not registered")
+        
+        attendees.remove(user_id)
+        
+        return await self.update_document(
+            self.COLLECTION,
+            event_id,
+            {'attendees': attendees}
+        )
+
+
+class AnnouncementService(FirestoreService):
+    """공지사항 관련 Firestore 작업"""
+    
+    COLLECTION = 'announcements'
+    
+    async def create_announcement(
+        self,
+        announcement_id: str,
+        club_id: str,
+        title: str,
+        content: str,
+        created_by: str
+    ) -> Dict[str, Any]:
+        """공지사항 생성"""
+        data = {
+            'club_id': club_id,
+            'title': title,
+            'content': content,
+            'status': 'active',
+            'created_by': created_by,
+            'sent_to': 0,
+            'opens': 0
+        }
+        
+        announcement = await self.create_document(self.COLLECTION, announcement_id, data)
+        
+        return announcement
+    
+    async def get_announcement(self, announcement_id: str) -> Optional[Dict[str, Any]]:
+        """공지사항 조회"""
+        return await self.get_document(self.COLLECTION, announcement_id)
+    
+    async def get_announcements(
+        self,
+        club_id: Optional[str] = None,
+        status: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """공지사항 목록 조회"""
+        filters = []
+        
+        if club_id:
+            filters.append(('club_id', '==', club_id))
+        
+        if status:
+            filters.append(('status', '==', status))
+        
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        announcements = await self.query_documents(
+            self.COLLECTION,
+            filters=filters if filters else None,
+            limit=None
+        )
+        
+        # Python에서 정렬 및 페이징 (최신순)
+        announcements.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        start_idx = offset
+        end_idx = offset + limit
+        return announcements[start_idx:end_idx]
+    
+    async def update_announcement(
+        self,
+        announcement_id: str,
+        data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """공지사항 업데이트"""
+        return await self.update_document(self.COLLECTION, announcement_id, data)
+    
+    async def delete_announcement(self, announcement_id: str) -> bool:
+        """공지사항 삭제 (soft delete)"""
+        await self.update_document(
+            self.COLLECTION,
+            announcement_id,
+            {'status': 'archived'}
+        )
+        return True
+    
+    async def increment_opens(self, announcement_id: str) -> Dict[str, Any]:
+        """열람 수 증가"""
+        db = self._get_db()
+        announcement_ref = db.collection(self.COLLECTION).document(announcement_id)
+        announcement_ref.update({'opens': firestore.Increment(1)})
+        
+        return await self.get_announcement(announcement_id)
+
+
+class BookmarkService(FirestoreService):
+    """북마크 관련 Firestore 작업"""
+    
+    COLLECTION = 'bookmarks'
+    
+    async def create_bookmark(
+        self,
+        bookmark_id: str,
+        user_id: str,
+        club_id: str
+    ) -> Dict[str, Any]:
+        """북마크 생성"""
+        # 중복 확인
+        existing = await self.get_user_bookmark(user_id, club_id)
+        if existing:
+            raise ValueError("Already bookmarked")
+        
+        data = {
+            'user_id': user_id,
+            'club_id': club_id
+        }
+        
+        return await self.create_document(self.COLLECTION, bookmark_id, data)
+    
+    async def get_bookmark(self, bookmark_id: str) -> Optional[Dict[str, Any]]:
+        """북마크 조회"""
+        return await self.get_document(self.COLLECTION, bookmark_id)
+    
+    async def get_user_bookmark(
+        self,
+        user_id: str,
+        club_id: str
+    ) -> Optional[Dict[str, Any]]:
+        """사용자의 특정 클럽 북마크 조회"""
+        bookmarks = await self.query_documents(
+            self.COLLECTION,
+            filters=[
+                ('user_id', '==', user_id),
+                ('club_id', '==', club_id)
+            ],
+            limit=1
+        )
+        
+        return bookmarks[0] if bookmarks else None
+    
+    async def get_user_bookmarks(
+        self,
+        user_id: str,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """사용자의 모든 북마크 조회"""
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        bookmarks = await self.query_documents(
+            self.COLLECTION,
+            filters=[('user_id', '==', user_id)],
+            limit=None
+        )
+        
+        # Python에서 정렬 및 제한
+        bookmarks.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        return bookmarks[:limit]
+    
+    async def delete_bookmark(
+        self,
+        user_id: str,
+        club_id: str
+    ) -> bool:
+        """북마크 삭제"""
+        bookmark = await self.get_user_bookmark(user_id, club_id)
+        
+        if not bookmark:
+            raise ValueError("Bookmark not found")
+        
+        bookmark_id = bookmark['id']
+        return await self.delete_document(self.COLLECTION, bookmark_id)
+    
+    async def count_user_bookmarks(self, user_id: str) -> int:
+        """사용자의 북마크 수 조회"""
+        return await self.count_documents(
+            self.COLLECTION,
+            filters=[('user_id', '==', user_id)]
+        )
+
+
+class NotificationService(FirestoreService):
+    """알림 관리 서비스"""
+    COLLECTION = 'notifications'
+    
+    async def create_notification(
+        self,
+        user_id: str,
+        type: str,
+        title: str,
+        content: str,
+        club_id: Optional[str] = None,
+        club_name: Optional[str] = None,
+        reference_id: Optional[str] = None,
+        link: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """알림 생성"""
+        notification_data = {
+            'user_id': user_id,
+            'type': type,
+            'title': title,
+            'content': content,
+            'club_id': club_id,
+            'club_name': club_name,
+            'reference_id': reference_id,
+            'link': link,
+            'is_read': False,
+            'created_at': SERVER_TIMESTAMP
+        }
+        
+        notification_id = await self.create_document(
+            self.COLLECTION,
+            None,
+            notification_data
+        )
+        
+        return await self.get_document(self.COLLECTION, notification_id)
+    
+    async def get_user_notifications(
+        self,
+        user_id: str,
+        limit: int = 50,
+        unread_only: bool = False
+    ) -> List[Dict[str, Any]]:
+        """사용자의 알림 목록 조회"""
+        filters = [('user_id', '==', user_id)]
+        
+        if unread_only:
+            filters.append(('is_read', '==', False))
+        
+        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
+        notifications = await self.query_documents(
+            self.COLLECTION,
+            filters=filters,
+            limit=None
+        )
+        
+        # Python에서 정렬 및 제한 (최신순)
+        notifications.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        return notifications[:limit]
+    
+    async def mark_as_read(self, notification_id: str) -> bool:
+        """알림을 읽음으로 표시"""
+        return await self.update_document(
+            self.COLLECTION,
+            notification_id,
+            {'is_read': True}
+        )
+    
+    async def mark_all_as_read(self, user_id: str) -> int:
+        """사용자의 모든 알림을 읽음으로 표시"""
+        notifications = await self.get_user_notifications(
+            user_id=user_id,
+            limit=1000,
+            unread_only=True
+        )
+        
+        count = 0
+        for notification in notifications:
+            await self.mark_as_read(notification['id'])
+            count += 1
+        
+        return count
+    
+    async def count_unread(self, user_id: str) -> int:
+        """읽지 않은 알림 수 조회"""
+        return await self.count_documents(
+            self.COLLECTION,
+            filters=[
+                ('user_id', '==', user_id),
+                ('is_read', '==', False)
+            ]
+        )
+    
+    async def delete_notification(self, notification_id: str) -> bool:
+        """알림 삭제"""
+        return await self.delete_document(self.COLLECTION, notification_id)
+    
+    async def create_bulk_notifications(
+        self,
+        user_ids: List[str],
+        type: str,
+        title: str,
+        content: str,
+        club_id: Optional[str] = None,
+        club_name: Optional[str] = None,
+        reference_id: Optional[str] = None,
+        link: Optional[str] = None
+    ) -> int:
+        """여러 사용자에게 동일한 알림 생성"""
+        count = 0
+        for user_id in user_ids:
+            await self.create_notification(
+                user_id=user_id,
+                type=type,
+                title=title,
+                content=content,
+                club_id=club_id,
+                club_name=club_name,
+                reference_id=reference_id,
+                link=link
+            )
+            count += 1
+        
+        return count
+
+
 # 전역 서비스 인스턴스
 user_service = UserService()
 club_service = ClubService()
+subscription_service = SubscriptionService()
+event_service = EventService()
+announcement_service = AnnouncementService()
+bookmark_service = BookmarkService()
+notification_service = NotificationService()
 firestore_service = FirestoreService()
 

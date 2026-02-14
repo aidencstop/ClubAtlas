@@ -1,47 +1,58 @@
+'use client';
+
+import Link from 'next/link';
 import styles from './UpcomingEvents.module.css';
+import { Event as ApiEvent } from '@/lib/api/events';
 
 const imgIcon = "https://www.figma.com/api/mcp/asset/f9a0d896-59aa-4f4d-9ac4-b0740537ba8b";
 
-interface Event {
-  title: string;
-  date: string;
-  notifications: string;
+interface UpcomingEventsProps {
+  events: ApiEvent[];
+  clubId: string;
 }
 
-const events: Event[] = [
-  {
-    title: 'Weekly Meeting',
-    date: 'Mon, Nov 27 • 4:00 PM',
-    notifications: '32 email notifications sent',
-  },
-  {
-    title: 'Competition Prep Workshop',
-    date: 'Wed, Nov 29 • 5:00 PM',
-    notifications: '18 email notifications sent',
-  },
-];
+export default function UpcomingEvents({ events, clubId }: UpcomingEventsProps) {
+  const displayEvents = events.slice(0, 4);
 
-export default function UpcomingEvents() {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <h3 className={styles.title}>Upcoming Events (Next 7 Days)</h3>
-        <button className={styles.viewAllLink}>View All →</button>
+        <Link href="/admin/dashboard/events" className={styles.viewAllLink}>
+          View All →
+        </Link>
       </div>
-      <div className={styles.eventsGrid}>
-        {events.map((event, index) => (
-          <div key={index} className={styles.eventCard}>
-            <div className={styles.eventHeader}>
-              <div className={styles.eventInfo}>
-                <h4 className={styles.eventTitle}>{event.title}</h4>
-                <p className={styles.eventDate}>{event.date}</p>
+      {displayEvents.length === 0 ? (
+        <div className={styles.emptyState}>
+          No upcoming events in the next 7 days
+        </div>
+      ) : (
+        <div className={styles.eventsGrid}>
+          {displayEvents.map((event) => (
+            <div key={event.id} className={styles.eventCard}>
+              <div className={styles.eventHeader}>
+                <div className={styles.eventInfo}>
+                  <h4 className={styles.eventTitle}>{event.title}</h4>
+                  <p className={styles.eventDate}>
+                    {new Date(event.start_datetime).toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </p>
+                </div>
+                <img src={imgIcon} alt="Event" className={styles.eventIcon} />
               </div>
-              <img src={imgIcon} alt="Event" className={styles.eventIcon} />
+              <p className={styles.eventNotifications}>
+                {event.attendees?.length || 0} registered
+              </p>
             </div>
-            <p className={styles.eventNotifications}>{event.notifications}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

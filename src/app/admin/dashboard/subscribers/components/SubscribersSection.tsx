@@ -1,58 +1,93 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './SubscribersSection.module.css';
 import StatCard from './StatCard';
 import SubscriberRow from './SubscriberRow';
 import SubscriberDetailsModal from './SubscriberDetailsModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { getClubSubscribers, Subscriber as ApiSubscriber } from '@/lib/api';
 
 const imgIconSearch = "https://www.figma.com/api/mcp/asset/8c02a939-889b-4a3b-bada-1dd826a49483";
 
 interface Subscriber {
   id: string;
   email: string;
+  displayName: string;
   subscribedDate: string;
   initial: string;
+  notificationEnabled: boolean;
 }
 
-const mockSubscribers: Subscriber[] = [
-  {
-    id: '1',
-    email: 'john.doe@email.edu',
-    subscribedDate: 'Nov 2024',
-    initial: 'J',
-  },
-  {
-    id: '2',
-    email: 'jane.smith@email.edu',
-    subscribedDate: 'Nov 2024',
-    initial: 'J',
-  },
-  {
-    id: '3',
-    email: 'alex.kim@email.edu',
-    subscribedDate: 'Nov 2024',
-    initial: 'A',
-  },
-  {
-    id: '4',
-    email: 'maria.garcia@email.edu',
-    subscribedDate: 'Nov 2024',
-    initial: 'M',
-  },
-];
-
 export default function SubscribersSection() {
+  const { userProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalSubscribers, setTotalSubscribers] = useState(0);
+  const [weeklyGrowth, setWeeklyGrowth] = useState(0);
 
-  const handleSearch = () => {
-    console.log('Searching for:', searchQuery);
+  useEffect(() => {
+    loadSubscribers();
+  }, [userProfile]);
+
+  const loadSubscribers = async () => {
+    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+      setSubscribers([]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const clubId = userProfile.managed_club_ids[0];
+      const response = await getClubSubscribers(clubId);
+
+      if (response.data) {
+        const mappedSubscribers: Subscriber[] = response.data.subscribers.map((apiSubscriber: ApiSubscriber) => {
+          const email = apiSubscriber.user_email || 'N/A';
+          const displayName = apiSubscriber.user_display_name || email.split('@')[0];
+          const initial = displayName.charAt(0).toUpperCase();
+
+          return {
+            id: apiSubscriber.id,
+            email,
+            displayName,
+            subscribedDate: new Date(apiSubscriber.subscribed_at).toLocaleDateString('en-US', {
+              month: 'short',
+              year: 'numeric'
+            }),
+            initial,
+            notificationEnabled: apiSubscriber.notification_enabled
+          };
+        });
+
+        setSubscribers(mappedSubscribers);
+        setTotalSubscribers(response.data.total);
+
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const recentSubscribers = mappedSubscribers.filter(sub => {
+          const subDate = new Date(sub.subscribedDate);
+          return subDate >= weekAgo;
+        });
+        setWeeklyGrowth(recentSubscribers.length);
+      }
+    } catch (err) {
+      console.error('Failed to load subscribers:', err);
+      setError('Failed to load subscribers');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleViewDetails = (subscriberId: string) => {
-    const subscriber = mockSubscribers.find(s => s.id === subscriberId);
+    const subscriber = subscribers.find(s => s.id === subscriberId);
     if (subscriber) {
       setSelectedSubscriber(subscriber);
       setIsModalOpen(true);
@@ -64,63 +99,79 @@ export default function SubscribersSection() {
     setSelectedSubscriber(null);
   };
 
-  const filteredSubscribers = mockSubscribers.filter(subscriber =>
-    subscriber.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSubscribers = subscribers.filter(subscriber =>
+    subscriber.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    subscriber.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const activeRate = totalSubscribers > 0 
+    ? Math.round((subscribers.filter(s => s.notificationEnabled).length / totalSubscribers) * 100) 
+    : 0;
 
   return (
     <>
       <div className={styles.subscribersSection}>
         <h1 className={styles.title}>Subscribers</h1>
 
-        <div className={styles.statsGrid}>
-          <StatCard
-            value="127"
-            label="Total Subscribers"
-            subtext="+12 this week"
-            subtextColor="green"
-          />
-          <StatCard
-            value="89%"
-            label="Active Rate"
-            subtext="Opened recent email"
-            subtextColor="gray"
-          />
-          <StatCard
-            value="42%"
-            label="Avg. Open Rate"
-            subtext="Email engagement"
-            subtextColor="gray"
-          />
-        </div>
-
-        <div className={styles.subscribersContainer}>
-          <div className={styles.searchBar}>
-            <div className={styles.searchInput}>
-              <img src={imgIconSearch} alt="" className={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search subscribers by email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.input}
+        {isLoading ? (
+          <div className={styles.loading}>Loading subscribers...</div>
+        ) : error ? (
+          <div className={styles.error}>{error}</div>
+        ) : (
+          <>
+            <div className={styles.statsGrid}>
+              <StatCard
+                value={totalSubscribers.toString()}
+                label="Total Subscribers"
+                subtext={weeklyGrowth > 0 ? `+${weeklyGrowth} this week` : 'No new this week'}
+                subtextColor={weeklyGrowth > 0 ? 'green' : 'gray'}
+              />
+              <StatCard
+                value={`${activeRate}%`}
+                label="Notification Enabled"
+                subtext="Have notifications on"
+                subtextColor="gray"
+              />
+              <StatCard
+                value={filteredSubscribers.length.toString()}
+                label="Showing"
+                subtext={searchQuery ? 'Filtered results' : 'All subscribers'}
+                subtextColor="gray"
               />
             </div>
-            <button onClick={handleSearch} className={styles.searchButton}>
-              Search
-            </button>
-          </div>
 
-          <div className={styles.subscribersList}>
-            {filteredSubscribers.map((subscriber) => (
-              <SubscriberRow
-                key={subscriber.id}
-                subscriber={subscriber}
-                onViewDetails={handleViewDetails}
-              />
-            ))}
-          </div>
-        </div>
+            <div className={styles.subscribersContainer}>
+              <div className={styles.searchBar}>
+                <div className={styles.searchInput}>
+                  <img src={imgIconSearch} alt="" className={styles.searchIcon} />
+                  <input
+                    type="text"
+                    placeholder="Search subscribers by email or name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+
+              {filteredSubscribers.length === 0 ? (
+                <div className={styles.emptyState}>
+                  {searchQuery ? 'No subscribers found matching your search' : 'No subscribers yet'}
+                </div>
+              ) : (
+                <div className={styles.subscribersList}>
+                  {filteredSubscribers.map((subscriber) => (
+                    <SubscriberRow
+                      key={subscriber.id}
+                      subscriber={subscriber}
+                      onViewDetails={handleViewDetails}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <SubscriberDetailsModal

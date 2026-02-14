@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './AdminLoginForm.module.css';
 import ForgotPasswordModal from '../../../student/login/components/ForgotPasswordModal';
+import { signIn } from '@/lib/firebase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 type AdminRole = 'club-leader' | 'super-admin';
 
@@ -15,21 +17,68 @@ interface AdminLoginFormProps {
 
 export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormProps) {
   const router = useRouter();
+  const { refreshUserProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 실제 로그인 API 호출 구현
-    console.log('Admin Login:', { email, password, role });
+    setError('');
+    setLoading(true);
     
-    // 임시: 로그인 성공 시 대시보드로 리다이렉트
-    // 실제 구현 시에는 API 응답을 확인한 후 리다이렉트
-    if (role === 'super-admin') {
-      router.push('/superadmin/dashboard');
-    } else {
-      router.push('/admin/dashboard');
+    try {
+      // Firebase 로그인
+      const userCredential = await signIn(email, password);
+      
+      // 사용자 프로필 새로고침
+      await refreshUserProfile();
+      
+      // ID 토큰 가져오기
+      const token = await userCredential.user.getIdTokenResult();
+      const userRole = token.claims.role as string | undefined;
+      
+      // 역할 확인
+      if (role === 'super-admin') {
+        if (userRole !== 'super-admin') {
+          setError('Super Admin 권한이 없습니다. 역할을 확인해주세요.');
+          setLoading(false);
+          return;
+        }
+        router.push('/superadmin/dashboard');
+      } else {
+        // club-leader 또는 admin
+        if (userRole !== 'club-leader' && userRole !== 'admin' && userRole !== 'super-admin') {
+          setError('Club Leader 권한이 없습니다. 권한 요청이 필요합니다.');
+          setLoading(false);
+          return;
+        }
+        
+        // Super Admin은 admin 대시보드에도 접근 가능
+        if (userRole === 'super-admin') {
+          router.push('/superadmin/dashboard');
+        } else {
+          router.push('/admin/dashboard');
+        }
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Firebase 에러 메시지 처리
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        setError('이메일 또는 비밀번호가 잘못되었습니다.');
+      } else if (err.code === 'auth/user-not-found') {
+        setError('존재하지 않는 계정입니다.');
+      } else if (err.code === 'auth/user-disabled') {
+        setError('비활성화된 계정입니다. 관리자에게 문의하세요.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        setError('로그인에 실패했습니다. 다시 시도해주세요.');
+      }
+      setLoading(false);
     }
   };
 
@@ -63,6 +112,20 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
+        {error && (
+          <div style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            borderRadius: '8px',
+            color: '#c33',
+            fontSize: '14px'
+          }}>
+            {error}
+          </div>
+        )}
+        
         <div className={styles.fieldGroup}>
           <label htmlFor="email" className={styles.label}>
             Email Address
@@ -75,6 +138,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
           <p className={styles.hint}>
             {isSuperAdmin ? 'Use your admin credentials' : 'Use your club leader credentials'}
@@ -93,17 +157,19 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
           <button
             type="button"
             onClick={() => setIsForgotPasswordOpen(true)}
             className={styles.forgotLink}
+            disabled={loading}
           >
             Forgot password?
           </button>
         </div>
 
-        <button type="submit" className={styles.submitButton}>
+        <button type="submit" className={styles.submitButton} disabled={loading}>
           <img 
             src={isSuperAdmin 
               ? "https://www.figma.com/api/mcp/asset/70c0d910-6213-43a6-aa12-de12917c791a"
@@ -112,7 +178,12 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
             alt="arrow"
             className={styles.arrowIcon}
           />
-          <span>{isSuperAdmin ? 'Sign In as Super Admin' : 'Sign In to Dashboard'}</span>
+          <span>
+            {loading 
+              ? 'Signing in...' 
+              : isSuperAdmin ? 'Sign In as Super Admin' : 'Sign In to Dashboard'
+            }
+          </span>
         </button>
       </form>
 

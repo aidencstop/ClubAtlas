@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getIdToken } from '@/lib/firebase/auth';
 import styles from './PlatformConfiguration.module.css';
 
 interface ConfigItem {
@@ -10,35 +12,92 @@ interface ConfigItem {
   enabled: boolean;
 }
 
-export default function PlatformConfiguration() {
-  const [configs, setConfigs] = useState<ConfigItem[]>([
-    {
-      id: 'new-club-approvals',
-      title: 'New Club Approvals',
-      description: 'Require admin approval for new clubs',
-      enabled: true
-    },
-    {
-      id: 'email-notifications',
-      title: 'Email Notifications',
-      description: 'System email notifications',
-      enabled: true
-    },
-    {
-      id: 'public-registration',
-      title: 'Public Registration',
-      description: 'Allow public user registration',
-      enabled: true
-    }
-  ]);
+interface PlatformConfigurationsResponse {
+  configurations: ConfigItem[];
+}
 
-  const toggleConfig = (id: string) => {
-    setConfigs(prevConfigs =>
-      prevConfigs.map(config =>
-        config.id === id ? { ...config, enabled: !config.enabled } : config
-      )
-    );
+export default function PlatformConfiguration() {
+  const { user } = useAuth();
+  const [configs, setConfigs] = useState<ConfigItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadConfigurations();
+  }, []);
+
+  const loadConfigurations = async () => {
+    if (!user) return;
+
+    try {
+      const token = await getIdToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/system/configurations`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data: PlatformConfigurationsResponse = await response.json();
+        setConfigs(data.configurations);
+      }
+    } catch (error) {
+      console.error('Failed to load configurations:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const toggleConfig = async (id: string) => {
+    if (!user) return;
+
+    const config = configs.find(c => c.id === id);
+    if (!config) return;
+
+    try {
+      const token = await getIdToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/system/configurations/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ enabled: !config.enabled }),
+        }
+      );
+
+      if (response.ok) {
+        setConfigs(prevConfigs =>
+          prevConfigs.map(c =>
+            c.id === id ? { ...c, enabled: !c.enabled } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update configuration:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <h3 className={styles.title}>Platform Configuration</h3>
+        <div className={styles.list}>
+          <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

@@ -1,49 +1,87 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './FeaturedClubs.module.css';
 import ClubCard from './ClubCard';
+import { getClubs, Club } from '@/lib/api/clubs';
 
 const arrowIcon = "/images/icons/arrow-right.svg";
 
-const roboticsImage = "/images/clubs/robotics.jpg";
-const photographyImage = "/images/clubs/photography.jpg";
-const dramaImage = "/images/clubs/drama.jpg";
-
-const clubs = [
-  {
-    id: 1,
-    name: 'Robotics Club',
-    description: 'Building the future with cutting-edge robotics and automation projects',
-    category: 'STEM',
-    categoryColor: 'rgba(255, 255, 255, 0.9)',
-    image: roboticsImage,
-    schedule: 'Every Monday 4PM',
-    members: '127+ members',
-  },
-  {
-    id: 2,
-    name: 'Photography Club',
-    description: 'Capture moments, develop skills, and share your creative vision',
-    category: 'Arts',
-    categoryColor: 'rgba(255, 255, 255, 0.9)',
-    image: photographyImage,
-    schedule: 'Every Thursday 6PM',
-    members: '89+ members',
-  },
-  {
-    id: 3,
-    name: 'Drama Society',
-    description: 'Express yourself through theater, acting, and stage production',
-    category: 'Performance',
-    categoryColor: 'rgba(255, 255, 255, 0.9)',
-    image: dramaImage,
-    schedule: 'Every Tuesday 5:30PM',
-    members: '156+ members',
-  },
-];
+function getDayName(day?: string): string {
+  const days: { [key: string]: string } = {
+    'monday': 'Monday',
+    'tuesday': 'Tuesday',
+    'wednesday': 'Wednesday',
+    'thursday': 'Thursday',
+    'friday': 'Friday',
+    'saturday': 'Saturday',
+    'sunday': 'Sunday'
+  };
+  return day ? days[day.toLowerCase()] || day : '';
+}
 
 export default function FeaturedClubs() {
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadFeaturedClubs();
+  }, []);
+
+  const loadFeaturedClubs = async () => {
+    setLoading(true);
+    try {
+      const response = await getClubs({ page_size: 50 });
+
+      if (response.data && !response.error) {
+        const sortedClubs = [...response.data.clubs].sort((a, b) => 
+          (b.subscriber_count || 0) - (a.subscriber_count || 0)
+        );
+
+        const featured = sortedClubs.slice(0, 3).map((club: Club) => {
+          const dayName = getDayName(club.meeting_schedule?.day);
+          const timeSlot = club.meeting_schedule?.time_slots?.[0] || '';
+          const schedule = dayName && timeSlot 
+            ? `Every ${dayName} ${timeSlot}` 
+            : 'Schedule TBA';
+
+          return {
+            id: club.id,
+            name: club.name,
+            description: club.description,
+            category: club.categories?.[0] || 'General',
+            categoryColor: 'rgba(255, 255, 255, 0.9)',
+            image: club.logo_url || '/default-club-logo.png',
+            schedule: schedule,
+            members: `${club.subscriber_count || 0}+ members`,
+          };
+        });
+
+        setClubs(featured);
+      }
+    } catch (err) {
+      console.error('Failed to load featured clubs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className={styles.section}>
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>Featured Clubs</h2>
+          </div>
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+            Loading...
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -54,11 +92,18 @@ export default function FeaturedClubs() {
             <img src={arrowIcon} alt="" />
           </Link>
         </div>
-        <div className={styles.clubsGrid}>
-          {clubs.map((club) => (
-            <ClubCard key={club.id} club={club} />
-          ))}
-        </div>
+        
+        {clubs.length === 0 ? (
+          <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+            No featured clubs available.
+          </div>
+        ) : (
+          <div className={styles.clubsGrid}>
+            {clubs.map((club) => (
+              <ClubCard key={club.id} club={club} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

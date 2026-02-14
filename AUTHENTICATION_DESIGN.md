@@ -647,9 +647,10 @@ interface User {
 **확정 정보**:
 ```
 이메일: superadmin@gmail.com
-비밀번호: 0000
+비밀번호: Super123
 이름: superadmin
 ```
+(Firebase 최소 6자 요구사항에 맞춰 변경)
 
 ### 11.4 비밀번호 정책
 **결정**: 강화 정책
@@ -668,6 +669,80 @@ interface User {
 
 ---
 
+## 12. 구현 완료 상태
+
+### 12.1 완료된 단계 ✅
+- ✅ **1단계**: 백엔드 인증 API 구현 완료
+  - 학생 회원가입, 리더 권한 요청, 사용자 조회 API
+  - SuperAdmin 권한 요청 관리 API
+- ✅ **2단계**: 역할 기반 접근 제어 (RBAC) 완료
+  - Firebase Custom Claims
+  - Firestore 역할 동기화
+  - 백엔드 의존성 함수 (`require_super_admin`, `require_club_leader`)
+  - 프론트엔드 `ProtectedRoute` 컴포넌트
+- ✅ **3단계**: 프론트엔드 인증 로직 구현 완료
+  - 학생/Admin/SuperAdmin 로그인 페이지
+  - 학생 회원가입 페이지
+  - 리더 권한 요청 페이지
+  - 역할별 자동 리다이렉트
+  - `AuthContext` 전역 상태 관리
+- ✅ **4단계**: SuperAdmin 권한 요청 관리 UI 완료
+  - `/superadmin/club-leaders` 페이지에 "Pending Requests" 탭 추가
+  - 승인/거부 모달 구현
+  - 실시간 API 연동
+- ✅ **5단계**: 로그아웃 기능 완료
+  - Student/Admin/SuperAdmin 헤더에 로그아웃 추가
+  - 역할별 로그인 페이지로 리다이렉트
+- ✅ **7단계**: 프로필 편집 기능 완료
+  - 공통 `EditProfileModal` 컴포넌트
+  - Student/Admin/SuperAdmin 통합
+
+### 12.2 보류/미구현 단계 ⏸️
+- ⏸️ **6단계**: 비밀번호 재설정 (Forgot Password)
+  - Firebase Password Reset Email 사용 예정
+  - 구현 예정 위치: `src/app/student/login/components/ForgotPasswordModal.tsx`
+
+### 12.3 테스트 완료 항목
+- ✅ SuperAdmin 계정 생성 (`superadmin@gmail.com` / `Super123`)
+- ✅ SuperAdmin 로그인 및 대시보드 접근
+- ✅ 역할 기반 접근 제어 검증
+- ✅ 로그아웃 기능 동작 확인
+- ✅ 프로필 편집 및 실시간 반영 확인
+
+### 12.4 생성된 주요 파일
+**백엔드**:
+- `backend/app/api/auth.py` - 인증 API
+- `backend/app/api/admin/leader_requests.py` - SuperAdmin 리더 요청 관리
+- `backend/app/models/auth.py` - 인증 관련 Pydantic 모델
+- `backend/scripts/create_superadmin.py` - 초기 SuperAdmin 생성 스크립트
+- `backend/app/services/auth_service.py` - 인증 서비스 로직
+
+**프론트엔드**:
+- `src/contexts/AuthContext.tsx` - 전역 인증 컨텍스트
+- `src/components/ProtectedRoute.tsx` - 라우트 보호 컴포넌트
+- `src/components/EditProfileModal.tsx` - 프로필 편집 모달
+- `src/lib/api/auth.ts` - 인증 API 클라이언트
+- `src/lib/api/admin.ts` - SuperAdmin API 클라이언트
+- `src/lib/api/users.ts` - 사용자 API 클라이언트
+- `src/lib/api/clubs.ts` - 동아리 API 클라이언트
+- `src/app/admin/request-access/page.tsx` - 리더 권한 요청 페이지
+- `src/app/superadmin/club-leaders/components/PendingRequestsTable.tsx` - 대기 요청 테이블
+- `src/app/superadmin/club-leaders/components/ApproveRequestModal.tsx` - 승인 모달
+- `src/app/superadmin/club-leaders/components/RejectRequestModal.tsx` - 거부 모달
+
+### 12.5 다음 구현 예정 기능
+1. **비밀번호 재설정** (6단계)
+2. **더미 데이터 Firestore 마이그레이션**
+3. **Admin Dashboard 실제 데이터 연동**
+4. **이벤트 관리 시스템**
+5. **구독 시스템**
+6. **AI 추천 시스템 프론트엔드 연동**
+
+자세한 구현 상태는 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) 참조.
+
+---
+
 ## 문서 버전
 - v1.0 - 2026-01-31: 초안 작성
 - v1.1 - 2026-01-31: 정책 결정사항 확정
+- v1.2 - 2026-01-31: 구현 완료 상태 추가

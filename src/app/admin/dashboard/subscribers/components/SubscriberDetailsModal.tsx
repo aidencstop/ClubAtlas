@@ -6,8 +6,10 @@ import styles from './SubscriberDetailsModal.module.css';
 interface Subscriber {
   id: string;
   email: string;
+  displayName: string;
   subscribedDate: string;
   initial: string;
+  notificationEnabled: boolean;
 }
 
 interface SubscriberDetailsModalProps {
@@ -38,6 +40,13 @@ export default function SubscriberDetailsModal({ isOpen, onClose, subscriber }: 
         
         <div className={styles.fields}>
           <div className={styles.field}>
+            <label className={styles.label}>Name</label>
+            <div className={styles.readOnlyInput}>
+              {subscriber.displayName}
+            </div>
+          </div>
+
+          <div className={styles.field}>
             <label className={styles.label}>Email</label>
             <div className={styles.readOnlyInput}>
               {subscriber.email}
@@ -48,6 +57,13 @@ export default function SubscriberDetailsModal({ isOpen, onClose, subscriber }: 
             <label className={styles.label}>Subscription Date</label>
             <div className={styles.readOnlyInput}>
               {subscriber.subscribedDate}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Notifications</label>
+            <div className={styles.readOnlyInput}>
+              {subscriber.notificationEnabled ? '✅ Enabled' : '🔕 Disabled'}
             </div>
           </div>
         </div>

@@ -54,3 +54,24 @@ class EventListResponse(BaseModel):
     total: int
 
 
+class AttendanceRecord(BaseModel):
+    """출석 기록"""
+    event: Event
+    status: str = Field(..., description="attended or missed")
+    club_name: str = Field(..., description="동아리 이름")
+
+
+class AttendanceStats(BaseModel):
+    """출석 통계"""
+    total_events: int = Field(..., description="전체 이벤트 수")
+    attended: int = Field(..., description="참석한 이벤트 수")
+    missed: int = Field(..., description="불참한 이벤트 수")
+    attendance_rate: float = Field(..., description="출석률 (0-100)")
+
+
+class AttendanceHistoryResponse(BaseModel):
+    """출석 이력 응답"""
+    records: List[AttendanceRecord]
+    stats: AttendanceStats
+
+

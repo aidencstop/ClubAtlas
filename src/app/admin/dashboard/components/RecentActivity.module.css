@@ -83,6 +83,17 @@
   margin: 0;
 }
 
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
 
 
 

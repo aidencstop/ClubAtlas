@@ -1,8 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './MyPage.module.css';
+import { getMySubscriptions, unsubscribeFromClub, updateNotificationSettings, Subscription } from '@/lib/api/subscriptions';
+import { getClub, Club, subscribeToClub } from '@/lib/api/clubs';
+import { getMyAttendanceHistory, getMyCalendarEvents, AttendanceRecord, AttendanceStats, Event } from '@/lib/api/events';
+import { getMyBookmarks, deleteBookmark, createBookmark, BookmarkedClub } from '@/lib/api/bookmarks';
+import { getRecommendations, ClubRecommendation } from '@/lib/api/recommendations';
+import { useAuth } from '@/contexts/AuthContext';
+import EditProfileModal from '@/components/EditProfileModal';
+import ChangePasswordModal from '@/components/ChangePasswordModal';
 
 // Figma 아이콘 및 이미지 URLs (최신 디자인 기준)
 const logoIcon = "https://www.figma.com/api/mcp/asset/a3f3e789-4132-4ee6-9056-6cac63c80070";
@@ -51,8 +59,369 @@ const roboticsImageLarge = "https://www.figma.com/api/mcp/asset/2ea62fac-3b99-4b
 const photographyImageLarge = "https://www.figma.com/api/mcp/asset/cad04e6a-4e92-4d32-a266-af8cb40da6b0";
 const debateImageLarge = "https://www.figma.com/api/mcp/asset/21474162-77bc-4f7c-90a2-637ab7563087";
 
+interface SubscribedClubData extends Subscription {
+  clubDetails?: Club;
+}
+
 export default function MyPagePage() {
+  const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [subscriptions, setSubscriptions] = useState<SubscribedClubData[]>([]);
+  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
+  const [unsubscribingClubId, setUnsubscribingClubId] = useState<string | null>(null);
+  
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'attended' | 'missed'>('all');
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  
+  const [bookmarkedClubs, setBookmarkedClubs] = useState<BookmarkedClub[]>([]);
+  const [isLoadingBookmarks, setIsLoadingBookmarks] = useState(false);
+  const [bookmarksError, setBookmarksError] = useState<string | null>(null);
+  const [removingBookmarkId, setRemovingBookmarkId] = useState<string | null>(null);
+  const [subscribingFromBookmark, setSubscribingFromBookmark] = useState<string | null>(null);
+  
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    eventReminders: true,
+    weeklyDigest: false
+  });
+  
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [eventsError, setEventsError] = useState<string | null>(null);
+  
+  const [recommendations, setRecommendations] = useState<ClubRecommendation[]>([]);
+  const [recommendedClubsData, setRecommendedClubsData] = useState<Club[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [recommendationsError, setRecommendationsError] = useState<string | null>(null);
+  const [savingBookmarkId, setSavingBookmarkId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab === 'subscribed' || activeTab === 'overview') {
+      loadSubscribedClubs();
+    }
+    if (activeTab === 'history') {
+      loadAttendanceHistory();
+    }
+    if (activeTab === 'saved' || activeTab === 'overview') {
+      loadBookmarkedClubs();
+    }
+    if (activeTab === 'overview') {
+      loadUpcomingEvents();
+      loadRecommendations();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadAttendanceHistory();
+    }
+  }, [historyFilter]);
+
+  const loadSubscribedClubs = async () => {
+    setIsLoadingSubscriptions(true);
+    setSubscriptionError(null);
+
+    try {
+      const response = await getMySubscriptions();
+      
+      if (response.error) {
+        setSubscriptionError(response.error);
+        return;
+      }
+
+      if (response.data) {
+        const subscriptionsData = response.data.subscriptions;
+        
+        const subscriptionsWithDetails = await Promise.all(
+          subscriptionsData.map(async (sub) => {
+            try {
+              const clubResponse = await getClub(sub.club_id);
+              return {
+                ...sub,
+                clubDetails: clubResponse.data
+              };
+            } catch (err) {
+              console.error(`Failed to load club ${sub.club_id}:`, err);
+              return {
+                ...sub,
+                clubDetails: undefined
+              };
+            }
+          })
+        );
+
+        setSubscriptions(subscriptionsWithDetails);
+      }
+    } catch (err) {
+      console.error('Failed to load subscriptions:', err);
+      setSubscriptionError('Failed to load subscriptions');
+    } finally {
+      setIsLoadingSubscriptions(false);
+    }
+  };
+
+  const loadAttendanceHistory = async () => {
+    setIsLoadingHistory(true);
+    setHistoryError(null);
+
+    try {
+      const response = await getMyAttendanceHistory({
+        status_filter: historyFilter
+      });
+
+      if (response.error) {
+        setHistoryError(response.error);
+        return;
+      }
+
+      if (response.data) {
+        setAttendanceRecords(response.data.records);
+        setAttendanceStats(response.data.stats);
+      }
+    } catch (err) {
+      console.error('Failed to load attendance history:', err);
+      setHistoryError('Failed to load attendance history');
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const loadBookmarkedClubs = async () => {
+    setIsLoadingBookmarks(true);
+    setBookmarksError(null);
+
+    try {
+      const response = await getMyBookmarks();
+
+      if (response.error) {
+        setBookmarksError(response.error);
+        return;
+      }
+
+      if (response.data) {
+        setBookmarkedClubs(response.data.bookmarks);
+      }
+    } catch (err) {
+      console.error('Failed to load bookmarks:', err);
+      setBookmarksError('Failed to load bookmarks');
+    } finally {
+      setIsLoadingBookmarks(false);
+    }
+  };
+
+  const handleRemoveBookmark = async (clubId: string) => {
+    if (removingBookmarkId) return;
+
+    if (!confirm('Are you sure you want to remove this club from your saved list?')) {
+      return;
+    }
+
+    setRemovingBookmarkId(clubId);
+
+    try {
+      const response = await deleteBookmark(clubId);
+
+      if (response.error) {
+        alert(response.error || 'Failed to remove bookmark');
+        return;
+      }
+
+      setBookmarkedClubs(prev => prev.filter(club => club.club_id !== clubId));
+    } catch (err) {
+      console.error('Remove bookmark error:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setRemovingBookmarkId(null);
+    }
+  };
+
+  const handleSubscribeFromBookmark = async (clubId: string) => {
+    if (subscribingFromBookmark) return;
+
+    setSubscribingFromBookmark(clubId);
+
+    try {
+      const response = await subscribeToClub(clubId);
+
+      if (response.error) {
+        alert(response.error || 'Failed to subscribe');
+        return;
+      }
+
+      alert('Successfully subscribed to the club!');
+      await loadSubscribedClubs();
+    } catch (err) {
+      console.error('Subscribe error:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setSubscribingFromBookmark(null);
+    }
+  };
+
+  const loadUpcomingEvents = async () => {
+    setIsLoadingEvents(true);
+    setEventsError(null);
+
+    try {
+      const now = new Date();
+      const weekLater = new Date();
+      weekLater.setDate(now.getDate() + 7);
+
+      const response = await getMyCalendarEvents({
+        start_date: now.toISOString(),
+        end_date: weekLater.toISOString()
+      });
+
+      if (response.error) {
+        setEventsError(response.error);
+        return;
+      }
+
+      if (response.data) {
+        setUpcomingEvents(response.data.events.slice(0, 3));
+      }
+    } catch (err) {
+      console.error('Failed to load upcoming events:', err);
+      setEventsError('Failed to load upcoming events');
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  };
+
+  const loadRecommendations = async () => {
+    setIsLoadingRecommendations(true);
+    setRecommendationsError(null);
+
+    try {
+      const response = await getRecommendations({ limit: 4 });
+
+      if (response.error) {
+        setRecommendationsError(response.error);
+        return;
+      }
+
+      if (response.data) {
+        setRecommendations(response.data.recommendations);
+
+        const clubDataPromises = response.data.recommendations.map(rec => 
+          getClub(rec.club_id)
+        );
+        const clubResponses = await Promise.all(clubDataPromises);
+
+        const clubs: Club[] = [];
+        clubResponses.forEach(clubResp => {
+          if (clubResp.data && !clubResp.error) {
+            clubs.push(clubResp.data);
+          }
+        });
+
+        setRecommendedClubsData(clubs);
+      }
+    } catch (err) {
+      console.error('Failed to load recommendations:', err);
+      setRecommendationsError('Failed to load recommendations');
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
+  const handleSaveRecommendation = async (clubId: string) => {
+    setSavingBookmarkId(clubId);
+    try {
+      const response = await createBookmark(clubId);
+      
+      if (response.error) {
+        alert(response.error);
+        return;
+      }
+
+      await loadBookmarkedClubs();
+      alert('Club bookmarked successfully!');
+    } catch (err) {
+      console.error('Failed to save bookmark:', err);
+      alert('Failed to bookmark club');
+    } finally {
+      setSavingBookmarkId(null);
+    }
+  };
+
+  const handleToggleNotification = (type: 'emailNotifications' | 'eventReminders' | 'weeklyDigest') => {
+    setNotificationSettings(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
+
+  const handleUnsubscribe = async (clubId: string) => {
+    if (unsubscribingClubId) return;
+    
+    if (!confirm('Are you sure you want to unsubscribe from this club?')) {
+      return;
+    }
+
+    setUnsubscribingClubId(clubId);
+
+    try {
+      const response = await unsubscribeFromClub(clubId);
+      
+      if (response.error) {
+        alert(response.error || 'Failed to unsubscribe');
+        return;
+      }
+
+      setSubscriptions(prev => prev.filter(sub => sub.club_id !== clubId));
+    } catch (err) {
+      console.error('Unsubscribe error:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setUnsubscribingClubId(null);
+    }
+  };
+
+  const handleToggleNotifications = async (clubId: string, currentEnabled: boolean) => {
+    try {
+      const response = await updateNotificationSettings(clubId, !currentEnabled);
+      
+      if (response.error) {
+        alert(response.error || 'Failed to update notifications');
+        return;
+      }
+
+      setSubscriptions(prev => prev.map(sub => 
+        sub.club_id === clubId 
+          ? { ...sub, notification_enabled: !currentEnabled }
+          : sub
+      ));
+    } catch (err) {
+      console.error('Toggle notifications error:', err);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
+  const getMeetingScheduleText = (club: Club) => {
+    if (club.meeting_schedule && club.meeting_schedule.length > 0) {
+      const schedule = club.meeting_schedule[0];
+      const timeSlot = schedule.time_slots && schedule.time_slots.length > 0 
+        ? schedule.time_slots[0] 
+        : 'TBD';
+      return `${schedule.day}, ${timeSlot}`;
+    }
+    return 'TBD';
+  };
+
+  const formatSubscribedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  const activeSubscriptions = subscriptions.filter(sub => sub.clubDetails);
+  const subscribedCount = activeSubscriptions.length;
 
   return (
     <div className={styles.pageWrapper}>
@@ -93,17 +462,19 @@ export default function MyPagePage() {
           <div className={styles.profileCard}>
             <div className={styles.profileContent}>
               <div className={styles.avatar}>
-                <span>JD</span>
+                <span>{userProfile?.display_name?.substring(0, 2).toUpperCase() || 'JD'}</span>
               </div>
               <div className={styles.profileInfo}>
-                <h1 className={styles.profileName}>John Doe</h1>
+                <h1 className={styles.profileName}>{userProfile?.display_name || 'User'}</h1>
                 <p className={styles.profileDetails}>
-                  john.doe@email.edu • Computer Science • Class of 2026
+                  {userProfile?.email || 'user@email.edu'} • Computer Science • Class of 2026
                 </p>
                 <div className={styles.profileStats}>
                   <div className={styles.statTag} style={{ background: '#eff6ff' }}>
                     <span className={styles.statLabel}>Following:</span>
-                    <span className={styles.statValue} style={{ color: '#155dfc' }}>3 clubs</span>
+                    <span className={styles.statValue} style={{ color: '#155dfc' }}>
+                      {subscribedCount} clubs
+                    </span>
                   </div>
                   <div className={styles.statTag} style={{ background: '#f0fdf4' }}>
                     <span className={styles.statLabel}>Events:</span>
@@ -132,7 +503,7 @@ export default function MyPagePage() {
               onClick={() => setActiveTab('subscribed')}
             >
               <img src={subscribeIcon} alt="" />
-              <span>Subscribed (3)</span>
+              <span>Subscribed ({subscribedCount})</span>
             </button>
             <button 
               className={`${styles.tab} ${activeTab === 'history' ? styles.activeTab : ''}`}
@@ -146,7 +517,7 @@ export default function MyPagePage() {
               onClick={() => setActiveTab('saved')}
             >
               <img src={savedIcon} alt="" />
-              <span>Saved (3)</span>
+              <span>Saved ({bookmarkedClubs.length})</span>
             </button>
             <button 
               className={`${styles.tab} ${activeTab === 'settings' ? styles.activeTab : ''}`}
@@ -167,7 +538,9 @@ export default function MyPagePage() {
                     <div className={styles.statIconBlue}>
                       <img src={clubsFollowingIcon} alt="" />
                     </div>
-                    <span className={styles.statNumber}>3</span>
+                    <span className={styles.statNumber}>
+                      {isLoadingSubscriptions ? '-' : subscribedCount}
+                    </span>
                   </div>
                   <p className={styles.statLabel}>Clubs Following</p>
                 </div>
@@ -177,7 +550,9 @@ export default function MyPagePage() {
                     <div className={styles.statIconGreen}>
                       <img src={upcomingEventsIcon} alt="" />
                     </div>
-                    <span className={styles.statNumber}>3</span>
+                    <span className={styles.statNumber}>
+                      {isLoadingEvents ? '-' : upcomingEvents.length}
+                    </span>
                   </div>
                   <p className={styles.statLabel}>Upcoming Events</p>
                 </div>
@@ -187,7 +562,9 @@ export default function MyPagePage() {
                     <div className={styles.statIconPurple}>
                       <img src={eventsAttendedIcon} alt="" />
                     </div>
-                    <span className={styles.statNumber}>12</span>
+                    <span className={styles.statNumber}>
+                      {attendanceStats?.attended || 0}
+                    </span>
                   </div>
                   <p className={styles.statLabel}>Events Attended</p>
                 </div>
@@ -197,7 +574,9 @@ export default function MyPagePage() {
                     <div className={styles.statIconOrange}>
                       <img src={savedClubsIcon} alt="" />
                     </div>
-                    <span className={styles.statNumber}>3</span>
+                    <span className={styles.statNumber}>
+                      {isLoadingBookmarks ? '-' : bookmarkedClubs.length}
+                    </span>
                   </div>
                   <p className={styles.statLabel}>Saved Clubs</p>
                 </div>
@@ -213,28 +592,49 @@ export default function MyPagePage() {
                       Browse More →
                     </Link>
                   </div>
-                  <div className={styles.clubsList}>
-                    {[
-                      { name: 'Robotics Club', category: 'ACADEMIC', image: roboticsImage, nextEvent: 'Mon, Nov 27, 4:00 PM' },
-                      { name: 'Photography Club', category: 'ARTS', image: photographyImage, nextEvent: 'Thu, Nov 30, 6:00 PM' },
-                      { name: 'Debate Team', category: 'ACADEMIC', image: debateImage, nextEvent: 'Wed, Nov 29, 3:00 PM' }
-                    ].map((club, index) => (
-                      <div key={index} className={styles.subscribedClubCard}>
-                        <div className={styles.clubCardContent}>
-                          <img src={club.image} alt={club.name} className={styles.clubImage} />
-                          <div className={styles.clubInfo}>
-                            <span className={styles.clubCategory}>{club.category}</span>
-                            <h3 className={styles.clubName}>{club.name}</h3>
-                            <div className={styles.clubNextEvent}>
-                              <img src={clockIcon} alt="" />
-                              <span>Next: {club.nextEvent}</span>
+                  
+                  {isLoadingSubscriptions ? (
+                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                      Loading...
+                    </div>
+                  ) : activeSubscriptions.length === 0 ? (
+                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                      <p>No subscribed clubs yet.</p>
+                    </div>
+                  ) : (
+                    <div className={styles.clubsList}>
+                      {activeSubscriptions.slice(0, 3).map((subscription) => {
+                        const club = subscription.clubDetails!;
+                        const displayImage = club.logo_url || club.banner_url || roboticsImage;
+                        const mainCategory = club.categories && club.categories.length > 0 
+                          ? club.categories[0].toUpperCase() 
+                          : 'GENERAL';
+                        const nextEvent = getMeetingScheduleText(club);
+
+                        return (
+                          <div key={subscription.id} className={styles.subscribedClubCard}>
+                            <div className={styles.clubCardContent}>
+                              <img src={displayImage} alt={club.name} className={styles.clubImage} />
+                              <div className={styles.clubInfo}>
+                                <span className={styles.clubCategory}>{mainCategory}</span>
+                                <h3 className={styles.clubName}>{club.name}</h3>
+                                <div className={styles.clubNextEvent}>
+                                  <img src={clockIcon} alt="" />
+                                  <span>Next: {nextEvent}</span>
+                                </div>
+                              </div>
                             </div>
+                            <Link 
+                              href={`/student/home/clubs/${club.id}`}
+                              className={styles.viewProfileButton}
+                            >
+                              View Profile
+                            </Link>
                           </div>
-                        </div>
-                        <button className={styles.viewProfileButton}>View Profile</button>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Upcoming Events */}
@@ -245,30 +645,61 @@ export default function MyPagePage() {
                       Full Calendar →
                     </Link>
                   </div>
-                  <div className={styles.eventsList}>
-                    {[
-                      { club: 'Robotics Club', title: 'Weekly Meeting', date: 'Mon, Nov 27 • 4:00 PM' },
-                      { club: 'Debate Team', title: 'Practice Session', date: 'Wed, Nov 29 • 3:00 PM' },
-                      { club: 'Photography Club', title: 'Photo Walk', date: 'Thu, Nov 30 • 6:00 PM' }
-                    ].map((event, index) => (
-                      <div key={index} className={styles.eventCard}>
-                        <div className={styles.eventContent}>
-                          <div className={styles.eventIconBlue}>
-                            <img src={calendarIconBlue} alt="" />
+                  
+                  {isLoadingEvents ? (
+                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                      Loading...
+                    </div>
+                  ) : upcomingEvents.length === 0 ? (
+                    <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                      <p>No upcoming events in the next 7 days.</p>
+                    </div>
+                  ) : (
+                    <div className={styles.eventsList}>
+                      {upcomingEvents.map((event) => {
+                        const clubSub = subscriptions.find(sub => sub.club_id === event.club_id);
+                        const clubName = clubSub?.clubDetails?.name || 'Unknown Club';
+                        const eventDate = new Date(event.start_datetime);
+                        const formattedDate = eventDate.toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        });
+
+                        return (
+                          <div key={event.id} className={styles.eventCard}>
+                            <div className={styles.eventContent}>
+                              <div className={styles.eventIconBlue}>
+                                <img src={calendarIconBlue} alt="" />
+                              </div>
+                              <div className={styles.eventInfo}>
+                                <p className={styles.eventClub}>{clubName}</p>
+                                <h3 className={styles.eventTitle}>{event.title}</h3>
+                                <p className={styles.eventDate}>{formattedDate}</p>
+                              </div>
+                            </div>
+                            <div className={styles.eventActions}>
+                              <Link 
+                                href="/student/home/calendar" 
+                                className={styles.viewDetailsButton}
+                              >
+                                View Details
+                              </Link>
+                              <Link 
+                                href="/student/home/calendar" 
+                                className={styles.addToCalendarButton}
+                              >
+                                Add to Calendar
+                              </Link>
+                            </div>
                           </div>
-                          <div className={styles.eventInfo}>
-                            <p className={styles.eventClub}>{event.club}</p>
-                            <h3 className={styles.eventTitle}>{event.title}</h3>
-                            <p className={styles.eventDate}>{event.date}</p>
-                          </div>
-                        </div>
-                        <div className={styles.eventActions}>
-                          <button className={styles.viewDetailsButton}>View Details</button>
-                          <button className={styles.addToCalendarButton}>Add to Calendar</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -276,29 +707,79 @@ export default function MyPagePage() {
               <div className={styles.recommendedSection}>
                 <div className={styles.sectionHeader}>
                   <h2>Recommended for You</h2>
-                  <Link href="#" className={styles.sectionLink}>
+                  <Link href="/student/home/ai-recommendations" className={styles.sectionLink}>
                     Get More Recommendations →
                   </Link>
                 </div>
-                <div className={styles.recommendedGrid}>
-                  {[
-                    { name: 'Robotics Club', image: roboticsImage, match: '88% Match' },
-                    { name: 'Photography Club', image: photographyImage, match: '88% Match' },
-                    { name: 'Debate Team', image: debateImage, match: '88% Match' }
-                  ].map((club, index) => (
-                    <div key={index} className={styles.recommendedCard}>
-                      <img src={club.image} alt={club.name} className={styles.recommendedImage} />
-                      <span className={styles.matchBadge}>{club.match}</span>
-                      <h3 className={styles.recommendedName}>{club.name}</h3>
-                      <div className={styles.recommendedActions}>
-                        <button className={styles.viewButton}>View</button>
-                        <button className={styles.heartButton}>
-                          <img src={heartIcon} alt="Save" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                
+                {isLoadingRecommendations ? (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                    Loading recommendations...
+                  </div>
+                ) : recommendationsError ? (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#e74c3c' }}>
+                    <p>{recommendationsError}</p>
+                    {recommendationsError.includes('선호도') && (
+                      <Link 
+                        href="/student/home/ai-recommendations" 
+                        style={{ 
+                          display: 'inline-block', 
+                          marginTop: '10px', 
+                          color: '#007bff', 
+                          textDecoration: 'underline' 
+                        }}
+                      >
+                        Set your preferences now
+                      </Link>
+                    )}
+                  </div>
+                ) : recommendedClubsData.length === 0 ? (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                    <p>No recommendations available.</p>
+                    <Link 
+                      href="/student/home/ai-recommendations" 
+                      style={{ 
+                        display: 'inline-block', 
+                        marginTop: '10px', 
+                        color: '#007bff', 
+                        textDecoration: 'underline' 
+                      }}
+                    >
+                      Set your preferences
+                    </Link>
+                  </div>
+                ) : (
+                  <div className={styles.recommendedGrid}>
+                    {recommendedClubsData.slice(0, 3).map((club) => {
+                      const recommendation = recommendations.find(r => r.club_id === club.id);
+                      const matchScore = recommendation ? Math.round((recommendation.score / 13.5) * 100) : 0;
+                      
+                      return (
+                        <div key={club.id} className={styles.recommendedCard}>
+                          <img 
+                            src={club.logo_url || '/default-club-logo.png'} 
+                            alt={club.name} 
+                            className={styles.recommendedImage} 
+                          />
+                          <span className={styles.matchBadge}>{matchScore}% Match</span>
+                          <h3 className={styles.recommendedName}>{club.name}</h3>
+                          <div className={styles.recommendedActions}>
+                            <Link href={`/student/home/clubs/${club.id}`} className={styles.viewButton}>
+                              View
+                            </Link>
+                            <button 
+                              className={styles.heartButton}
+                              onClick={() => handleSaveRecommendation(club.id)}
+                              disabled={savingBookmarkId === club.id}
+                            >
+                              <img src={heartIcon} alt="Save" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -314,79 +795,120 @@ export default function MyPagePage() {
                 </Link>
               </div>
 
+              {/* Loading State */}
+              {isLoadingSubscriptions && (
+                <div style={{ padding: '60px 20px', textAlign: 'center', color: '#666' }}>
+                  Loading your subscribed clubs...
+                </div>
+              )}
+
+              {/* Error State */}
+              {subscriptionError && !isLoadingSubscriptions && (
+                <div style={{ 
+                  padding: '20px', 
+                  textAlign: 'center', 
+                  color: '#ef4444',
+                  backgroundColor: '#fee',
+                  borderRadius: '8px',
+                  margin: '20px 0'
+                }}>
+                  {subscriptionError}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!isLoadingSubscriptions && !subscriptionError && activeSubscriptions.length === 0 && (
+                <div style={{ 
+                  padding: '60px 20px', 
+                  textAlign: 'center',
+                  color: '#666'
+                }}>
+                  <p style={{ marginBottom: '20px' }}>You haven't subscribed to any clubs yet.</p>
+                  <Link href="/student/home/clubs" className={styles.browseMoreButton}>
+                    Browse Clubs
+                  </Link>
+                </div>
+              )}
+
               {/* Subscribed Clubs List */}
-              <div className={styles.subscribedClubsList}>
-                {[
-                  {
-                    name: 'Robotics Club',
-                    category: 'ACADEMIC',
-                    image: roboticsImageLarge,
-                    description: 'Exploring innovative ideas and building the future of technology through hands-on projects.',
-                    nextMeeting: 'Mon, Nov 27, 4:00 PM',
-                    emailNotifications: true,
-                    memberSince: 'Nov 2024'
-                  },
-                  {
-                    name: 'Photography Club',
-                    category: 'ARTS',
-                    image: photographyImageLarge,
-                    description: 'Exploring innovative ideas and building the future of technology through hands-on projects.',
-                    nextMeeting: 'Thu, Nov 30, 6:00 PM',
-                    emailNotifications: true,
-                    memberSince: 'Nov 2024'
-                  },
-                  {
-                    name: 'Debate Team',
-                    category: 'ACADEMIC',
-                    image: debateImageLarge,
-                    description: 'Exploring innovative ideas and building the future of technology through hands-on projects.',
-                    nextMeeting: 'Wed, Nov 29, 3:00 PM',
-                    emailNotifications: true,
-                    memberSince: 'Nov 2024'
-                  }
-                ].map((club, index) => (
-                  <div key={index} className={styles.subscribedClubCard}>
-                    <div className={styles.subscribedClubContent}>
-                      <img src={club.image} alt={club.name} className={styles.subscribedClubImage} />
-                      <div className={styles.subscribedClubInfo}>
-                        <div className={styles.subscribedClubTags}>
-                          <span className={styles.categoryTag}>{club.category}</span>
-                          <span className={styles.subscribedTag}>Subscribed ✓</span>
-                        </div>
-                        <h3 className={styles.subscribedClubName}>{club.name}</h3>
-                        <p className={styles.subscribedClubDescription}>{club.description}</p>
-                        
-                        <div className={styles.clubDetailsGrid}>
-                          <div className={styles.clubDetail}>
-                            <p className={styles.detailLabel}>Next Meeting</p>
-                            <p className={styles.detailValue}>{club.nextMeeting}</p>
-                          </div>
-                          <div className={styles.clubDetail}>
-                            <p className={styles.detailLabel}>Email Notifications</p>
-                            <div className={styles.detailValueWithIcon}>
-                              <img src={checkIcon} alt="" className={styles.checkIcon} />
-                              <p className={styles.detailValueEnabled}>Enabled</p>
+              {!isLoadingSubscriptions && !subscriptionError && activeSubscriptions.length > 0 && (
+                <div className={styles.subscribedClubsList}>
+                  {activeSubscriptions.map((subscription) => {
+                    const club = subscription.clubDetails!;
+                    const displayImage = club.banner_url || club.logo_url || roboticsImageLarge;
+                    const mainCategory = club.categories && club.categories.length > 0 
+                      ? club.categories[0].toUpperCase() 
+                      : 'GENERAL';
+                    const nextMeeting = getMeetingScheduleText(club);
+                    const isUnsubscribing = unsubscribingClubId === club.id;
+
+                    return (
+                      <div key={subscription.id} className={styles.subscribedClubCard}>
+                        <div className={styles.subscribedClubContent}>
+                          <img src={displayImage} alt={club.name} className={styles.subscribedClubImage} />
+                          <div className={styles.subscribedClubInfo}>
+                            <div className={styles.subscribedClubTags}>
+                              <span className={styles.categoryTag}>{mainCategory}</span>
+                              <span className={styles.subscribedTag}>Subscribed ✓</span>
+                            </div>
+                            <h3 className={styles.subscribedClubName}>{club.name}</h3>
+                            <p className={styles.subscribedClubDescription}>
+                              {club.tagline || club.description}
+                            </p>
+                            
+                            <div className={styles.clubDetailsGrid}>
+                              <div className={styles.clubDetail}>
+                                <p className={styles.detailLabel}>Next Meeting</p>
+                                <p className={styles.detailValue}>{nextMeeting}</p>
+                              </div>
+                              <div className={styles.clubDetail}>
+                                <p className={styles.detailLabel}>Email Notifications</p>
+                                <div className={styles.detailValueWithIcon}>
+                                  <img src={checkIcon} alt="" className={styles.checkIcon} />
+                                  <p className={subscription.notification_enabled ? styles.detailValueEnabled : styles.detailValue}>
+                                    {subscription.notification_enabled ? 'Enabled' : 'Disabled'}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className={styles.clubDetail}>
+                                <p className={styles.detailLabel}>Member Since</p>
+                                <p className={styles.detailValue}>
+                                  {formatSubscribedDate(subscription.subscribed_at)}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className={styles.clubActions}>
+                              <Link 
+                                href={`/student/home/clubs/${club.id}`} 
+                                className={styles.viewClubProfileButton}
+                              >
+                                View Club Profile
+                              </Link>
+                              <button 
+                                className={styles.manageNotificationsButton}
+                                onClick={() => handleToggleNotifications(club.id, subscription.notification_enabled)}
+                              >
+                                <img src={notificationIcon} alt="" />
+                                <span>
+                                  {subscription.notification_enabled ? 'Disable' : 'Enable'} Notifications
+                                </span>
+                              </button>
+                              <button 
+                                className={styles.unsubscribeButton}
+                                onClick={() => handleUnsubscribe(club.id)}
+                                disabled={isUnsubscribing}
+                              >
+                                {isUnsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+                              </button>
                             </div>
                           </div>
-                          <div className={styles.clubDetail}>
-                            <p className={styles.detailLabel}>Member Since</p>
-                            <p className={styles.detailValue}>{club.memberSince}</p>
-                          </div>
-                        </div>
-
-                        <div className={styles.clubActions}>
-                          <button className={styles.viewClubProfileButton}>View Club Profile</button>
-                          <button className={styles.manageNotificationsButton}>
-                            <img src={notificationIcon} alt="" />
-                            <span>Manage Notifications</span>
-                          </button>
-                          <button className={styles.unsubscribeButton}>Unsubscribe</button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -396,96 +918,136 @@ export default function MyPagePage() {
               {/* Filter Buttons */}
               <div className={styles.historyHeader}>
                 <div className={styles.historyFilters}>
-                  <button className={styles.filterButtonActive}>All (4)</button>
-                  <button className={styles.filterButton}>Attended</button>
-                  <button className={styles.filterButton}>Missed</button>
+                  <button 
+                    className={historyFilter === 'all' ? styles.filterButtonActive : styles.filterButton}
+                    onClick={() => setHistoryFilter('all')}
+                  >
+                    All ({attendanceStats?.total_events || 0})
+                  </button>
+                  <button 
+                    className={historyFilter === 'attended' ? styles.filterButtonActive : styles.filterButton}
+                    onClick={() => setHistoryFilter('attended')}
+                  >
+                    Attended
+                  </button>
+                  <button 
+                    className={historyFilter === 'missed' ? styles.filterButtonActive : styles.filterButton}
+                    onClick={() => setHistoryFilter('missed')}
+                  >
+                    Missed
+                  </button>
                 </div>
               </div>
 
               {/* Stats Cards */}
-              <div className={styles.historyStatsGrid}>
-                <div className={styles.historyStatCard}>
-                  <div className={styles.historyStatHeader}>
-                    <div className={styles.historyStatIconGreen}>
-                      <img src={eventsAttendedIconGreen} alt="" />
+              {attendanceStats && (
+                <div className={styles.historyStatsGrid}>
+                  <div className={styles.historyStatCard}>
+                    <div className={styles.historyStatHeader}>
+                      <div className={styles.historyStatIconGreen}>
+                        <img src={eventsAttendedIconGreen} alt="" />
+                      </div>
+                      <span className={styles.historyStatNumber}>{attendanceStats.attended}</span>
                     </div>
-                    <span className={styles.historyStatNumber}>3</span>
+                    <p className={styles.historyStatLabel}>Events Attended</p>
                   </div>
-                  <p className={styles.historyStatLabel}>Events Attended</p>
-                </div>
 
-                <div className={styles.historyStatCard}>
-                  <div className={styles.historyStatHeader}>
-                    <div className={styles.historyStatIconRed}>
-                      <img src={eventsMissedIconRed} alt="" />
+                  <div className={styles.historyStatCard}>
+                    <div className={styles.historyStatHeader}>
+                      <div className={styles.historyStatIconRed}>
+                        <img src={eventsMissedIconRed} alt="" />
+                      </div>
+                      <span className={styles.historyStatNumber}>{attendanceStats.missed}</span>
                     </div>
-                    <span className={styles.historyStatNumber}>1</span>
+                    <p className={styles.historyStatLabel}>Events Missed</p>
                   </div>
-                  <p className={styles.historyStatLabel}>Events Missed</p>
-                </div>
 
-                <div className={styles.historyStatCard}>
-                  <div className={styles.historyStatHeader}>
-                    <div className={styles.historyStatIconBlue}>
-                      <img src={attendanceRateIconBlue} alt="" />
+                  <div className={styles.historyStatCard}>
+                    <div className={styles.historyStatHeader}>
+                      <div className={styles.historyStatIconBlue}>
+                        <img src={attendanceRateIconBlue} alt="" />
+                      </div>
+                      <span className={styles.historyStatNumber}>{Math.round(attendanceStats.attendance_rate)}%</span>
                     </div>
-                    <span className={styles.historyStatNumber}>75%</span>
+                    <p className={styles.historyStatLabel}>Attendance Rate</p>
                   </div>
-                  <p className={styles.historyStatLabel}>Attendance Rate</p>
                 </div>
-              </div>
+              )}
+
+              {/* Loading State */}
+              {isLoadingHistory && (
+                <div style={{ 
+                  padding: '60px 20px', 
+                  textAlign: 'center', 
+                  color: '#666' 
+                }}>
+                  Loading attendance history...
+                </div>
+              )}
+
+              {/* Error State */}
+              {historyError && !isLoadingHistory && (
+                <div style={{ 
+                  padding: '20px', 
+                  textAlign: 'center', 
+                  color: '#ef4444',
+                  backgroundColor: '#fee',
+                  borderRadius: '8px',
+                  margin: '20px 0'
+                }}>
+                  {historyError}
+                </div>
+              )}
 
               {/* Event Timeline */}
-              <div className={styles.eventTimeline}>
-                <h2 className={styles.eventTimelineTitle}>Event Timeline</h2>
-                <div className={styles.eventTimelineList}>
-                  {[
-                    {
-                      club: 'Robotics Club',
-                      event: 'Workshop',
-                      date: 'Nov 20, 2024',
-                      status: 'Attended'
-                    },
-                    {
-                      club: 'Photography Club',
-                      event: 'Exhibition',
-                      date: 'Nov 15, 2024',
-                      status: 'Attended'
-                    },
-                    {
-                      club: 'Robotics Club',
-                      event: 'Weekly Meeting',
-                      date: 'Nov 13, 2024',
-                      status: 'Attended'
-                    },
-                    {
-                      club: 'Debate Team',
-                      event: 'Tournament',
-                      date: 'Nov 10, 2024',
-                      status: 'Missed'
-                    }
-                  ].map((item, index) => (
-                    <div
-                      key={index}
-                      className={item.status === 'Attended' ? styles.eventItemAttended : styles.eventItemMissed}
-                    >
-                      <div className={styles.eventItemContent}>
-                        <div className={item.status === 'Attended' ? styles.eventIconAttended : styles.eventIconMissed}>
-                          <img src={item.status === 'Attended' ? eventCheckIcon : eventXIcon} alt="" />
-                        </div>
-                        <div className={styles.eventItemInfo}>
-                          <p className={styles.eventItemClub}>{item.club}</p>
-                          <h3 className={styles.eventItemEvent}>{item.event}</h3>
-                          <p className={styles.eventItemDate}>{item.date}</p>
-                        </div>
-                      </div>
-                      <div className={item.status === 'Attended' ? styles.eventStatusAttended : styles.eventStatusMissed}>
-                        {item.status}
-                      </div>
+              {!isLoadingHistory && !historyError && (
+                <div className={styles.eventTimeline}>
+                  <h2 className={styles.eventTimelineTitle}>Event Timeline</h2>
+                  
+                  {attendanceRecords.length === 0 ? (
+                    <div style={{ 
+                      padding: '60px 20px', 
+                      textAlign: 'center', 
+                      color: '#666' 
+                    }}>
+                      No event history found.
                     </div>
-                  ))}
+                  ) : (
+                    <div className={styles.eventTimelineList}>
+                      {attendanceRecords.map((record, index) => {
+                        const isAttended = record.status === 'attended';
+                        const eventDate = new Date(record.event.end_datetime);
+                        const formattedDate = eventDate.toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        });
+
+                        return (
+                          <div
+                            key={index}
+                            className={isAttended ? styles.eventItemAttended : styles.eventItemMissed}
+                          >
+                            <div className={styles.eventItemContent}>
+                              <div className={isAttended ? styles.eventIconAttended : styles.eventIconMissed}>
+                                <img src={isAttended ? eventCheckIcon : eventXIcon} alt="" />
+                              </div>
+                              <div className={styles.eventItemInfo}>
+                                <p className={styles.eventItemClub}>{record.club_name}</p>
+                                <h3 className={styles.eventItemEvent}>{record.event.title}</h3>
+                                <p className={styles.eventItemDate}>{formattedDate}</p>
+                              </div>
+                            </div>
+                            <div className={isAttended ? styles.eventStatusAttended : styles.eventStatusMissed}>
+                              {isAttended ? 'Attended' : 'Missed'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -495,59 +1057,111 @@ export default function MyPagePage() {
               {/* Header with Get More Recommendations Button */}
               <div className={styles.savedHeader}>
                 <div></div>
-                <button className={styles.getRecommendationsButton}>Get More Recommendations</button>
+                <Link href="/student/home/ai-recommendations" className={styles.getRecommendationsButton}>
+                  Get More Recommendations
+                </Link>
               </div>
 
-              {/* Saved Clubs Card */}
-              <div className={styles.savedClubsCard}>
-                <h2 className={styles.savedClubsTitle}>Saved Clubs</h2>
-                <div className={styles.savedClubsList}>
-                  {[
-                    {
-                      name: 'Computer Science Society',
-                      category: 'ACADEMIC',
-                      match: '88% Match',
-                      description: 'Based on your tech interests',
-                      image: computerScienceImage
-                    },
-                    {
-                      name: 'Maker Space',
-                      category: 'TECH',
-                      match: '82% Match',
-                      description: 'Similar to clubs you follow',
-                      image: makerSpaceImage
-                    },
-                    {
-                      name: 'Drama Society',
-                      category: 'ARTS',
-                      match: '75% Match',
-                      description: 'Explore new interests',
-                      image: dramaSocietyImage
-                    }
-                  ].map((club, index) => (
-                    <div key={index} className={styles.savedClubItem}>
-                      <div className={styles.savedClubItemContent}>
-                        <img src={club.image} alt={club.name} className={styles.savedClubItemImage} />
-                        <div className={styles.savedClubItemInfo}>
-                          <div className={styles.savedClubItemTags}>
-                            <span className={styles.savedClubItemCategory}>{club.category}</span>
-                            <span className={styles.savedClubItemMatch}>{club.match}</span>
-                          </div>
-                          <h3 className={styles.savedClubItemName}>{club.name}</h3>
-                          <p className={styles.savedClubItemDescription}>{club.description}</p>
-                          <div className={styles.savedClubItemActions}>
-                            <button className={styles.viewProfileButtonBlue}>View Profile</button>
-                            <button className={styles.subscribeButton}>Subscribe</button>
-                          </div>
-                        </div>
-                      </div>
-                      <button className={styles.removeButton}>
-                        <img src={removeIcon} alt="Remove" />
-                      </button>
-                    </div>
-                  ))}
+              {/* Loading State */}
+              {isLoadingBookmarks && (
+                <div style={{ 
+                  padding: '60px 20px', 
+                  textAlign: 'center', 
+                  color: '#666' 
+                }}>
+                  Loading saved clubs...
                 </div>
-              </div>
+              )}
+
+              {/* Error State */}
+              {bookmarksError && !isLoadingBookmarks && (
+                <div style={{ 
+                  padding: '20px', 
+                  textAlign: 'center', 
+                  color: '#ef4444',
+                  backgroundColor: '#fee',
+                  borderRadius: '8px',
+                  margin: '20px 0'
+                }}>
+                  {bookmarksError}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!isLoadingBookmarks && !bookmarksError && bookmarkedClubs.length === 0 && (
+                <div style={{ 
+                  padding: '60px 20px', 
+                  textAlign: 'center',
+                  color: '#666'
+                }}>
+                  <p style={{ marginBottom: '20px' }}>You haven't saved any clubs yet.</p>
+                  <Link href="/student/home/clubs" className={styles.getRecommendationsButton}>
+                    Browse Clubs
+                  </Link>
+                </div>
+              )}
+
+              {/* Saved Clubs Card */}
+              {!isLoadingBookmarks && !bookmarksError && bookmarkedClubs.length > 0 && (
+                <div className={styles.savedClubsCard}>
+                  <h2 className={styles.savedClubsTitle}>Saved Clubs</h2>
+                  <div className={styles.savedClubsList}>
+                    {bookmarkedClubs.map((club) => {
+                      const displayImage = club.banner_url || club.logo_url || computerScienceImage;
+                      const mainCategory = club.categories && club.categories.length > 0 
+                        ? club.categories[0].toUpperCase() 
+                        : 'GENERAL';
+                      const matchText = club.match_score 
+                        ? `${Math.round(club.match_score)}% Match` 
+                        : null;
+                      const description = club.match_reason || club.club_tagline || club.club_description;
+                      const isRemoving = removingBookmarkId === club.club_id;
+                      const isSubscribing = subscribingFromBookmark === club.club_id;
+
+                      return (
+                        <div key={club.bookmark_id} className={styles.savedClubItem}>
+                          <div className={styles.savedClubItemContent}>
+                            <img src={displayImage} alt={club.club_name} className={styles.savedClubItemImage} />
+                            <div className={styles.savedClubItemInfo}>
+                              <div className={styles.savedClubItemTags}>
+                                <span className={styles.savedClubItemCategory}>{mainCategory}</span>
+                                {matchText && (
+                                  <span className={styles.savedClubItemMatch}>{matchText}</span>
+                                )}
+                              </div>
+                              <h3 className={styles.savedClubItemName}>{club.club_name}</h3>
+                              <p className={styles.savedClubItemDescription}>{description}</p>
+                              <div className={styles.savedClubItemActions}>
+                                <Link 
+                                  href={`/student/home/clubs/${club.club_id}`} 
+                                  className={styles.viewProfileButtonBlue}
+                                >
+                                  View Profile
+                                </Link>
+                                <button 
+                                  className={styles.subscribeButton}
+                                  onClick={() => handleSubscribeFromBookmark(club.club_id)}
+                                  disabled={isSubscribing}
+                                >
+                                  {isSubscribing ? 'Subscribing...' : 'Subscribe'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <button 
+                            className={styles.removeButton}
+                            onClick={() => handleRemoveBookmark(club.club_id)}
+                            disabled={isRemoving}
+                            style={{ opacity: isRemoving ? 0.5 : 1 }}
+                          >
+                            <img src={removeIcon} alt="Remove" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -558,30 +1172,40 @@ export default function MyPagePage() {
               <div className={styles.settingsSection}>
                 <h2 className={styles.settingsSectionTitle}>Account Information</h2>
                 <div className={styles.accountInfoForm}>
-                  <div className={styles.formRow}>
-                    <div className={styles.formField}>
-                      <label className={styles.formLabel}>First Name</label>
-                      <input type="text" className={styles.formInput} defaultValue="John" />
-                    </div>
-                    <div className={styles.formField}>
-                      <label className={styles.formLabel}>Last Name</label>
-                      <input type="text" className={styles.formInput} defaultValue="Doe" />
-                    </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Display Name</label>
+                    <input 
+                      type="text" 
+                      className={styles.formInput} 
+                      value={userProfile?.display_name || ''} 
+                      disabled
+                    />
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Email</label>
-                    <input type="email" className={styles.formInput} defaultValue="john.doe@email.edu" />
+                    <input 
+                      type="email" 
+                      className={styles.formInput} 
+                      value={userProfile?.email || ''} 
+                      disabled
+                    />
                   </div>
                   <div className={styles.formField}>
-                    <label className={styles.formLabel}>Student ID</label>
-                    <input type="text" className={`${styles.formInput} ${styles.formInputDisabled}`} defaultValue="STU202301234" disabled />
-                  </div>
-                  <div className={styles.formField}>
-                    <label className={styles.formLabel}>Department / Major</label>
-                    <input type="text" className={styles.formInput} defaultValue="Computer Science" />
+                    <label className={styles.formLabel}>Role</label>
+                    <input 
+                      type="text" 
+                      className={`${styles.formInput} ${styles.formInputDisabled}`} 
+                      value={userProfile?.role === 'student' ? 'Student' : userProfile?.role || 'Student'} 
+                      disabled 
+                    />
                   </div>
                   <div className={styles.formActions}>
-                    <button className={styles.saveChangesButton}>Save Changes</button>
+                    <button 
+                      className={styles.saveChangesButton}
+                      onClick={() => setShowEditProfileModal(true)}
+                    >
+                      Edit Profile
+                    </button>
                   </div>
                 </div>
               </div>
@@ -596,10 +1220,15 @@ export default function MyPagePage() {
                     </div>
                     <div className={styles.passwordDetails}>
                       <p className={styles.passwordTitle}>Password</p>
-                      <p className={styles.passwordDate}>Last changed: Nov 15, 2025</p>
+                      <p className={styles.passwordDate}>••••••••</p>
                     </div>
                   </div>
-                  <button className={styles.changePasswordButton}>Change Password</button>
+                  <button 
+                    className={styles.changePasswordButton}
+                    onClick={() => setShowChangePasswordModal(true)}
+                  >
+                    Change Password
+                  </button>
                 </div>
               </div>
 
@@ -612,21 +1241,36 @@ export default function MyPagePage() {
                       <p className={styles.notificationTitle}>Email Notifications</p>
                       <p className={styles.notificationDescription}>Receive updates about subscribed clubs</p>
                     </div>
-                    <button className={styles.notificationButtonEnabled}>Enabled</button>
+                    <button 
+                      className={notificationSettings.emailNotifications ? styles.notificationButtonEnabled : styles.notificationButtonDisabled}
+                      onClick={() => handleToggleNotification('emailNotifications')}
+                    >
+                      {notificationSettings.emailNotifications ? 'Enabled' : 'Disabled'}
+                    </button>
                   </div>
                   <div className={styles.notificationItem}>
                     <div className={styles.notificationInfo}>
                       <p className={styles.notificationTitle}>Event Reminders</p>
                       <p className={styles.notificationDescription}>Get reminded about upcoming events</p>
                     </div>
-                    <button className={styles.notificationButtonEnabled}>Enabled</button>
+                    <button 
+                      className={notificationSettings.eventReminders ? styles.notificationButtonEnabled : styles.notificationButtonDisabled}
+                      onClick={() => handleToggleNotification('eventReminders')}
+                    >
+                      {notificationSettings.eventReminders ? 'Enabled' : 'Disabled'}
+                    </button>
                   </div>
                   <div className={styles.notificationItem}>
                     <div className={styles.notificationInfo}>
                       <p className={styles.notificationTitle}>Weekly Digest</p>
                       <p className={styles.notificationDescription}>Receive weekly summary of club activities</p>
                     </div>
-                    <button className={styles.notificationButtonDisabled}>Disabled</button>
+                    <button 
+                      className={notificationSettings.weeklyDigest ? styles.notificationButtonEnabled : styles.notificationButtonDisabled}
+                      onClick={() => handleToggleNotification('weeklyDigest')}
+                    >
+                      {notificationSettings.weeklyDigest ? 'Enabled' : 'Disabled'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -639,11 +1283,34 @@ export default function MyPagePage() {
                     <p className={styles.dangerZoneActionTitle}>Delete Account</p>
                     <p className={styles.dangerZoneActionDescription}>Permanently delete your account and all associated data</p>
                   </div>
-                  <button className={styles.deleteAccountButton}>Delete Account</button>
+                  <button 
+                    className={styles.deleteAccountButton}
+                    onClick={() => alert('Account deletion requires additional verification. Please contact support.')}
+                  >
+                    Delete Account
+                  </button>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Modals */}
+          <EditProfileModal 
+            isOpen={showEditProfileModal}
+            onClose={() => setShowEditProfileModal(false)}
+            onSuccess={() => {
+              setShowEditProfileModal(false);
+            }}
+          />
+          
+          <ChangePasswordModal 
+            isOpen={showChangePasswordModal}
+            onClose={() => setShowChangePasswordModal(false)}
+            onSuccess={() => {
+              setShowChangePasswordModal(false);
+              alert('Password changed successfully!');
+            }}
+          />
         </div>
       </main>
 

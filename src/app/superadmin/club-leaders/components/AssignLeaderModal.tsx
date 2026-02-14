@@ -1,32 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './AssignLeaderModal.module.css';
+import { getClubs, Club } from '@/lib/api/clubs';
+import { assignClubLeader } from '@/lib/api/superadmin';
 
 const imgIconClose = "https://www.figma.com/api/mcp/asset/2a5b716d-8aba-49c7-af7f-2044b39bf661";
 
 interface AssignLeaderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAssignLeader: (leaderData: { name: string; email: string; club: string; role: string }) => void;
+  onSuccess: () => void;
 }
 
-export default function AssignLeaderModal({ isOpen, onClose, onAssignLeader }: AssignLeaderModalProps) {
-  const [name, setName] = useState('');
+export default function AssignLeaderModal({ isOpen, onClose, onSuccess }: AssignLeaderModalProps) {
   const [email, setEmail] = useState('');
-  const [club, setClub] = useState('');
-  const [role, setRole] = useState('');
+  const [clubId, setClubId] = useState('');
+  const [roleTitle, setRoleTitle] = useState('President');
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadClubs();
+    }
+  }, [isOpen]);
+
+  const loadClubs = async () => {
+    try {
+      const response = await getClubs({ page_size: 100 });
+      if (response.data && !response.error) {
+        setClubs(response.data.clubs);
+      }
+    } catch (err) {
+      console.error('Failed to load clubs:', err);
+    }
+  };
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAssignLeader({ name, email, club, role });
-    // Reset form
-    setName('');
-    setEmail('');
-    setClub('');
-    setRole('');
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await assignClubLeader({
+        email,
+        club_id: clubId,
+        role_title: roleTitle
+      });
+
+      if (response.error) {
+        setError(response.error);
+        return;
+      }
+
+      alert(`Successfully assigned ${email} as leader of ${response.data?.club_name}`);
+      
+      // Reset form
+      setEmail('');
+      setClubId('');
+      setRoleTitle('President');
+      
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error('Failed to assign leader:', err);
+      setError(err.message || 'Failed to assign leader');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -40,28 +85,35 @@ export default function AssignLeaderModal({ isOpen, onClose, onAssignLeader }: A
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.formGroup}>
-            <label htmlFor="leaderName" className={styles.label}>Leader Name</label>
-            <input
-              type="text"
-              id="leaderName"
-              className={styles.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+          {error && (
+            <div style={{ 
+              padding: '12px', 
+              background: '#fee2e2', 
+              border: '1px solid #ef4444',
+              borderRadius: '8px', 
+              color: '#991b1b',
+              marginBottom: '16px',
+              fontSize: '14px'
+            }}>
+              {error}
+            </div>
+          )}
 
           <div className={styles.formGroup}>
-            <label htmlFor="email" className={styles.label}>Email</label>
+            <label htmlFor="email" className={styles.label}>User Email</label>
             <input
               type="email"
               id="email"
               className={styles.input}
+              placeholder="user@email.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isLoading}
             />
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+              The user must already have an account
+            </p>
           </div>
 
           <div className={styles.formGroup}>
@@ -69,33 +121,36 @@ export default function AssignLeaderModal({ isOpen, onClose, onAssignLeader }: A
             <select
               id="club"
               className={styles.dropdown}
-              value={club}
-              onChange={(e) => setClub(e.target.value)}
+              value={clubId}
+              onChange={(e) => setClubId(e.target.value)}
               required
+              disabled={isLoading}
             >
               <option value="">Select a club</option>
-              <option value="Robotics Club">Robotics Club</option>
-              <option value="Photography Club">Photography Club</option>
-              <option value="Drama Society">Drama Society</option>
-              <option value="STEM Club">STEM Club</option>
-              <option value="Arts Club">Arts Club</option>
+              {clubs.map((club) => (
+                <option key={club.id} value={club.id}>
+                  {club.name}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="role" className={styles.label}>Role</label>
+            <label htmlFor="role" className={styles.label}>Role Title</label>
             <input
               type="text"
               id="role"
               className={styles.input}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              placeholder="President"
+              value={roleTitle}
+              onChange={(e) => setRoleTitle(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
 
-          <button type="submit" className={styles.assignButton}>
-            Assign Leader
+          <button type="submit" className={styles.assignButton} disabled={isLoading}>
+            {isLoading ? 'Assigning...' : 'Assign Leader'}
           </button>
         </form>
       </div>

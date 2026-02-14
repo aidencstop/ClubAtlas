@@ -5,22 +5,62 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './LoginForm.module.css';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import { signIn } from '@/lib/firebase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 const arrowIcon = "/images/icons/student-login/arrow.svg";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { refreshUserProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 실제 Firebase 인증 로직 구현
-    console.log('Login:', { email, password });
+    setError('');
+    setLoading(true);
     
-    // 임시: 로그인 성공 시 홈으로 리다이렉트
-    router.push('/student/home');
+    try {
+      // Firebase 로그인
+      const userCredential = await signIn(email, password);
+      
+      // 사용자 프로필 새로고침
+      await refreshUserProfile();
+      
+      // ID 토큰 가져오기
+      const token = await userCredential.user.getIdTokenResult();
+      const role = token.claims.role as string | undefined;
+      
+      // 역할 확인
+      if (role && role !== 'student') {
+        setError('학생 계정이 아닙니다. Admin 로그인을 사용해주세요.');
+        setLoading(false);
+        return;
+      }
+      
+      // 로그인 성공 - student 홈으로 리다이렉트
+      router.push('/student/home');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Firebase 에러 메시지 처리
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        setError('이메일 또는 비밀번호가 잘못되었습니다.');
+      } else if (err.code === 'auth/user-not-found') {
+        setError('존재하지 않는 계정입니다.');
+      } else if (err.code === 'auth/user-disabled') {
+        setError('비활성화된 계정입니다. 관리자에게 문의하세요.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        setError('로그인에 실패했습니다. 다시 시도해주세요.');
+      }
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,6 +71,20 @@ export default function LoginForm() {
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
+        {error && (
+          <div style={{
+            padding: '12px',
+            marginBottom: '16px',
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            borderRadius: '8px',
+            color: '#c33',
+            fontSize: '14px'
+          }}>
+            {error}
+          </div>
+        )}
+        
         <div className={styles.fieldGroup}>
           <label htmlFor="email" className={styles.label}>
             Email Address
@@ -43,6 +97,7 @@ export default function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
           <p className={styles.hint}>Use your student credentials</p>
         </div>
@@ -59,23 +114,25 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
           <button
             type="button"
             onClick={() => setIsForgotPasswordOpen(true)}
             className={styles.forgotLink}
+            disabled={loading}
           >
             Forgot password?
           </button>
         </div>
 
-        <button type="submit" className={styles.submitButton}>
+        <button type="submit" className={styles.submitButton} disabled={loading}>
           <img 
             src={arrowIcon} 
             alt="arrow"
             className={styles.arrowIcon}
           />
-          <span>Sign In as Student</span>
+          <span>{loading ? 'Signing in...' : 'Sign In as Student'}</span>
         </button>
       </form>
 

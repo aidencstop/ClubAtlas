@@ -1,27 +1,27 @@
 'use client';
 
 import styles from './EditLeadershipTeam.module.css';
+import { ClubLeader } from '@/lib/api/clubs';
 
 const imgIconEdit = "https://www.figma.com/api/mcp/asset/7d5f8357-c4c3-4daa-9a50-a7a20461c680";
 const imgIconDelete = "https://www.figma.com/api/mcp/asset/352610b8-1805-4e24-9a5d-cf41eb44d274";
 
 interface LeaderCardProps {
-  initial: string;
-  name: string;
-  role: string;
-  email: string;
+  leader: ClubLeader;
 }
 
-function LeaderCard({ initial, name, role, email }: LeaderCardProps) {
+function LeaderCard({ leader }: LeaderCardProps) {
+  const initial = leader.name.charAt(0).toUpperCase();
+  
   return (
     <div className={styles.leaderCard}>
       <div className={styles.avatar}>
         <span className={styles.avatarText}>{initial}</span>
       </div>
       <div className={styles.leaderInfo}>
-        <h3 className={styles.leaderName}>{name}</h3>
-        <p className={styles.leaderRole}>{role}</p>
-        <p className={styles.leaderEmail}>{email}</p>
+        <h3 className={styles.leaderName}>{leader.name}</h3>
+        <p className={styles.leaderRole}>{leader.role}</p>
+        <p className={styles.leaderEmail}>{leader.email || 'No email'}</p>
       </div>
       <div className={styles.actions}>
         <button className={styles.actionButton}>
@@ -35,25 +35,25 @@ function LeaderCard({ initial, name, role, email }: LeaderCardProps) {
   );
 }
 
-export default function EditLeadershipTeam() {
+interface EditLeadershipTeamProps {
+  leaders: ClubLeader[];
+  setLeaders: (value: ClubLeader[]) => void;
+}
+
+export default function EditLeadershipTeam({ leaders }: EditLeadershipTeamProps) {
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>Leadership Team</h2>
 
-      <div className={styles.leadersGrid}>
-        <LeaderCard
-          initial="S"
-          name="Sarah Johnson"
-          role="President"
-          email="sarah.j@email.edu"
-        />
-        <LeaderCard
-          initial="M"
-          name="Michael Chen"
-          role="Vice President"
-          email="michael.c@email.edu"
-        />
-      </div>
+      {leaders.length === 0 ? (
+        <div className={styles.emptyState}>No leaders assigned yet</div>
+      ) : (
+        <div className={styles.leadersGrid}>
+          {leaders.map((leader, idx) => (
+            <LeaderCard key={idx} leader={leader} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

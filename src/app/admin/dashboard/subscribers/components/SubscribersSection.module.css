@@ -97,6 +97,28 @@
   gap: 8px;
 }
 
+.loading,
+.error,
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.error {
+  color: #ef4444;
+}
+
+.emptyState {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 20px;
+  margin-top: 20px;
+  color: #9ca3af;
+}
+
 
 
 

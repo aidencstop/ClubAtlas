@@ -3,8 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getAuth } from 'firebase/auth';
 import styles from './AIRecommendations.module.css';
 import ClubRecommendationCard from './components/ClubRecommendationCard';
+import { createRecommendationPreferences } from '@/lib/api/users';
+import { getRecommendations } from '@/lib/api/recommendations';
+import { getClub, Club } from '@/lib/api/clubs';
 
 // 공용 헤더 아이콘 (Student Home과 동일)
 const logoIcon = "/images/icons/logo.svg";
@@ -63,6 +67,7 @@ export default function AIRecommendationsPage() {
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<ClubRecommendation[]>([]);
+  const [clubsData, setClubsData] = useState<{ [key: string]: Club }>({});
   const [error, setError] = useState<string | null>(null);
 
   const toggleSelection = (item: string, list: string[], setList: (list: string[]) => void) => {
@@ -99,27 +104,63 @@ export default function AIRecommendationsPage() {
     setError(null);
     
     try {
-      // 테스트용 사용자 ID - 선호도에 따라 선택
-      let testUserId = 'test_user_tech_lover';
-      if (selectedCategories.some(cat => ['Arts', 'Music', 'Creative'].includes(cat))) {
-        testUserId = 'test_user_arts_enthusiast';
-      } else if (selectedCategories.some(cat => ['Science', 'Research'].includes(cat))) {
-        testUserId = 'test_user_science_geek';
-      }
+      const auth = getAuth();
+      const user = auth.currentUser;
       
-      // 테스트 추천 API 호출
-      const response = await fetch(`http://localhost:8000/api/test/recommendations/${testUserId}?limit=10`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setRecommendations(data.recommendations || []);
-        setCurrentStep(4);
-      } else {
-        setError('Failed to get recommendations. Please try again.');
+      if (!user) {
+        setError('You must be logged in to get recommendations.');
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error('Error getting recommendations:', error);
-      setError('An error occurred. Please try again.');
+
+      const token = await user.getIdToken();
+
+      // Step 1: 선호도 저장
+      const preferencesData = {
+        preferred_categories: selectedCategories,
+        preferred_activity_types: selectedActivityTypes,
+        available_time_slots: selectedTimeSlots
+      };
+
+      const savePreferencesResponse = await createRecommendationPreferences(preferencesData, token);
+
+      if (savePreferencesResponse.error) {
+        setError(`Failed to save preferences: ${savePreferencesResponse.error}`);
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 2: 추천 받기
+      const recommendationsResponse = await getRecommendations({ limit: 10 });
+
+      if (recommendationsResponse.error) {
+        setError(`Failed to get recommendations: ${recommendationsResponse.error}`);
+        setIsLoading(false);
+        return;
+      }
+
+      if (recommendationsResponse.data) {
+        const recs = recommendationsResponse.data.recommendations || [];
+        setRecommendations(recs);
+        setCurrentStep(4);
+
+        // Step 3: 각 추천 club의 상세 정보 가져오기
+        const clubsDataMap: { [key: string]: Club } = {};
+        for (const rec of recs) {
+          try {
+            const clubResponse = await getClub(rec.club_id);
+            if (clubResponse.data && !clubResponse.error) {
+              clubsDataMap[rec.club_id] = clubResponse.data;
+            }
+          } catch (clubError) {
+            console.error(`Failed to load club ${rec.club_id}:`, clubError);
+          }
+        }
+        setClubsData(clubsDataMap);
+      }
+    } catch (error: any) {
+      console.error('Error in recommendation flow:', error);
+      setError(error.message || 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -379,6 +420,7 @@ export default function AIRecommendationsPage() {
                 <ClubRecommendationCard
                   key={recommendation.club_id}
                   recommendation={recommendation}
+                  clubData={clubsData[recommendation.club_id]}
                 />
               ))}
             </div>
