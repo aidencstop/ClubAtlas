@@ -31,7 +31,7 @@ export interface Club {
   tagline?: string;
   categories: string[];
   tags?: string[];
-  activity_type: string;
+  activity_type: string[];
   meeting_schedule?: MeetingSchedule[];
   leaders?: ClubLeader[];
   contact_email?: string;
@@ -83,7 +83,7 @@ export interface ClubUpdate {
   tagline?: string;
   categories?: string[];
   tags?: string[];
-  activity_type?: string;
+  activity_type?: string[];
   meeting_schedule?: MeetingSchedule[];
   leaders?: ClubLeader[];
   contact_email?: string;

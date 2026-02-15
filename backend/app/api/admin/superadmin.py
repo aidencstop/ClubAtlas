@@ -766,7 +766,7 @@ async def get_all_clubs(
                 name=club_data.get('name', ''),
                 description=club_data.get('description'),
                 categories=club_data.get('categories', []),
-                activity_type=club_data.get('activity_type', ''),
+                activity_type=club_data.get('activity_type', []),
                 leader_name=leader_name,
                 leader_email=leader_email,
                 total_subscribers=total_subscribers,

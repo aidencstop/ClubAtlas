@@ -16,7 +16,7 @@ const locationIcon = "/images/icons/calendar/location.svg";
 interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (eventDate: Date) => void;
 }
 
 export default function CreateEventModal({ isOpen, onClose, onSuccess }: CreateEventModalProps) {
@@ -97,7 +97,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: CreateE
       
       onClose();
       if (onSuccess) {
-        onSuccess();
+        onSuccess(startDatetime);
       }
     } catch (err) {
       console.error('Create event error:', err);

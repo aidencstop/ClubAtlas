@@ -168,7 +168,7 @@ class ClubDetailedInfo(BaseModel):
     name: str
     description: Optional[str]
     categories: List[str]
-    activity_type: str
+    activity_type: List[str]
     leader_name: Optional[str] = None
     leader_email: Optional[str] = None
     total_subscribers: int
@@ -191,7 +191,7 @@ class ClubCreateBySuperAdmin(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1)
     categories: List[str] = Field(..., min_items=1)
-    activity_type: str
+    activity_type: List[str]
     leader_email: Optional[str] = Field(None, description="리더 이메일 (선택사항)")
     contact_email: Optional[str] = None
     tagline: Optional[str] = None
@@ -202,7 +202,7 @@ class ClubUpdateBySuperAdmin(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     categories: Optional[List[str]] = None
-    activity_type: Optional[str] = None
+    activity_type: Optional[List[str]] = None
     is_active: Optional[bool] = None
     contact_email: Optional[str] = None
     tagline: Optional[str] = None

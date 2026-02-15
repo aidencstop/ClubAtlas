@@ -206,7 +206,9 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
         email=user_profile['email'],
         display_name=user_profile.get('display_name'),
         role=role,
-        is_authenticated=True
+        is_authenticated=True,
+        managed_club_ids=user_profile.get('managed_club_ids'),
+        leader_position=user_profile.get('leader_position')
     )
 
 

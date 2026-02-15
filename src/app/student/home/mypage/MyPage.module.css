@@ -470,6 +470,11 @@
   line-height: 20px;
   cursor: pointer;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 400;
 }
 
 .viewProfileButton:hover {
@@ -558,6 +563,11 @@
   line-height: 20px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 400;
 }
 
 .viewDetailsButton {

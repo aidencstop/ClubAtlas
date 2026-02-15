@@ -12,22 +12,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import EditProfileModal from '@/components/EditProfileModal';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 
-// Figma 아이콘 및 이미지 URLs (최신 디자인 기준)
-const logoIcon = "https://www.figma.com/api/mcp/asset/a3f3e789-4132-4ee6-9056-6cac63c80070";
-const searchIcon = "https://www.figma.com/api/mcp/asset/3c6776bb-8f0f-41b1-adf7-db0756d1708a";
-const bellIcon = "https://www.figma.com/api/mcp/asset/0fdb18a2-0960-40d6-b3ed-97250893724b";
-const overviewIcon = "https://www.figma.com/api/mcp/asset/96433dc0-06b1-44e8-bc9f-7652cfcf63a9";
-const subscribeIcon = "https://www.figma.com/api/mcp/asset/5feaec16-d673-4ad1-a0e8-7425ba12348e";
-const historyIcon = "https://www.figma.com/api/mcp/asset/e54352bc-980e-4373-87ff-30464400b9e2";
-const savedIcon = "https://www.figma.com/api/mcp/asset/7e9748b4-79fd-4661-a901-15cdac90f74a";
-const settingsIcon = "https://www.figma.com/api/mcp/asset/37d7f7af-7d93-4d09-9fd8-f127ff68ef99";
-const clubsFollowingIcon = "https://www.figma.com/api/mcp/asset/c3e9c472-f6ea-4eee-bbb6-721d10c4439a";
-const upcomingEventsIcon = "https://www.figma.com/api/mcp/asset/8526ba9b-b6d9-4712-a205-33b92b378f4b";
-const eventsAttendedIcon = "https://www.figma.com/api/mcp/asset/b75fd0dc-5929-494e-99a3-42156a88af7e";
-const savedClubsIcon = "https://www.figma.com/api/mcp/asset/336474af-d61e-48f9-b80b-42de4d168f05";
-const calendarIconBlue = "https://www.figma.com/api/mcp/asset/382d65ad-73da-4bc4-9943-142cb86fffd3";
-const clockIcon = "https://www.figma.com/api/mcp/asset/5cde0127-b609-4238-b941-7c6cfba8259a";
-const heartIcon = "https://www.figma.com/api/mcp/asset/5fb67623-b0e8-418b-a1ba-989d20404da1";
+// 로컬 아이콘 및 이미지 경로
+const logoIcon = "/images/icons/mypage/logo.svg";
+const bellIcon = "/images/icons/mypage/bell.svg";
+const logoutIcon = "/images/icons/mypage/logout.svg";
+const overviewIcon = "/images/icons/mypage/overview.svg";
+const subscribeIcon = "/images/icons/mypage/subscribed.svg";
+const historyIcon = "/images/icons/mypage/history.svg";
+const savedIcon = "/images/icons/mypage/saved.svg";
+const settingsIcon = "/images/icons/mypage/settings.svg";
+const clubsFollowingIcon = "/images/icons/mypage/clubs-following.svg";
+const upcomingEventsIcon = "/images/icons/mypage/upcoming-events.svg";
+const eventsAttendedIcon = "/images/icons/mypage/events-attended.svg";
+const savedClubsIcon = "/images/icons/mypage/saved-clubs.svg";
+const calendarIconBlue = "/images/icons/mypage/calendar-blue.svg";
+const clockIcon = "/images/icons/mypage/calendar-small.svg";
+const heartIcon = "/images/icons/mypage/bookmark.svg";
 
 // Subscribed 탭 아이콘
 const checkIcon = "https://www.figma.com/api/mcp/asset/a10af64b-bdf3-48e7-8a33-eb26119adc3c";
@@ -449,7 +449,7 @@ export default function MyPagePage() {
               <span className={styles.badge}>3</span>
             </button>
             <button className={styles.iconButton}>
-              <img src={searchIcon} alt="Search" />
+              <img src={logoutIcon} alt="Profile" />
             </button>
           </div>
         </div>

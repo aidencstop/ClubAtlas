@@ -25,11 +25,20 @@ const aiIcon = "/images/icons/ai/ai-avatar.svg";
 
 // 카테고리 옵션
 const CATEGORIES = [
-  'Mathematics', 'Science', 'Technology', 'Engineering',
-  'Arts', 'Music', 'Drama', 'Dance',
-  'Sports', 'Literature', 'History', 'Languages',
-  'Business', 'Economics', 'Psychology', 'Philosophy',
-  'Environmental', 'Social Service', 'Politics', 'Debate'
+  'Student Leadership and Media',
+  'Cultural Affinity Groups',
+  'Community Service and Social Justice',
+  'Gender Equity and Sexual Health',
+  'Mental Wellness',
+  'Stem Research and Olympiad',
+  'Data Science and Engineering',
+  'Finance and Economy',
+  'Humanities',
+  'Literature, Language, and Philiology',
+  'Visual Arts',
+  'Performing Arts',
+  'Food, Cooking, Cuisine',
+  'Sports and Recreations'
 ];
 
 // 활동 유형 옵션

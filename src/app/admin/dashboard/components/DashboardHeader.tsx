@@ -91,12 +91,7 @@ export default function DashboardHeader() {
   };
 
   const handleViewPublicSite = () => {
-    if (userProfile?.managed_club_ids && userProfile.managed_club_ids.length > 0) {
-      const clubId = userProfile.managed_club_ids[0];
-      router.push(`/student/home/clubs/${clubId}`);
-    } else {
-      alert('No club assigned to this account.');
-    }
+    router.push('/student/home');
   };
 
   const handleLogout = async () => {

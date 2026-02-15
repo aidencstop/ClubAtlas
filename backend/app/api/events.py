@@ -129,22 +129,31 @@ async def get_my_calendar_events(
     """
     내 캘린더 이벤트 조회
     
-    - 구독한 동아리의 이벤트만 반환
+    - 구독한 동아리의 이벤트 반환
+    - 관리하는 동아리의 이벤트 반환
     """
     user_id = current_user['uid']
     
     try:
         from app.services.firestore_service import subscription_service
         
+        club_ids = set()
+        
         subscriptions = await subscription_service.get_user_subscriptions(
             user_id,
             active_only=True
         )
         
-        if not subscriptions:
-            return EventListResponse(events=[], total=0)
+        if subscriptions:
+            club_ids.update([sub['club_id'] for sub in subscriptions])
         
-        club_ids = [sub['club_id'] for sub in subscriptions]
+        user_profile = await user_service.get_user_profile(user_id)
+        managed_clubs = user_profile.get('managed_club_ids', [])
+        if managed_clubs:
+            club_ids.update(managed_clubs)
+        
+        if not club_ids:
+            return EventListResponse(events=[], total=0)
         
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None

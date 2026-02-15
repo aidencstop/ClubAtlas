@@ -94,6 +94,8 @@ class AuthVerifyResponse(BaseModel):
     display_name: Optional[str]
     role: str
     is_authenticated: bool
+    managed_club_ids: Optional[list] = None
+    leader_position: Optional[str] = None
 
 
 class LoginRequest(BaseModel):

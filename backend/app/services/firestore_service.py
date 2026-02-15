@@ -225,7 +225,7 @@ class ClubService(FirestoreService):
         name: str,
         description: str,
         categories: List[str],
-        activity_type: str,
+        activity_type: List[str],
         **kwargs
     ) -> Dict[str, Any]:
         """동아리 생성"""
@@ -270,7 +270,8 @@ class ClubService(FirestoreService):
             filters.append(('categories', 'array_contains_any', categories))
         
         if activity_type:
-            filters.append(('activity_type', '==', activity_type))
+            # activity_type이 배열이므로 array-contains 사용
+            filters.append(('activity_type', 'array-contains', activity_type))
         
         filters.append(('is_active', '==', True))
         
@@ -528,27 +529,30 @@ class EventService(FirestoreService):
         if club_id:
             filters.append(('club_id', '==', club_id))
         
-        if status:
-            filters.append(('status', '==', status))
-        
-        if start_date:
-            filters.append(('start_datetime', '>=', start_date))
-        
-        if end_date:
-            filters.append(('start_datetime', '<=', end_date))
-        
-        # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
         events = await self.query_documents(
             self.COLLECTION,
             filters=filters if filters else None,
             limit=None
         )
         
-        # Python에서 정렬 및 페이징
-        events.sort(key=lambda x: x.get('start_datetime', datetime.min))
+        filtered_events = []
+        for event in events:
+            if status and event.get('status') != status:
+                continue
+            
+            event_start = event.get('start_datetime')
+            if event_start:
+                if start_date and event_start < start_date:
+                    continue
+                if end_date and event_start > end_date:
+                    continue
+            
+            filtered_events.append(event)
+        
+        filtered_events.sort(key=lambda x: x.get('start_datetime', datetime.min))
         start_idx = offset
         end_idx = offset + limit
-        return events[start_idx:end_idx]
+        return filtered_events[start_idx:end_idx]
     
     async def update_event(
         self,

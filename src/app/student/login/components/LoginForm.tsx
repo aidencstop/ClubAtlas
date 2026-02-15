@@ -35,15 +35,17 @@ export default function LoginForm() {
       const token = await userCredential.user.getIdTokenResult();
       const role = token.claims.role as string | undefined;
       
-      // 역할 확인
-      if (role && role !== 'student') {
-        setError('학생 계정이 아닙니다. Admin 로그인을 사용해주세요.');
-        setLoading(false);
-        return;
+      // 역할에 따라 리다이렉트 (모든 역할 허용)
+      if (role === 'super-admin') {
+        // SuperAdmin은 전용 대시보드로
+        router.push('/superadmin/dashboard');
+      } else if (role === 'club-leader' || role === 'admin') {
+        // 리더는 student 페이지 접근 가능 (기본 페이지는 student home)
+        router.push('/student/home');
+      } else {
+        // 일반 학생
+        router.push('/student/home');
       }
-      
-      // 로그인 성공 - student 홈으로 리다이렉트
-      router.push('/student/home');
     } catch (err: any) {
       console.error('Login error:', err);
       

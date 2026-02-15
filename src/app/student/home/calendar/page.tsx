@@ -8,6 +8,7 @@ import EventDetailModal from './components/EventDetailModal';
 import WeekView from './components/WeekView';
 import { useAuth } from '@/contexts/AuthContext';
 import { getMyCalendarEvents, Event as ApiEvent } from '@/lib/api';
+import { getClub } from '@/lib/api/clubs';
 
 // 로컬 아이콘 경로
 const viewModeIcon = "/images/icons/calendar/view-mode.svg";
@@ -29,6 +30,7 @@ interface CalendarEvent {
   title: string;
   color: string;
   club_id: string;
+  club_name?: string;
   description: string;
   location: string;
   start_datetime: Date;
@@ -91,20 +93,34 @@ export default function CalendarPage() {
       });
 
       if (response.data) {
-        const calendarEvents: CalendarEvent[] = response.data.events.map((apiEvent: ApiEvent, idx: number) => {
-          const startDate = new Date(apiEvent.start_datetime);
-          return {
-            id: apiEvent.id || '',
-            date: startDate.getDate(),
-            time: startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }),
-            title: apiEvent.title,
-            color: eventColors[idx % eventColors.length],
-            club_id: apiEvent.club_id,
-            description: apiEvent.description,
-            location: apiEvent.location,
-            start_datetime: startDate
-          };
-        });
+        const calendarEvents: CalendarEvent[] = await Promise.all(
+          response.data.events.map(async (apiEvent: ApiEvent, idx: number) => {
+            const startDate = new Date(apiEvent.start_datetime);
+            
+            let clubName = 'Club';
+            try {
+              const clubResponse = await getClub(apiEvent.club_id);
+              if (clubResponse.data) {
+                clubName = clubResponse.data.name;
+              }
+            } catch (err) {
+              console.error(`Failed to fetch club ${apiEvent.club_id}:`, err);
+            }
+            
+            return {
+              id: apiEvent.id || '',
+              date: startDate.getDate(),
+              time: startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }),
+              title: apiEvent.title,
+              color: eventColors[idx % eventColors.length],
+              club_id: apiEvent.club_id,
+              club_name: clubName,
+              description: apiEvent.description,
+              location: apiEvent.location,
+              start_datetime: startDate
+            };
+          })
+        );
 
         setEvents(calendarEvents);
 
@@ -117,7 +133,7 @@ export default function CalendarPage() {
             id: event.id,
             date: event.start_datetime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             time: event.start_datetime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-            club: 'Club',
+            club: event.club_name || 'Club',
             event: event.title,
             category: 'academic',
             categoryColor: categoryColors['academic'],
@@ -379,7 +395,11 @@ export default function CalendarPage() {
                       </div>
                     </div>
                   ) : (
-                    <WeekView onEventClick={() => handleEventClick()} />
+                    <WeekView 
+                      onEventClick={handleEventClick} 
+                      currentDate={currentDate}
+                      events={events}
+                    />
                   )}
                 </>
               )}
@@ -418,7 +438,7 @@ export default function CalendarPage() {
                           >
                             {event.category}
                           </div>
-                          <Link href={`/student/home/clubs?club=${event.club_id}`} className={styles.viewClubButton}>
+                          <Link href={`/student/home/clubs/${event.club_id}`} className={styles.viewClubButton}>
                             View Club
                           </Link>
                         </div>
@@ -443,7 +463,9 @@ export default function CalendarPage() {
       <CreateEventModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onSuccess={loadEvents}
+        onSuccess={(eventDate) => {
+          setCurrentDate(new Date(eventDate.getFullYear(), eventDate.getMonth(), 1));
+        }}
       />
 
       {/* Event Detail Modal */}

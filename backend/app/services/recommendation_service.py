@@ -92,10 +92,18 @@ class RecommendationService:
                 collaborative_score * HYBRID_WEIGHTS['collaborative']
             )
             
-            # 점수가 0보다 큰 경우만 추가
-            if total_score > 0:
-                all_reasons = content_reasons + collab_reasons
-                scored_clubs.append((club, total_score, all_reasons))
+            # 점수가 0 이상인 경우 모두 추가 (매칭이 약해도 추천)
+            all_reasons = content_reasons + collab_reasons
+            
+            # 이유가 없으면 기본 이유 추가
+            if not all_reasons:
+                all_reasons.append(RecommendationReason(
+                    type="available_club",
+                    description="캠퍼스에서 활동 중인 동아리",
+                    score_contribution=0.0
+                ))
+            
+            scored_clubs.append((club, total_score, all_reasons))
         
         # 3. 점수순으로 정렬
         scored_clubs.sort(key=lambda x: x[1], reverse=True)
@@ -156,12 +164,21 @@ class RecommendationService:
         
         # 2. 활동 유형 매칭
         if preferences.preferred_activity_types and club.activity_type:
-            if club.activity_type in preferences.preferred_activity_types:
-                activity_score = CONTENT_WEIGHTS['activity_type_match']
+            user_activity_types = set(preferences.preferred_activity_types)
+            # activity_type이 리스트인 경우와 단일 문자열인 경우 모두 처리
+            club_activity_types = set(club.activity_type) if isinstance(club.activity_type, list) else {club.activity_type}
+            
+            matched_types = user_activity_types & club_activity_types
+            if matched_types:
+                # 매칭된 유형 수에 비례하여 점수 부여
+                match_ratio = len(matched_types) / len(user_activity_types)
+                activity_score = match_ratio * CONTENT_WEIGHTS['activity_type_match']
                 score += activity_score
+                
+                matched_types_str = ', '.join(matched_types)
                 reasons.append(RecommendationReason(
                     type="activity_type_match",
-                    description=f"{club.activity_type} 활동 선호",
+                    description=f"{matched_types_str} 활동 선호",
                     score_contribution=activity_score
                 ))
         

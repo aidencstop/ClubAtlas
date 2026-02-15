@@ -38,7 +38,7 @@ class Club(BaseModel):
     tagline: Optional[str] = Field(None, description="한 줄 소개")
     categories: List[str] = Field(..., description="동아리 카테고리 (복수)")
     tags: List[str] = Field(default_factory=list, description="태그")
-    activity_type: str = Field(..., description="활동 유형: Online, On-Campus, Off-Campus, Hybrid")
+    activity_type: List[str] = Field(..., description="활동 유형: Online, On-Campus, Off-Campus, Hybrid (복수 선택 가능)")
     meeting_schedule: Optional[List[MeetingSchedule]] = Field(default_factory=list)
     leaders: List[ClubLeader] = Field(default_factory=list)
     contact_email: Optional[str] = None
@@ -58,7 +58,7 @@ class ClubCreate(BaseModel):
     tagline: Optional[str] = None
     categories: List[str]
     tags: List[str] = Field(default_factory=list)
-    activity_type: str
+    activity_type: List[str]
     meeting_schedule: Optional[List[MeetingSchedule]] = Field(default_factory=list)
     contact_email: Optional[str] = None
 
@@ -70,7 +70,7 @@ class ClubUpdate(BaseModel):
     tagline: Optional[str] = None
     categories: Optional[List[str]] = None
     tags: Optional[List[str]] = None
-    activity_type: Optional[str] = None
+    activity_type: Optional[List[str]] = None
     meeting_schedule: Optional[List[MeetingSchedule]] = None
     contact_email: Optional[str] = None
     logo_url: Optional[str] = None

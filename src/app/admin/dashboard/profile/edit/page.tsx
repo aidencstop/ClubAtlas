@@ -21,11 +21,10 @@ export default function EditClubProfilePage() {
 
   // Form state
   const [clubName, setClubName] = useState('');
-  const [tagline, setTagline] = useState('');
+  const [activityTypes, setActivityTypes] = useState<string[]>([]);
   const [missionStatement, setMissionStatement] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [activityType, setActivityType] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [meetingSchedule, setMeetingSchedule] = useState<MeetingSchedule[]>([]);
   const [leaders, setLeaders] = useState<ClubLeader[]>([]);
@@ -50,11 +49,16 @@ export default function EditClubProfilePage() {
         
         // 폼 state 초기화
         setClubName(clubData.name);
-        setTagline(clubData.tagline || '');
+        // activity_type을 배열로 처리 (하위 호환성 유지)
+        const activityTypeArray = Array.isArray(clubData.activity_type)
+          ? clubData.activity_type
+          : typeof clubData.activity_type === 'string' && clubData.activity_type
+            ? [clubData.activity_type]
+            : [];
+        setActivityTypes(activityTypeArray);
         setMissionStatement(clubData.description);
         setCategories(clubData.categories);
         setTags(clubData.tags || []);
-        setActivityType(clubData.activity_type);
         setContactEmail(clubData.contact_email || '');
         setMeetingSchedule(clubData.meeting_schedule || []);
         setLeaders(clubData.leaders || []);
@@ -82,14 +86,12 @@ export default function EditClubProfilePage() {
 
       const response = await updateClub(club.id, {
         name: clubName,
-        tagline: tagline,
         description: missionStatement,
         categories: categories,
         tags: tags,
-        activity_type: activityType,
+        activity_type: activityTypes,
         contact_email: contactEmail,
         meeting_schedule: meetingSchedule,
-        leaders: leaders,
       });
 
       if (response.data) {
@@ -199,8 +201,8 @@ export default function EditClubProfilePage() {
           <EditBasicInformation
             clubName={clubName}
             setClubName={setClubName}
-            tagline={tagline}
-            setTagline={setTagline}
+            activityTypes={activityTypes}
+            setActivityTypes={setActivityTypes}
             missionStatement={missionStatement}
             setMissionStatement={setMissionStatement}
             categories={categories}

@@ -5,11 +5,28 @@ import styles from './EditBasicInformation.module.css';
 
 const imgIconUpload = "https://www.figma.com/api/mcp/asset/3443f4d0-635f-4f31-a5a4-3fcf7af9f9cb";
 
+const CATEGORIES = [
+  'Student Leadership and Media',
+  'Cultural Affinity Groups',
+  'Community Service and Social Justice',
+  'Gender Equity and Sexual Health',
+  'Mental Wellness',
+  'Stem Research and Olympiad',
+  'Data Science and Engineering',
+  'Finance and Economy',
+  'Humanities',
+  'Literature, Language, and Philiology',
+  'Visual Arts',
+  'Performing Arts',
+  'Food, Cooking, Cuisine',
+  'Sports and Recreations'
+];
+
 interface EditBasicInformationProps {
   clubName: string;
   setClubName: (value: string) => void;
-  tagline: string;
-  setTagline: (value: string) => void;
+  activityTypes: string[];
+  setActivityTypes: (value: string[]) => void;
   missionStatement: string;
   setMissionStatement: (value: string) => void;
   categories: string[];
@@ -20,19 +37,29 @@ interface EditBasicInformationProps {
   onBannerUpload: (file: File) => void;
 }
 
+const ACTIVITY_TYPES = ['Online', 'On-Campus', 'Off-Campus', 'Hybrid'];
+
 export default function EditBasicInformation({
   clubName,
   setClubName,
-  tagline,
-  setTagline,
+  activityTypes,
+  setActivityTypes,
   missionStatement,
   setMissionStatement,
   categories,
+  setCategories,
   logoUrl,
   bannerUrl,
   onLogoUpload,
   onBannerUpload
 }: EditBasicInformationProps) {
+  const toggleActivityType = (type: string) => {
+    if (activityTypes.includes(type)) {
+      setActivityTypes(activityTypes.filter(t => t !== type));
+    } else {
+      setActivityTypes([...activityTypes, type]);
+    }
+  };
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,22 +140,41 @@ export default function EditBasicInformation({
       </div>
 
       <div className={styles.fieldGroup}>
-        <label className={styles.label}>Tagline</label>
-        <input
-          type="text"
-          value={tagline}
-          onChange={(e) => setTagline(e.target.value)}
-          className={styles.input}
-        />
+        <label className={styles.label}>Activity Types * (Select all that apply)</label>
+        <div className={styles.checkboxGroup}>
+          {ACTIVITY_TYPES.map((type) => (
+            <label key={type} className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={activityTypes.includes(type)}
+                onChange={() => toggleActivityType(type)}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxText}>{type}</span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className={styles.fieldGroup}>
-        <label className={styles.label}>Categories *</label>
-        <div className={styles.categoryInput}>
-          {categories.map((cat, idx) => (
-            <span key={idx} className={styles.categoryBadge}>
-              {cat}
-            </span>
+        <label className={styles.label}>Categories * (Select all that apply)</label>
+        <div className={styles.checkboxGroup}>
+          {CATEGORIES.map((category) => (
+            <label key={category} className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={categories.includes(category)}
+                onChange={() => {
+                  if (categories.includes(category)) {
+                    setCategories(categories.filter(c => c !== category));
+                  } else {
+                    setCategories([...categories, category]);
+                  }
+                }}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxText}>{category}</span>
+            </label>
           ))}
         </div>
       </div>

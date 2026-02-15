@@ -15,7 +15,7 @@ interface Club {
   name: string;
   description?: string;
   categories: string[];
-  activity_type: string;
+  activity_type: string[];
   leader_name?: string;
   leader_email?: string;
   total_subscribers: number;

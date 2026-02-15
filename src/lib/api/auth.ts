@@ -48,6 +48,8 @@ export interface AuthVerifyResponse {
   display_name?: string;
   role: string;
   is_authenticated: boolean;
+  managed_club_ids?: string[];
+  leader_position?: string;
 }
 
 /**

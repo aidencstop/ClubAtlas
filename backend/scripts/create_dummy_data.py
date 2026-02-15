@@ -24,7 +24,7 @@ DUMMY_CLUBS = [
         "tagline": "미래를 만드는 로봇공학",
         "categories": ["Technology", "Engineering", "STEM"],
         "tags": ["robotics", "programming", "competition", "arduino"],
-        "activity_type": "On-Campus",
+        "activity_type": ["On-Campus"],
         "meeting_schedule": [
             {
                 "day": "Tuesday",
@@ -54,7 +54,7 @@ DUMMY_CLUBS = [
         "tagline": "순간을 포착하는 예술",
         "categories": ["Arts", "Creative", "Visual Arts"],
         "tags": ["photography", "exhibition", "camera", "art"],
-        "activity_type": "Hybrid",
+        "activity_type": ["Hybrid", "Off-Campus"],
         "meeting_schedule": [
             {
                 "day": "Wednesday",
@@ -79,7 +79,7 @@ DUMMY_CLUBS = [
         "tagline": "별을 관찰하는 과학자들",
         "categories": ["Science", "STEM", "Nature"],
         "tags": ["astronomy", "telescope", "space", "observation"],
-        "activity_type": "Off-Campus",
+        "activity_type": ["Off-Campus"],
         "meeting_schedule": [
             {
                 "day": "Friday",
@@ -104,7 +104,7 @@ DUMMY_CLUBS = [
         "tagline": "AI로 미래를 설계하다",
         "categories": ["Technology", "Computer Science", "STEM"],
         "tags": ["ai", "machine-learning", "python", "deep-learning"],
-        "activity_type": "Online",
+        "activity_type": ["Online"],
         "meeting_schedule": [
             {
                 "day": "Monday",
@@ -134,7 +134,7 @@ DUMMY_CLUBS = [
         "tagline": "열정과 협동의 그라운드",
         "categories": ["Sports", "Recreation", "Team Sports"],
         "tags": ["soccer", "football", "sports", "teamwork"],
-        "activity_type": "On-Campus",
+        "activity_type": ["On-Campus"],
         "meeting_schedule": [
             {
                 "day": "Tuesday",
@@ -164,7 +164,7 @@ DUMMY_CLUBS = [
         "tagline": "하모니를 만드는 음악가들",
         "categories": ["Arts", "Music", "Performance"],
         "tags": ["music", "band", "performance", "instruments"],
-        "activity_type": "On-Campus",
+        "activity_type": ["On-Campus"],
         "meeting_schedule": [
             {
                 "day": "Wednesday",
@@ -194,7 +194,7 @@ DUMMY_CLUBS = [
         "tagline": "미래의 기업가를 위한 공간",
         "categories": ["Business", "Innovation", "Leadership"],
         "tags": ["startup", "entrepreneurship", "business", "innovation"],
-        "activity_type": "Hybrid",
+        "activity_type": ["Hybrid", "Online"],
         "meeting_schedule": [
             {
                 "day": "Thursday",
@@ -219,7 +219,7 @@ DUMMY_CLUBS = [
         "tagline": "실험실에서 발견하는 과학",
         "categories": ["Science", "Research", "STEM"],
         "tags": ["chemistry", "research", "lab", "experiment"],
-        "activity_type": "On-Campus",
+        "activity_type": ["On-Campus"],
         "meeting_schedule": [
             {
                 "day": "Monday",
@@ -244,7 +244,7 @@ DUMMY_CLUBS = [
         "tagline": "논리로 승부하는 토론의 장",
         "categories": ["Academic", "Communication", "Leadership"],
         "tags": ["debate", "public-speaking", "argumentation", "competition"],
-        "activity_type": "On-Campus",
+        "activity_type": ["On-Campus"],
         "meeting_schedule": [
             {
                 "day": "Wednesday",
@@ -269,7 +269,7 @@ DUMMY_CLUBS = [
         "tagline": "웹으로 세상을 연결하다",
         "categories": ["Technology", "Computer Science", "Design"],
         "tags": ["web-dev", "html", "css", "javascript", "react"],
-        "activity_type": "Online",
+        "activity_type": ["Online", "Hybrid"],
         "meeting_schedule": [
             {
                 "day": "Tuesday",

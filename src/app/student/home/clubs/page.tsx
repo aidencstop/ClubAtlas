@@ -199,11 +199,29 @@ export default function BrowseClubsPage() {
 
   const getMeetingInfo = (club: Club) => {
     if (club.meeting_schedule && club.meeting_schedule.length > 0) {
-      const schedule = club.meeting_schedule[0];
+      // 요일의 첫 글자만 추출하고 / 로 연결
+      const dayAbbreviations = club.meeting_schedule
+        .map(s => s.day)
+        .filter(Boolean)
+        .map(day => day.charAt(0))
+        .join(' / ');
+      
+      // 모든 시간대 수집 (중복 제거) 후 오름차순 정렬
+      const allTimes = new Set<string>();
+      club.meeting_schedule.forEach(s => {
+        if (s.time_slots && s.time_slots.length > 0) {
+          s.time_slots.forEach(t => allTimes.add(t));
+        }
+      });
+      const sortedTimes = Array.from(allTimes).sort().join(', ');
+      
+      // 위치 (첫 번째 것 사용)
+      const location = club.meeting_schedule[0].location || 'TBD';
+      
       return {
-        day: schedule.day || 'TBD',
-        time: schedule.time_slots && schedule.time_slots.length > 0 ? schedule.time_slots[0] : 'TBD',
-        location: schedule.location || 'TBD'
+        day: dayAbbreviations || 'TBD',
+        time: sortedTimes || 'TBD',
+        location: location
       };
     }
     return { day: 'TBD', time: 'TBD', location: 'TBD' };
@@ -284,11 +302,20 @@ export default function BrowseClubsPage() {
                       className={styles.filterSelect}
                     >
                       <option value="All">All Categories</option>
-                      <option value="STEM">STEM</option>
-                      <option value="Arts">Arts</option>
-                      <option value="Performance">Performance</option>
-                      <option value="Academic">Academic</option>
-                      <option value="Strategy">Strategy</option>
+                      <option value="Student Leadership and Media">Student Leadership and Media</option>
+                      <option value="Cultural Affinity Groups">Cultural Affinity Groups</option>
+                      <option value="Community Service and Social Justice">Community Service and Social Justice</option>
+                      <option value="Gender Equity and Sexual Health">Gender Equity and Sexual Health</option>
+                      <option value="Mental Wellness">Mental Wellness</option>
+                      <option value="Stem Research and Olympiad">Stem Research and Olympiad</option>
+                      <option value="Data Science and Engineering">Data Science and Engineering</option>
+                      <option value="Finance and Economy">Finance and Economy</option>
+                      <option value="Humanities">Humanities</option>
+                      <option value="Literature, Language, and Philiology">Literature, Language, and Philiology</option>
+                      <option value="Visual Arts">Visual Arts</option>
+                      <option value="Performing Arts">Performing Arts</option>
+                      <option value="Food, Cooking, Cuisine">Food, Cooking, Cuisine</option>
+                      <option value="Sports and Recreations">Sports and Recreations</option>
                     </select>
                   </div>
 
@@ -439,7 +466,10 @@ export default function BrowseClubsPage() {
                       <div className={styles.clubMeta}>
                         <div className={styles.metaRow}>
                           <img src={clockIcon} alt="" width="16" height="16" />
-                          <span>{meetingInfo.day}, {meetingInfo.time}</span>
+                          <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontWeight: '600' }}>{meetingInfo.day}</span>
+                            <span style={{ fontSize: '0.9em', color: '#666' }}>{meetingInfo.time}</span>
+                          </span>
                         </div>
                         <div className={styles.metaRow}>
                           <img src={locationIcon} alt="" width="16" height="16" />

@@ -34,7 +34,7 @@ export default function AllClubsPage() {
             name: data.name,
             description: data.description,
             categories: [data.category],
-            activity_type: data.category,
+            activity_type: [data.category],
             leader_email: data.leader,
             tagline: '',
           }),

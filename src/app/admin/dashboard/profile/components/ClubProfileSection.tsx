@@ -86,9 +86,15 @@ export default function ClubProfileSection() {
             </div>
 
             <div className={styles.fieldGroup}>
-              <p className={styles.label}>Tagline</p>
+              <p className={styles.label}>Activity Types</p>
               <div className={styles.fieldValue}>
-                <p className={styles.fieldText}>{club.tagline || 'No tagline set'}</p>
+                <p className={styles.fieldText}>
+                  {club.activity_type && club.activity_type.length > 0
+                    ? (Array.isArray(club.activity_type) 
+                        ? club.activity_type.join(', ') 
+                        : club.activity_type)
+                    : 'Not set'}
+                </p>
               </div>
             </div>
 
@@ -110,6 +116,39 @@ export default function ClubProfileSection() {
               <p className={styles.label}>Contact Email</p>
               <div className={styles.fieldValue}>
                 <p className={styles.fieldText}>{club.contact_email || 'Not set'}</p>
+              </div>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <p className={styles.label}>Meeting Days</p>
+              <div className={styles.fieldValue}>
+                <p className={styles.fieldText}>
+                  {club.meeting_schedule && club.meeting_schedule.length > 0
+                    ? club.meeting_schedule.map(s => s.day).join(', ')
+                    : 'Not set'}
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <p className={styles.label}>Meeting Times</p>
+              <div className={styles.fieldValue}>
+                <p className={styles.fieldText}>
+                  {club.meeting_schedule && club.meeting_schedule.length > 0 && club.meeting_schedule[0].time_slots
+                    ? Array.from(new Set(club.meeting_schedule.flatMap(s => s.time_slots || []))).join(', ')
+                    : 'Not set'}
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <p className={styles.label}>Location</p>
+              <div className={styles.fieldValue}>
+                <p className={styles.fieldText}>
+                  {club.meeting_schedule && club.meeting_schedule.length > 0 && club.meeting_schedule[0].location
+                    ? club.meeting_schedule[0].location
+                    : 'Not set'}
+                </p>
               </div>
             </div>
           </div>

@@ -18,7 +18,7 @@ const profileIcon = "/images/icons/profile.svg";
 
 export default function Header() {
   const router = useRouter();
-  const { userProfile, isAuthenticated } = useAuth();
+  const { userProfile, isAuthenticated, isClubLeader } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -376,6 +376,15 @@ export default function Header() {
                 >
                   My Profile
                 </Link>
+                {isClubLeader && (
+                  <Link 
+                    href="/admin/dashboard" 
+                    className={styles.profileMenuItem}
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
                 <button 
                   className={styles.profileMenuItem}
                   onClick={handleEditProfile}

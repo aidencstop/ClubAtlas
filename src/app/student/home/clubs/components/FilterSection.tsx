@@ -32,12 +32,20 @@ export default function FilterSection({
             className={styles.select}
           >
             <option value="All">All</option>
-            <option value="STEM">STEM</option>
-            <option value="Arts">Arts</option>
-            <option value="Performance">Performance</option>
-            <option value="Academic">Academic</option>
-            <option value="Sports">Sports</option>
-            <option value="Social">Social</option>
+            <option value="Student Leadership and Media">Student Leadership and Media</option>
+            <option value="Cultural Affinity Groups">Cultural Affinity Groups</option>
+            <option value="Community Service and Social Justice">Community Service and Social Justice</option>
+            <option value="Gender Equity and Sexual Health">Gender Equity and Sexual Health</option>
+            <option value="Mental Wellness">Mental Wellness</option>
+            <option value="Stem Research and Olympiad">Stem Research and Olympiad</option>
+            <option value="Data Science and Engineering">Data Science and Engineering</option>
+            <option value="Finance and Economy">Finance and Economy</option>
+            <option value="Humanities">Humanities</option>
+            <option value="Literature, Language, and Philiology">Literature, Language, and Philiology</option>
+            <option value="Visual Arts">Visual Arts</option>
+            <option value="Performing Arts">Performing Arts</option>
+            <option value="Food, Cooking, Cuisine">Food, Cooking, Cuisine</option>
+            <option value="Sports and Recreations">Sports and Recreations</option>
           </select>
         </div>
       </div>
