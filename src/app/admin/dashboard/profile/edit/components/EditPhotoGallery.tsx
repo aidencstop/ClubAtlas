@@ -3,8 +3,8 @@
 import { useRef } from 'react';
 import styles from './EditPhotoGallery.module.css';
 
-const imgIconUpload = "https://www.figma.com/api/mcp/asset/a6d9f18f-c910-4ec3-bd21-7d7b81842971";
-const imgIconDelete = "https://www.figma.com/api/mcp/asset/352610b8-1805-4e24-9a5d-cf41eb44d274";
+const imgIconUpload = "/images/icons/dashboard/icon-add-image.svg";
+const imgIconDelete = "/images/icons/dashboard/icon-delete.svg";
 
 interface PhotoSlotProps {
   imageUrl?: string;
@@ -68,12 +68,37 @@ interface EditPhotoGalleryProps {
 }
 
 export default function EditPhotoGallery({ mediaUrls, onMediaUpload, onMediaDelete }: EditPhotoGalleryProps) {
-  const totalSlots = 8;
+  const totalSlots = 6;
   const emptySlots = Math.max(0, totalSlots - mediaUrls.length);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    inputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onMediaUpload(file);
+    }
+    e.target.value = '';
+  };
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.sectionTitle}>Photo Gallery</h2>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Photo Gallery</h2>
+        <button type="button" className={styles.uploadButton} onClick={handleUploadClick}>
+          + Upload Photos
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+      </div>
 
       <div className={styles.galleryGrid}>
         {mediaUrls.map((url, idx) => (

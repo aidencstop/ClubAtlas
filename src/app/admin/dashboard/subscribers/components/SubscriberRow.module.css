@@ -21,16 +21,16 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #a0b888 0%, #609c22 100%);
+  background: #e8f0e3;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Inter', sans-serif;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 24px;
   letter-spacing: -0.3125px;
-  color: white;
+  color: #2a644d;
 }
 
 .info {
@@ -59,21 +59,21 @@
 .viewButton {
   height: 36px;
   padding: 8px 16px;
-  background: #f3f4f6;
-  border: none;
+  background: white;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   letter-spacing: -0.1504px;
-  color: #0a0a0a;
+  color: #374151;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .viewButton:hover {
-  background: #e5e7eb;
+  background: #f9fafb;
 }
 
 

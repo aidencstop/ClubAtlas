@@ -6,9 +6,9 @@ import StatCard from './StatCard';
 import SubscriberRow from './SubscriberRow';
 import SubscriberDetailsModal from './SubscriberDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getClubSubscribers, Subscriber as ApiSubscriber } from '@/lib/api';
+import { getClubSubscribers, Subscriber as ApiSubscriber, getAnnouncements } from '@/lib/api';
 
-const imgIconSearch = "https://www.figma.com/api/mcp/asset/8c02a939-889b-4a3b-bada-1dd826a49483";
+const imgIconSearch = "/images/icons/dashboard/icon-search.svg";
 
 interface Subscriber {
   id: string;
@@ -29,6 +29,7 @@ export default function SubscribersSection() {
   const [error, setError] = useState<string | null>(null);
   const [totalSubscribers, setTotalSubscribers] = useState(0);
   const [weeklyGrowth, setWeeklyGrowth] = useState(0);
+  const [avgOpenRate, setAvgOpenRate] = useState(0);
 
   useEffect(() => {
     loadSubscribers();
@@ -46,7 +47,16 @@ export default function SubscribersSection() {
       setError(null);
 
       const clubId = userProfile.managed_club_ids[0];
-      const response = await getClubSubscribers(clubId);
+      const [response, announcementsRes] = await Promise.all([
+        getClubSubscribers(clubId),
+        getAnnouncements({ club_id: clubId, limit: 100 }),
+      ]);
+
+      if (announcementsRes.data?.announcements?.length) {
+        const totalSent = announcementsRes.data.announcements.reduce((s, a) => s + (a.sent_to || 0), 0);
+        const totalOpens = announcementsRes.data.announcements.reduce((s, a) => s + (a.opens || 0), 0);
+        setAvgOpenRate(totalSent > 0 ? Math.round((totalOpens / totalSent) * 100) : 0);
+      }
 
       if (response.data) {
         const mappedSubscribers: Subscriber[] = response.data.subscribers.map((apiSubscriber: ApiSubscriber) => {
@@ -72,11 +82,10 @@ export default function SubscribersSection() {
 
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        const recentSubscribers = mappedSubscribers.filter(sub => {
-          const subDate = new Date(sub.subscribedDate);
-          return subDate >= weekAgo;
-        });
-        setWeeklyGrowth(recentSubscribers.length);
+        const recentCount = response.data.subscribers.filter(
+          (s: ApiSubscriber) => new Date(s.subscribed_at) >= weekAgo
+        ).length;
+        setWeeklyGrowth(recentCount);
       }
     } catch (err) {
       console.error('Failed to load subscribers:', err);
@@ -104,8 +113,8 @@ export default function SubscribersSection() {
     subscriber.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeRate = totalSubscribers > 0 
-    ? Math.round((subscribers.filter(s => s.notificationEnabled).length / totalSubscribers) * 100) 
+  const activeRate = totalSubscribers > 0
+    ? Math.round((subscribers.filter(s => s.notificationEnabled).length / totalSubscribers) * 100)
     : 0;
 
   return (
@@ -128,14 +137,14 @@ export default function SubscribersSection() {
               />
               <StatCard
                 value={`${activeRate}%`}
-                label="Notification Enabled"
-                subtext="Have notifications on"
+                label="Active Rate"
+                subtext="Opened recent email"
                 subtextColor="gray"
               />
               <StatCard
-                value={filteredSubscribers.length.toString()}
-                label="Showing"
-                subtext={searchQuery ? 'Filtered results' : 'All subscribers'}
+                value={`${avgOpenRate}%`}
+                label="Avg. Open Rate"
+                subtext="Email engagement"
                 subtextColor="gray"
               />
             </div>
@@ -146,12 +155,15 @@ export default function SubscribersSection() {
                   <img src={imgIconSearch} alt="" className={styles.searchIcon} />
                   <input
                     type="text"
-                    placeholder="Search subscribers by email or name..."
+                    placeholder="Search subscribers by email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={styles.input}
                   />
                 </div>
+                <button type="button" className={styles.searchButton}>
+                  Search
+                </button>
               </div>
 
               {filteredSubscribers.length === 0 ? (

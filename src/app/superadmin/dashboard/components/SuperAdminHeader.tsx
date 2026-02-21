@@ -7,9 +7,10 @@ import { logout } from '@/lib/firebase/auth';
 import EditProfileModal from '@/components/EditProfileModal';
 import styles from './SuperAdminHeader.module.css';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/7d34d2eb-6c06-4f33-bc67-4b83bc35f065";
-const imgIcon1 = "https://www.figma.com/api/mcp/asset/157f71e3-0626-46a4-b57f-503e9080fd39";
-const imgIcon2 = "https://www.figma.com/api/mcp/asset/1170304d-7665-44bb-811d-db4ebefff5e1";
+const logoIcon = "/images/icons/superadmin/header-shield.svg";
+const settingsIcon = "/images/icons/superadmin/header-settings.svg";
+const globeButtonIcon = "/images/icons/superadmin/header-globe-button.svg";
+const logoutIcon = "/images/icons/superadmin/header-logout.svg";
 
 export default function SuperAdminHeader() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function SuperAdminHeader() {
     <div className={styles.header}>
       <div className={styles.leftSection}>
         <div className={styles.logoContainer}>
-          <img src={imgIcon} alt="ClubAtlas" className={styles.logoIcon} />
+          <img src={logoIcon} alt="ClubAtlas" className={styles.logoIcon} />
         </div>
         <div className={styles.titleSection}>
           <h1 className={styles.title}>ClubAtlas Super Admin</h1>
@@ -39,9 +40,12 @@ export default function SuperAdminHeader() {
       
       <div className={styles.rightSection}>
         <button className={styles.iconButton} onClick={() => setShowEditModal(true)} title="Settings">
-          <img src={imgIcon1} alt="Settings" className={styles.icon} />
+          <img src={settingsIcon} alt="Settings" className={styles.icon} />
         </button>
-        <button className={styles.textButton}>View Public Site</button>
+        <a href="/welcome" className={styles.textButton}>
+          <img src={globeButtonIcon} alt="" className={styles.globeIcon} />
+          View Public Site
+        </a>
         <div className={styles.userProfile}>
           <div className={styles.avatar}>
             {userProfile?.display_name?.substring(0, 2).toUpperCase() || 'SA'}
@@ -52,7 +56,7 @@ export default function SuperAdminHeader() {
           </div>
         </div>
         <button className={styles.iconButton} onClick={handleLogout} title="Logout">
-          <img src={imgIcon2} alt="Logout" className={styles.icon} />
+          <img src={logoutIcon} alt="Logout" className={styles.icon} />
         </button>
       </div>
 

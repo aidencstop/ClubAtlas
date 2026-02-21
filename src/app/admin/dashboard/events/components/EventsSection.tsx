@@ -8,8 +8,8 @@ import EditEventModal from './EditEventModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEvents, createEvent, updateEvent, Event as ApiEvent } from '@/lib/api';
 
-const imgIconAdd = "https://www.figma.com/api/mcp/asset/a584c665-496e-46c9-8f42-c0a97ad35bb4";
-const imgIconSearch = "https://www.figma.com/api/mcp/asset/4c024de1-3263-4a46-ba23-8c294eadaff0";
+const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
+const imgIconSearch = "/images/icons/dashboard/icon-search.svg";
 
 interface Event {
   id: string;
@@ -58,6 +58,7 @@ const mockEvents: Event[] = [
 export default function EventsSection() {
   const { userProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterTab, setFilterTab] = useState<'upcoming' | 'past'>('upcoming');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -84,10 +85,17 @@ export default function EventsSection() {
       const response = await getEvents({ club_id: clubId, limit: 100 });
 
       if (response.data) {
-        const mappedEvents: Event[] = response.data.events.map((apiEvent: ApiEvent) => ({
+        const now = new Date();
+        const mappedEvents: Event[] = response.data.events.map((apiEvent: ApiEvent) => {
+          const startDate = new Date(apiEvent.start_datetime);
+          const isPast = startDate < now;
+          const status = apiEvent.status === 'cancelled' ? 'cancelled'
+            : isPast ? 'completed'
+            : 'upcoming';
+          return {
           id: apiEvent.id || '',
           title: apiEvent.title,
-          status: apiEvent.status === 'active' ? 'upcoming' : apiEvent.status === 'completed' ? 'completed' : 'cancelled',
+          status,
           date: new Date(apiEvent.start_datetime).toLocaleString('en-US', {
             weekday: 'short',
             month: 'short',
@@ -100,7 +108,8 @@ export default function EventsSection() {
           location: apiEvent.location,
           description: apiEvent.description,
           notificationsSent: apiEvent.attendees?.length || 0,
-        }));
+        };
+        });
 
         setEvents(mappedEvents);
       }
@@ -192,31 +201,52 @@ export default function EventsSection() {
     }
   };
 
-  const filteredEvents = events.filter(event =>
+  const filteredByTab = events.filter(event => {
+    const isUpcoming = event.status === 'upcoming';
+    return filterTab === 'upcoming' ? isUpcoming : !isUpcoming;
+  });
+  const filteredEvents = filteredByTab.filter(event =>
     event.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <>
       <div className={styles.eventsSection}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Event Management</h1>
-          <button onClick={handleCreateEvent} className={styles.createButton}>
-            <img src={imgIconAdd} alt="" className={styles.buttonIcon} />
-            <span>Create New Event</span>
-          </button>
-        </div>
-
-        <div className={styles.searchContainer}>
-          <div className={styles.searchBox}>
-            <img src={imgIconSearch} alt="" className={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={styles.searchInput}
-            />
+        <div className={styles.headerRow}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Event Management</h1>
+            <button onClick={handleCreateEvent} className={styles.createButton}>
+              <img src={imgIconAdd} alt="" className={styles.buttonIcon} />
+              <span>Create New Event</span>
+            </button>
+          </div>
+          <div className={styles.searchContainer}>
+            <div className={styles.searchBox}>
+              <img src={imgIconSearch} alt="" className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Search events..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
+            <div className={styles.filterTabs}>
+              <button
+                type="button"
+                className={`${styles.filterTab} ${filterTab === 'upcoming' ? styles.filterTabActive : ''}`}
+                onClick={() => setFilterTab('upcoming')}
+              >
+                Upcoming
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterTab} ${filterTab === 'past' ? styles.filterTabActive : ''}`}
+                onClick={() => setFilterTab('past')}
+              >
+                Past
+              </button>
+            </div>
           </div>
         </div>
 
@@ -226,7 +256,11 @@ export default function EventsSection() {
           <div className={styles.error}>{error}</div>
         ) : filteredEvents.length === 0 ? (
           <div className={styles.empty}>
-            {searchQuery ? 'No events found matching your search' : 'No events yet. Create your first event!'}
+            {searchQuery
+              ? 'No events found matching your search'
+              : filterTab === 'upcoming'
+                ? 'No upcoming events. Create your first event!'
+                : 'No past events yet.'}
           </div>
         ) : (
           <div className={styles.eventsGrid}>

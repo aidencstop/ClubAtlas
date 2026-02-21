@@ -2,8 +2,8 @@
 
 import styles from './EditProfileHeader.module.css';
 
-const imgIconBack = "https://www.figma.com/api/mcp/asset/a6d9f18f-c910-4ec3-bd21-7d7b81842971";
-const imgIconSave = "https://www.figma.com/api/mcp/asset/861682e6-2dca-449a-b130-1bcedd7e2066";
+const imgIconBack = "/images/icons/dashboard/icon-back.svg";
+const imgIconSave = "/images/icons/dashboard/icon-save.svg";
 
 interface EditProfileHeaderProps {
   onSave: () => void;

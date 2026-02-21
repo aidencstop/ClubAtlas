@@ -14,15 +14,11 @@ const MEETING_TIMES = [
 interface EditMeetingInformationProps {
   meetingSchedule: MeetingSchedule[];
   setMeetingSchedule: (value: MeetingSchedule[]) => void;
-  contactEmail: string;
-  setContactEmail: (value: string) => void;
 }
 
 export default function EditMeetingInformation({
   meetingSchedule,
-  setMeetingSchedule,
-  contactEmail,
-  setContactEmail
+  setMeetingSchedule
 }: EditMeetingInformationProps) {
   // Extract selected days and times from meeting schedule (filter out empty days)
   const validSchedule = meetingSchedule.filter(s => s.day && s.day.trim() !== '');
@@ -122,17 +118,6 @@ export default function EditMeetingInformation({
           onChange={(e) => handleLocationChange(e.target.value)}
           className={styles.input}
           placeholder="e.g., Room 201, Main Building"
-        />
-      </div>
-
-      <div className={styles.fieldGroup}>
-        <label className={styles.label}>Contact Email</label>
-        <input
-          type="email"
-          value={contactEmail}
-          onChange={(e) => setContactEmail(e.target.value)}
-          className={styles.input}
-          placeholder="club@email.com"
         />
       </div>
     </div>

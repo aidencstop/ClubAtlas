@@ -12,10 +12,10 @@ import PendingApprovals from './components/PendingApprovals';
 import RecentActivity from './components/RecentActivity';
 import SystemAlerts from './components/SystemAlerts';
 
-const imgIcon1 = "https://www.figma.com/api/mcp/asset/5f7bd4aa-ac7d-4cbc-af62-707b3c3e7f33";
-const imgIcon2 = "https://www.figma.com/api/mcp/asset/132616e0-3874-4855-a95b-ff467dd72d25";
-const imgIcon3 = "https://www.figma.com/api/mcp/asset/157f71e3-0626-46a4-b57f-503e9080fd39";
-const imgIcon4 = "https://www.figma.com/api/mcp/asset/b32bd367-2c80-4fba-a774-cc57246c2aae";
+const statTotalClubs = "/images/icons/superadmin/stat-total-clubs.svg";
+const statActiveLeaders = "/images/icons/superadmin/stat-active-leaders.svg";
+const statStudentUsers = "/images/icons/superadmin/stat-student-users.svg";
+const statTotalEvents = "/images/icons/superadmin/stat-total-events.svg";
 
 interface PlatformStats {
   total_clubs: number;
@@ -82,32 +82,32 @@ export default function SuperAdminDashboard() {
 
           <div className={styles.statsGrid}>
             <StatCard
-              icon={imgIcon1}
+              icon={statTotalClubs}
               value={loading ? "..." : stats?.total_clubs.toString() || "0"}
               label="Total Clubs"
               sublabel={loading ? "" : `${stats?.active_clubs || 0} active`}
-              bgColor="#dbeafe"
+              bgColor="#dcfce7"
             />
             <StatCard
-              icon={imgIcon2}
+              icon={statActiveLeaders}
               value={loading ? "..." : stats?.active_leaders.toString() || "0"}
               label="Active Leaders"
               sublabel={loading ? "" : `${stats?.pending_leader_requests || 0} pending`}
-              bgColor="#f3e8ff"
+              bgColor="#dcfce7"
             />
             <StatCard
-              icon={imgIcon3}
+              icon={statStudentUsers}
               value={loading ? "..." : stats?.total_students.toLocaleString() || "0"}
               label="Student Users"
               sublabel={loading ? "" : `+${stats?.new_students_this_week || 0} this week`}
               bgColor="#dcfce7"
             />
             <StatCard
-              icon={imgIcon4}
+              icon={statTotalEvents}
               value={loading ? "..." : stats?.total_events.toString() || "0"}
               label="Total Events"
-              sublabel={loading ? "" : `${stats?.upcoming_events || 0} upcoming`}
-              bgColor="#ffedd4"
+              sublabel="This semester"
+              bgColor="#dcfce7"
             />
           </div>
 

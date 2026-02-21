@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import styles from './CreateEventModal.module.css';
+import DatePicker from './DatePicker';
 
-const imgIconAdd = "https://www.figma.com/api/mcp/asset/a584c665-496e-46c9-8f42-c0a97ad35bb4";
+const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
+const imgIconCalendar = "/images/icons/dashboard/icon-calendar.svg";
 
 interface CreateEventModalProps {
   isOpen: boolean;
@@ -18,7 +20,33 @@ export interface EventFormData {
   description: string;
 }
 
+function formatDateForDisplay(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function getDatePart(dateTime: string): string {
+  if (!dateTime) return '';
+  const d = new Date(dateTime);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getTimePart(dateTime: string): string {
+  if (!dateTime) return '16:00';
+  const d = new Date(dateTime);
+  if (isNaN(d.getTime())) return '16:00';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 export default function CreateEventModal({ isOpen, onClose, onCreateEvent }: CreateEventModalProps) {
+  const dateInputRef = useRef<HTMLDivElement>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     dateTime: '',
@@ -39,14 +67,25 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent }: Cre
   };
 
   const handleCancel = () => {
-    // Reset form
     setFormData({
       title: '',
       dateTime: '',
       location: '',
       description: '',
     });
+    setShowDatePicker(false);
     onClose();
+  };
+
+  const handleDateSelect = (dateStr: string) => {
+    const time = getTimePart(formData.dateTime);
+    setFormData({ ...formData, dateTime: `${dateStr}T${time}` });
+    setShowDatePicker(false);
+  };
+
+  const handleTimeChange = (timeStr: string) => {
+    const date = formData.dateTime ? getDatePart(formData.dateTime) : new Date().toISOString().slice(0, 10);
+    setFormData({ ...formData, dateTime: `${date}T${timeStr}` });
   };
 
   if (!isOpen) return null;
@@ -72,13 +111,38 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent }: Cre
 
               <div className={styles.field}>
                 <label className={styles.label}>Date & Time</label>
-                <input
-                  type="datetime-local"
-                  value={formData.dateTime}
-                  onChange={(e) => setFormData({ ...formData, dateTime: e.target.value })}
-                  className={styles.input}
-                  required
-                />
+                <div className={styles.dateTimeRow}>
+                  <div
+                    ref={dateInputRef}
+                    className={styles.dateInputWrapper}
+                  >
+                    <input
+                      type="text"
+                      readOnly
+                      placeholder="dd/mm/yyyy"
+                      value={formatDateForDisplay(formData.dateTime)}
+                      onClick={() => setShowDatePicker(!showDatePicker)}
+                      className={styles.input}
+                      required
+                    />
+                    <img src={imgIconCalendar} alt="" className={styles.dateIcon} />
+                    {showDatePicker && (
+                      <DatePicker
+                        selectedDate={getDatePart(formData.dateTime) || new Date().toISOString().slice(0, 10)}
+                        onDateSelect={handleDateSelect}
+                        onClose={() => setShowDatePicker(false)}
+                        anchorRef={dateInputRef}
+                      />
+                    )}
+                  </div>
+                  <input
+                    type="time"
+                    value={getTimePart(formData.dateTime)}
+                    onChange={(e) => handleTimeChange(e.target.value)}
+                    className={styles.timeInput}
+                    required
+                  />
+                </div>
               </div>
 
               <div className={styles.field}>

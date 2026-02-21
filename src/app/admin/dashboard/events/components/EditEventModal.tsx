@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './CreateEventModal.module.css';
 
-const imgIconUpdate = "https://www.figma.com/api/mcp/asset/522c0906-3758-4261-b641-e4fcfe5c2038";
+const imgIconUpdate = "/images/icons/dashboard/icon-save.svg";
 
 interface EditEventModalProps {
   isOpen: boolean;

@@ -6,7 +6,8 @@ import { getIdToken } from '@/lib/firebase/auth';
 import styles from './PendingApprovals.module.css';
 import ApprovalModal from './ApprovalModal';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/fb1aabda-0955-4216-8cea-d576c532ee60";
+const warningIcon = "/images/icons/superadmin/pending-warning.svg";
+const COLLAPSED_LIMIT = 3;
 
 interface ApprovalItem {
   id: string;
@@ -26,6 +27,7 @@ export default function PendingApprovals() {
   const { user } = useAuth();
   const [approvalItems, setApprovalItems] = useState<ApprovalItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'approve' | 'deny';
@@ -158,13 +160,20 @@ export default function PendingApprovals() {
     setModalState({ isOpen: false, type: 'approve', item: null });
   };
 
+  const displayItems = expanded
+    ? approvalItems
+    : approvalItems.slice(0, COLLAPSED_LIMIT);
+  const hasMore = approvalItems.length > COLLAPSED_LIMIT;
+
   if (loading) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <img src={imgIcon} alt="Pending Approvals" className={styles.headerIcon} />
-          <h3 className={styles.title}>Pending Approvals</h3>
-          <div className={styles.badge}>...</div>
+          <div className={styles.headerLeft}>
+            <img src={warningIcon} alt="Pending Approvals" className={styles.headerIcon} />
+            <h3 className={styles.title}>Pending Approvals</h3>
+            <div className={styles.badge}>...</div>
+          </div>
         </div>
         <div className={styles.list}>
           <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
@@ -179,9 +188,20 @@ export default function PendingApprovals() {
     <>
       <div className={styles.container}>
         <div className={styles.header}>
-          <img src={imgIcon} alt="Pending Approvals" className={styles.headerIcon} />
-          <h3 className={styles.title}>Pending Approvals</h3>
-          <div className={styles.badge}>{approvalItems.length}</div>
+          <div className={styles.headerLeft}>
+            <img src={warningIcon} alt="Pending Approvals" className={styles.headerIcon} />
+            <h3 className={styles.title}>Pending Approvals</h3>
+            <div className={styles.badge}>{approvalItems.length}</div>
+          </div>
+          {hasMore && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className={styles.viewToggle}
+            >
+              {expanded ? 'View less' : 'View more'}
+            </button>
+          )}
         </div>
         <div className={styles.list}>
           {approvalItems.length === 0 ? (
@@ -189,7 +209,7 @@ export default function PendingApprovals() {
               No pending approvals
             </div>
           ) : (
-            approvalItems.map((item, index) => (
+            displayItems.map((item, index) => (
             <div key={index} className={styles.item}>
               <div className={styles.itemContent}>
                 <h4 className={styles.itemTitle}>{item.title}</h4>

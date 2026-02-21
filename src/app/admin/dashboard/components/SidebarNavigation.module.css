@@ -46,7 +46,7 @@
 }
 
 .navItemActive {
-  background: linear-gradient(90deg, rgba(63, 95, 29, 1) 0%, rgba(96, 156, 34, 1) 100%);
+  background: linear-gradient(90deg, #4f812b 0%, #6aa84f 100%);
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
@@ -58,6 +58,17 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  background-color: #364153;
+}
+
+.navItemActive .navIcon {
+  background-color: white;
 }
 
 .navText {

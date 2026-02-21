@@ -3,8 +3,8 @@
 import styles from './EditLeadershipTeam.module.css';
 import { ClubLeader } from '@/lib/api/clubs';
 
-const imgIconEdit = "https://www.figma.com/api/mcp/asset/7d5f8357-c4c3-4daa-9a50-a7a20461c680";
-const imgIconDelete = "https://www.figma.com/api/mcp/asset/352610b8-1805-4e24-9a5d-cf41eb44d274";
+const imgIconEdit = "/images/icons/dashboard/icon-edit.svg";
+const imgIconDelete = "/images/icons/dashboard/icon-delete.svg";
 
 interface LeaderCardProps {
   leader: ClubLeader;
@@ -40,10 +40,19 @@ interface EditLeadershipTeamProps {
   setLeaders: (value: ClubLeader[]) => void;
 }
 
-export default function EditLeadershipTeam({ leaders }: EditLeadershipTeamProps) {
+export default function EditLeadershipTeam({ leaders, setLeaders }: EditLeadershipTeamProps) {
+  const handleAddLeader = () => {
+    setLeaders([...leaders, { uid: `new-${Date.now()}`, name: '', role: '', email: '' }]);
+  };
+
   return (
     <div className={styles.section}>
-      <h2 className={styles.sectionTitle}>Leadership Team</h2>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Leadership Team</h2>
+        <button type="button" className={styles.addButton} onClick={handleAddLeader}>
+          + Add Leader
+        </button>
+      </div>
 
       {leaders.length === 0 ? (
         <div className={styles.emptyState}>No leaders assigned yet</div>

@@ -85,7 +85,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
   const isSuperAdmin = role === 'super-admin';
 
   return (
-    <div className={styles.panel}>
+    <div className={`${styles.panel} ${isSuperAdmin ? styles.panelSuperAdmin : styles.panelClubLeader}`}>
       <div className={styles.header}>
         <h2 className={styles.title}>Welcome Back</h2>
         <p className={styles.subtitle}>
@@ -94,6 +94,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
       </div>
 
       {/* 역할 선택 버튼 */}
+      <div className={styles.roleSelectorWrapper}>
       <div className={styles.roleSelector}>
         <button
           type="button"
@@ -109,6 +110,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
         >
           Super Admin
         </button>
+      </div>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
@@ -171,10 +173,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
 
         <button type="submit" className={styles.submitButton} disabled={loading}>
           <img 
-            src={isSuperAdmin 
-              ? "https://www.figma.com/api/mcp/asset/70c0d910-6213-43a6-aa12-de12917c791a"
-              : "https://www.figma.com/api/mcp/asset/195395cb-8a0d-4574-ad3c-2ee36c981243"
-            } 
+            src="/images/icons/admin-login/sign-in-arrow.svg"
             alt="arrow"
             className={styles.arrowIcon}
           />
@@ -192,7 +191,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
       <div className={styles.footer}>
         <p className={styles.footerText}>Not a club leader yet?</p>
         <Link href="/admin/request-access" className={styles.requestLink}>
-          Request Leader Access →
+          {isSuperAdmin ? 'Request Leader Access →' : 'Create a New Club →'}
         </Link>
       </div>
 

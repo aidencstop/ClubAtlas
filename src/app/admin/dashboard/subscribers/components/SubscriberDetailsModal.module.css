@@ -38,7 +38,8 @@
   line-height: 28px;
   letter-spacing: -0.4492px;
   color: #0a0a0a;
-  margin: 0 0 16px 0;
+  margin: 0 0 24px 0;
+  text-align: center;
 }
 
 .fields {
@@ -65,8 +66,9 @@
 
 .readOnlyInput {
   height: 48px;
-  padding: 12px;
+  padding: 0 16px;
   background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   font-family: 'Inter', sans-serif;
   font-size: 16px;
@@ -80,12 +82,12 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .closeButton {
   height: 36px;
-  padding: 8px 16px;
+  padding: 8px 24px;
   background: #f3f4f6;
   border: none;
   border-radius: 10px;

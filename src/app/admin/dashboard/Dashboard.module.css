@@ -1,28 +1,39 @@
 .container {
   position: relative;
   width: 100%;
+  --dashboard-padding-x: 48px;
 }
 
 .mainContent {
-  padding-top: 112px;
+  padding-top: 136px;
   display: flex;
   gap: 24px;
-  padding-left: 94.5px;
-  padding-right: 94.5px;
+  padding-left: var(--dashboard-padding-x);
+  padding-right: var(--dashboard-padding-x);
   padding-bottom: 32px;
   min-height: calc(100vh - 80px);
 }
 
-@media (max-width: 1400px) {
-  .mainContent {
-    padding: 32px 48px;
-  }
+.eventsContent,
+.announcementsContent,
+.subscribersContent,
+.analyticsContent {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 1024px) {
+  .container {
+    --dashboard-padding-x: 24px;
+  }
+
   .mainContent {
     flex-direction: column;
-    padding: 24px 24px;
+    padding-top: 136px;
+    padding-bottom: 24px;
   }
 }
 

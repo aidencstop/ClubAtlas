@@ -3,12 +3,12 @@
 }
 
 .mainContent {
-  padding-top: 112px;
+  padding-top: 136px;
   padding-left: 87px;
   padding-right: 87px;
   display: flex;
   gap: 24px;
-  min-height: calc(100vh - 112px);
+  min-height: calc(100vh - 136px);
 }
 
 .contentArea {
@@ -74,7 +74,7 @@
   .mainContent {
     padding-left: 24px;
     padding-right: 24px;
-    padding-top: 96px;
+    padding-top: 120px;
   }
   
   .bottomGrid {

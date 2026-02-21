@@ -129,7 +129,7 @@ export default function OverviewSection() {
 
       <div className={styles.statsGrid}>
         <StatCard
-          icon="https://www.figma.com/api/mcp/asset/e716709a-d34f-4326-9e83-1fba7611afd4"
+          icon="/images/icons/dashboard/stat-subscribers.svg"
           iconBg="#dbeafe"
           value={totalSubscribers.toString()}
           label="Total Subscribers"
@@ -137,7 +137,7 @@ export default function OverviewSection() {
           changePositive={weeklyNewSubscribers > 0}
         />
         <StatCard
-          icon="https://www.figma.com/api/mcp/asset/f9a0d896-59aa-4f4d-9ac4-b0740537ba8b"
+          icon="/images/icons/dashboard/nav-events.svg"
           iconBg="#f3e8ff"
           value={upcomingEvents.length.toString()}
           label="Upcoming Events"
@@ -145,7 +145,7 @@ export default function OverviewSection() {
           changePositive={thisWeekEvents > 0}
         />
         <StatCard
-          icon="https://www.figma.com/api/mcp/asset/59a88fd4-c704-48d4-bc84-9435d427da82"
+          icon="/images/icons/dashboard/stat-profile-views.svg"
           iconBg="#dcfce7"
           value={profileViews.toString()}
           label="Profile Views"
@@ -153,7 +153,7 @@ export default function OverviewSection() {
           changePositive={true}
         />
         <StatCard
-          icon="https://www.figma.com/api/mcp/asset/c71c1457-508b-4a52-9da5-ac57f1d6967e"
+          icon="/images/icons/dashboard/nav-analytics.svg"
           iconBg="#ffedd4"
           value={`${engagementRate}%`}
           label="Engagement Rate"

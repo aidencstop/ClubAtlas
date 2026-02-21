@@ -17,9 +17,9 @@ export default function AdminInfoPanel({ role }: AdminInfoPanelProps) {
         <div className={styles.decorativeCircle2}></div>
         
         <div className={styles.content}>
-          <div className={styles.iconContainer}>
+          <div className={`${styles.iconContainer} ${styles.iconContainerSuperAdmin}`}>
             <img 
-              src="https://www.figma.com/api/mcp/asset/2a744bdd-bfd2-46f9-862c-7dc0d5ddb726" 
+              src="/images/icons/admin-login/super-admin-shield.svg" 
               alt="Super Admin Dashboard"
               className={styles.icon}
             />
@@ -54,7 +54,9 @@ export default function AdminInfoPanel({ role }: AdminInfoPanelProps) {
   }
 
   return (
-    <div className={styles.panel}>
+    <div className={styles.panel} style={{
+      background: 'linear-gradient(180deg, #4f812b 0%, #3d6522 100%)'
+    }}>
       {/* 배경 장식 원형 */}
       <div className={styles.decorativeCircle1}></div>
       <div className={styles.decorativeCircle2}></div>
@@ -62,7 +64,7 @@ export default function AdminInfoPanel({ role }: AdminInfoPanelProps) {
       <div className={styles.content}>
         <div className={styles.iconContainer}>
           <img 
-            src="https://www.figma.com/api/mcp/asset/24956db7-0edc-4a7e-a423-92c50025ca34" 
+            src="/images/icons/admin-login/club-leader-icon.svg" 
             alt="Leader Dashboard"
             className={styles.icon}
           />

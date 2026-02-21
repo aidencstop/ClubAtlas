@@ -11,7 +11,9 @@ export default function EventsPage() {
       <DashboardHeader />
       <div className={styles.mainContent}>
         <SidebarNavigation />
-        <EventsSection />
+        <div className={styles.eventsContent}>
+          <EventsSection />
+        </div>
       </div>
     </div>
   );

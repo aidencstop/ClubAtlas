@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import styles from './EditBasicInformation.module.css';
 
-const imgIconUpload = "https://www.figma.com/api/mcp/asset/3443f4d0-635f-4f31-a5a4-3fcf7af9f9cb";
+const imgIconUpload = "/images/icons/dashboard/icon-upload.svg";
 
 const CATEGORIES = [
   'Student Leadership and Media',
@@ -25,6 +25,8 @@ const CATEGORIES = [
 interface EditBasicInformationProps {
   clubName: string;
   setClubName: (value: string) => void;
+  tagline: string;
+  setTagline: (value: string) => void;
   activityTypes: string[];
   setActivityTypes: (value: string[]) => void;
   missionStatement: string;
@@ -42,6 +44,8 @@ const ACTIVITY_TYPES = ['Online', 'On-Campus', 'Off-Campus', 'Hybrid'];
 export default function EditBasicInformation({
   clubName,
   setClubName,
+  tagline,
+  setTagline,
   activityTypes,
   setActivityTypes,
   missionStatement,
@@ -87,7 +91,7 @@ export default function EditBasicInformation({
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.sectionTitle}>Basic Information</h2>
+      <h2 className={styles.sectionTitle}>Current Profile Preview</h2>
 
       <div className={styles.imagesRow}>
         <div className={styles.logoColumn}>
@@ -136,6 +140,17 @@ export default function EditBasicInformation({
           value={clubName}
           onChange={(e) => setClubName(e.target.value)}
           className={styles.input}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <label className={styles.label}>Tagline</label>
+        <input
+          type="text"
+          value={tagline}
+          onChange={(e) => setTagline(e.target.value)}
+          className={styles.input}
+          placeholder="Building the future, one robot at a time"
         />
       </div>
 

@@ -2,11 +2,11 @@
 
 import styles from './EventCard.module.css';
 
-const imgIconCalendar = "https://www.figma.com/api/mcp/asset/0b484682-e16d-476a-8ae2-92199f87cd5d";
-const imgIconPeople = "https://www.figma.com/api/mcp/asset/dd19207a-63e5-4f47-882c-18ef0100f6ce";
-const imgIconMail = "https://www.figma.com/api/mcp/asset/1270314d-18bb-4d3f-924b-5991b020b1be";
-const imgIconEdit = "https://www.figma.com/api/mcp/asset/adc1b63b-dc7f-44ad-b00e-fa5ff64894a2";
-const imgIconDelete = "https://www.figma.com/api/mcp/asset/d95c4067-13e5-47be-b49e-4d339a2b57e9";
+const imgIconCalendar = "/images/icons/dashboard/icon-calendar.svg";
+const imgIconPeople = "/images/icons/dashboard/icon-people.svg";
+const imgIconMail = "/images/icons/dashboard/icon-mail.svg";
+const imgIconEdit = "/images/icons/dashboard/icon-edit.svg";
+const imgIconDelete = "/images/icons/dashboard/icon-delete.svg";
 
 interface Event {
   id: string;

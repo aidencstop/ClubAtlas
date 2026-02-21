@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './SidebarNavigation.module.css';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/39b932ab-3677-49ee-bf16-7761fb3eaf68";
-const imgIcon1 = "https://www.figma.com/api/mcp/asset/fc0d4d4b-4a7e-4fe6-8212-5138f7f1d0fa";
-const imgIcon2 = "https://www.figma.com/api/mcp/asset/f9a0d896-59aa-4f4d-9ac4-b0740537ba8b";
-const imgIcon3 = "https://www.figma.com/api/mcp/asset/bd8dee7d-f81d-4b0d-9a07-6c1710716739";
-const imgIcon4 = "https://www.figma.com/api/mcp/asset/bc1d3d37-65af-4a05-a651-6c8a1e11cff7";
-const imgIcon5 = "https://www.figma.com/api/mcp/asset/c71c1457-508b-4a52-9da5-ac57f1d6967e";
+const imgIcon = "/images/icons/dashboard/nav-overview.svg";
+const imgIcon1 = "/images/icons/dashboard/nav-club-profile.svg";
+const imgIcon2 = "/images/icons/dashboard/nav-events.svg";
+const imgIcon3 = "/images/icons/dashboard/nav-announcements.svg";
+const imgIcon4 = "/images/icons/dashboard/nav-subscribers.svg";
+const imgIcon5 = "/images/icons/dashboard/nav-analytics.svg";
 
 interface NavItem {
   label: string;
@@ -36,14 +36,21 @@ export default function SidebarNavigation() {
         <h3 className={styles.navTitle}>Navigation</h3>
         <nav className={styles.nav}>
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/admin/dashboard'
+              ? pathname === item.href
+              : (pathname === item.href || pathname.startsWith(item.href + '/'));
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
               >
-                <img src={item.icon} alt={item.label} className={styles.navIcon} />
+                <span
+                  className={styles.navIcon}
+                  style={{ maskImage: `url(${item.icon})`, WebkitMaskImage: `url(${item.icon})` }}
+                  role="img"
+                  aria-hidden={true}
+                />
                 <span className={styles.navText}>{item.label}</span>
               </Link>
             );

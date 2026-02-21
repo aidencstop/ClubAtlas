@@ -11,7 +11,9 @@ export default function SubscribersPage() {
       <DashboardHeader />
       <div className={styles.mainContent}>
         <SidebarNavigation />
-        <SubscribersSection />
+        <div className={styles.subscribersContent}>
+          <SubscribersSection />
+        </div>
       </div>
     </div>
   );

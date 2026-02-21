@@ -5,9 +5,9 @@ import styles from './AnnouncementsSection.module.css';
 import AnnouncementCard from './AnnouncementCard';
 import CreateAnnouncementModal, { AnnouncementFormData } from './CreateAnnouncementModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement, Announcement as ApiAnnouncement } from '@/lib/api';
+import { getAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement, Announcement as ApiAnnouncement, getClubSubscribers } from '@/lib/api';
 
-const imgIconAdd = "https://www.figma.com/api/mcp/asset/9ff62ea6-b3dd-4745-98ee-413e7b8375d7";
+const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
 
 interface Announcement {
   id: string;
@@ -43,7 +43,14 @@ export default function AnnouncementsSection() {
       setError(null);
 
       const clubId = userProfile.managed_club_ids[0];
-      const response = await getAnnouncements({ club_id: clubId, limit: 100 });
+      const [response, subscribersRes] = await Promise.all([
+        getAnnouncements({ club_id: clubId, limit: 100 }),
+        getClubSubscribers(clubId),
+      ]);
+
+      if (subscribersRes.data) {
+        setSubscriberCount(subscribersRes.data.total);
+      }
 
       if (response.data) {
         const mappedAnnouncements: Announcement[] = response.data.announcements.map((apiAnnouncement: ApiAnnouncement) => {
@@ -67,10 +74,6 @@ export default function AnnouncementsSection() {
         });
 
         setAnnouncements(mappedAnnouncements);
-        
-        if (mappedAnnouncements.length > 0) {
-          setSubscriberCount(mappedAnnouncements[0].sentTo);
-        }
       }
     } catch (err) {
       console.error('Failed to load announcements:', err);
@@ -146,8 +149,9 @@ export default function AnnouncementsSection() {
         </div>
 
         <div className={styles.infoBanner}>
+          <img src="/images/icons/dashboard/icon-info.svg" alt="" className={styles.infoIcon} />
           <p className={styles.infoText}>
-            📧 Announcements are automatically sent to all{' '}
+            Announcements are automatically sent to all{' '}
             <span className={styles.subscriberCount}>{subscriberCount} subscribers</span>{' '}
             via email and appear on your club profile page.
           </p>

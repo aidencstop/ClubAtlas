@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import styles from './CreateAnnouncementModal.module.css';
 
-const imgIconAdd = "https://www.figma.com/api/mcp/asset/9ff62ea6-b3dd-4745-98ee-413e7b8375d7";
+const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
 
 interface CreateAnnouncementModalProps {
   isOpen: boolean;

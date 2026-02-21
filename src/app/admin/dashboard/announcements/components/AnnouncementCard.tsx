@@ -2,10 +2,10 @@
 
 import styles from './AnnouncementCard.module.css';
 
-const imgIconMail = "https://www.figma.com/api/mcp/asset/7987a3a9-f240-4241-bffe-62f9f8ef3b60";
-const imgIconEye = "https://www.figma.com/api/mcp/asset/df07d638-997c-464c-a846-58d2d7dec9db";
-const imgIconEdit = "https://www.figma.com/api/mcp/asset/917950bc-6bc8-434c-95c2-0e99c1e129b7";
-const imgIconDelete = "https://www.figma.com/api/mcp/asset/3de6315f-a275-40c4-a43b-92b7cdc7f05f";
+const imgIconMail = "/images/icons/dashboard/icon-mail.svg";
+const imgIconEye = "/images/icons/dashboard/icon-eye.svg";
+const imgIconEdit = "/images/icons/dashboard/icon-edit.svg";
+const imgIconDelete = "/images/icons/dashboard/icon-delete.svg";
 
 interface Announcement {
   id: string;

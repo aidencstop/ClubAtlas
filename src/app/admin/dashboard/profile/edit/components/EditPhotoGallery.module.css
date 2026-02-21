@@ -8,6 +8,12 @@
   gap: 24px;
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .sectionTitle {
   font-family: 'Inter', sans-serif;
   font-size: 24px;
@@ -18,9 +24,28 @@
   letter-spacing: 0.0703px;
 }
 
+.uploadButton {
+  height: 40px;
+  padding: 0 20px;
+  background: linear-gradient(90deg, #4f812b 0%, #6aa84f 100%);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.uploadButton:hover {
+  opacity: 0.9;
+}
+
 .galleryGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 

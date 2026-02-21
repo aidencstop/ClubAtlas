@@ -11,7 +11,9 @@ export default function AnnouncementsPage() {
       <DashboardHeader />
       <div className={styles.mainContent}>
         <SidebarNavigation />
-        <AnnouncementsSection />
+        <div className={styles.announcementsContent}>
+          <AnnouncementsSection />
+        </div>
       </div>
     </div>
   );

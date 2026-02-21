@@ -4,7 +4,7 @@ import Link from 'next/link';
 import styles from './UpcomingEvents.module.css';
 import { Event as ApiEvent } from '@/lib/api/events';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/f9a0d896-59aa-4f4d-9ac4-b0740537ba8b";
+const imgIcon = "/images/icons/dashboard/nav-events.svg";
 
 interface UpcomingEventsProps {
   events: ApiEvent[];

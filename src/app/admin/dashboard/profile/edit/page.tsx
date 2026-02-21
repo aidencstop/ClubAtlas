@@ -2,12 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './EditProfile.module.css';
-import EditProfileHeader from './components/EditProfileHeader';
+import styles from '../../Dashboard.module.css';
+import editStyles from './EditProfile.module.css';
+import DashboardHeader from '../../components/DashboardHeader';
+import SidebarNavigation from '../../components/SidebarNavigation';
+import EditPageHeader from './components/EditPageHeader';
+import EditModeBanner from './components/EditModeBanner';
 import EditBasicInformation from './components/EditBasicInformation';
 import EditMeetingInformation from './components/EditMeetingInformation';
+import EditContactInformation from './components/EditContactInformation';
 import EditLeadershipTeam from './components/EditLeadershipTeam';
 import EditPhotoGallery from './components/EditPhotoGallery';
+import EditUpcomingEvents from './components/EditUpcomingEvents';
+import EditSaveFooter from './components/EditSaveFooter';
 import { getMyManagedClub, updateClub, Club, MeetingSchedule, ClubLeader } from '@/lib/api/clubs';
 import { uploadClubLogo, uploadClubBanner, uploadClubMedia, deleteClubMedia } from '@/lib/api';
 
@@ -19,13 +26,15 @@ export default function EditClubProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Form state
   const [clubName, setClubName] = useState('');
+  const [tagline, setTagline] = useState('');
   const [activityTypes, setActivityTypes] = useState<string[]>([]);
   const [missionStatement, setMissionStatement] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [contactEmail, setContactEmail] = useState('');
+  const [website, setWebsite] = useState('');
+  const [socialMedia, setSocialMedia] = useState('');
   const [meetingSchedule, setMeetingSchedule] = useState<MeetingSchedule[]>([]);
   const [leaders, setLeaders] = useState<ClubLeader[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | undefined>();
@@ -46,10 +55,8 @@ export default function EditClubProfilePage() {
       if (response.data) {
         const clubData = response.data;
         setClub(clubData);
-        
-        // 폼 state 초기화
         setClubName(clubData.name);
-        // activity_type을 배열로 처리 (하위 호환성 유지)
+        setTagline(clubData.tagline || '');
         const activityTypeArray = Array.isArray(clubData.activity_type)
           ? clubData.activity_type
           : typeof clubData.activity_type === 'string' && clubData.activity_type
@@ -87,11 +94,13 @@ export default function EditClubProfilePage() {
       const response = await updateClub(club.id, {
         name: clubName,
         description: missionStatement,
-        categories: categories,
-        tags: tags,
+        tagline: tagline || undefined,
+        categories,
+        tags,
         activity_type: activityTypes,
         contact_email: contactEmail,
         meeting_schedule: meetingSchedule,
+        leaders,
       });
 
       if (response.data) {
@@ -110,14 +119,17 @@ export default function EditClubProfilePage() {
     }
   };
 
+  const handleDiscard = () => {
+    if (confirm('Are you sure you want to discard all changes?')) {
+      router.push('/admin/dashboard/profile');
+    }
+  };
+
   const handleLogoUpload = async (file: File) => {
     if (!club) return;
-
     try {
       const response = await uploadClubLogo(club.id, file);
-      if (response.data) {
-        setLogoUrl(response.data.file_url);
-      }
+      if (response.data) setLogoUrl(response.data.file_url);
     } catch (err) {
       console.error('Failed to upload logo:', err);
       setError('Failed to upload logo');
@@ -126,12 +138,9 @@ export default function EditClubProfilePage() {
 
   const handleBannerUpload = async (file: File) => {
     if (!club) return;
-
     try {
       const response = await uploadClubBanner(club.id, file);
-      if (response.data) {
-        setBannerUrl(response.data.file_url);
-      }
+      if (response.data) setBannerUrl(response.data.file_url);
     } catch (err) {
       console.error('Failed to upload banner:', err);
       setError('Failed to upload banner');
@@ -140,12 +149,9 @@ export default function EditClubProfilePage() {
 
   const handleMediaUpload = async (file: File) => {
     if (!club) return;
-
     try {
       const response = await uploadClubMedia(club.id, file);
-      if (response.data) {
-        setMediaUrls([...mediaUrls, response.data.file_url]);
-      }
+      if (response.data) setMediaUrls((prev) => [...prev, response.data.file_url]);
     } catch (err) {
       console.error('Failed to upload media:', err);
       setError('Failed to upload media');
@@ -154,20 +160,22 @@ export default function EditClubProfilePage() {
 
   const handleMediaDelete = async (fileUrl: string) => {
     if (!club) return;
-
     try {
       await deleteClubMedia(club.id, fileUrl);
-      setMediaUrls(mediaUrls.filter(url => url !== fileUrl));
+      setMediaUrls((prev) => prev.filter((url) => url !== fileUrl));
     } catch (err) {
       console.error('Failed to delete media:', err);
-      setError('Failed to delete media');
     }
   };
 
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>Loading club profile...</div>
+        <DashboardHeader />
+        <div className={styles.mainContent}>
+          <SidebarNavigation />
+          <div className={editStyles.loading}>Loading club profile...</div>
+        </div>
       </div>
     );
   }
@@ -175,68 +183,73 @@ export default function EditClubProfilePage() {
   if (error && !club) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>{error}</div>
+        <DashboardHeader />
+        <div className={styles.mainContent}>
+          <SidebarNavigation />
+          <div className={editStyles.error}>{error}</div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={styles.container}>
-      <EditProfileHeader 
-        onSave={handleSave}
-        onCancel={() => router.push('/admin/dashboard/profile')}
-        isSaving={isSaving}
-      />
-      
-      {successMessage && (
-        <div className={styles.successBanner}>{successMessage}</div>
-      )}
-      
-      {error && (
-        <div className={styles.errorBanner}>{error}</div>
-      )}
+      <DashboardHeader />
+      <div className={styles.mainContent}>
+        <SidebarNavigation />
+        <div className={editStyles.formWrapper}>
+          {successMessage && (
+            <div className={editStyles.successBanner}>{successMessage}</div>
+          )}
+          {error && <div className={editStyles.errorBanner}>{error}</div>}
 
-      <div className={styles.content}>
-        <div className={styles.formContainer}>
-          <EditBasicInformation
-            clubName={clubName}
-            setClubName={setClubName}
-            activityTypes={activityTypes}
-            setActivityTypes={setActivityTypes}
-            missionStatement={missionStatement}
-            setMissionStatement={setMissionStatement}
-            categories={categories}
-            setCategories={setCategories}
-            logoUrl={logoUrl}
-            bannerUrl={bannerUrl}
-            onLogoUpload={handleLogoUpload}
-            onBannerUpload={handleBannerUpload}
-          />
-          <EditMeetingInformation
-            meetingSchedule={meetingSchedule}
-            setMeetingSchedule={setMeetingSchedule}
-            contactEmail={contactEmail}
-            setContactEmail={setContactEmail}
-          />
-          <EditLeadershipTeam
-            leaders={leaders}
-            setLeaders={setLeaders}
-          />
-          <EditPhotoGallery
-            mediaUrls={mediaUrls}
-            onMediaUpload={handleMediaUpload}
-            onMediaDelete={handleMediaDelete}
-          />
+          <EditModeBanner />
+          <EditPageHeader />
+
+          <div className={editStyles.formContainer}>
+            <EditBasicInformation
+              clubName={clubName}
+              setClubName={setClubName}
+              tagline={tagline}
+              setTagline={setTagline}
+              activityTypes={activityTypes}
+              setActivityTypes={setActivityTypes}
+              missionStatement={missionStatement}
+              setMissionStatement={setMissionStatement}
+              categories={categories}
+              setCategories={setCategories}
+              logoUrl={logoUrl}
+              bannerUrl={bannerUrl}
+              onLogoUpload={handleLogoUpload}
+              onBannerUpload={handleBannerUpload}
+            />
+            <EditMeetingInformation
+              meetingSchedule={meetingSchedule}
+              setMeetingSchedule={setMeetingSchedule}
+            />
+            <EditContactInformation
+              email={contactEmail}
+              setEmail={setContactEmail}
+              website={website}
+              setWebsite={setWebsite}
+              socialMedia={socialMedia}
+              setSocialMedia={setSocialMedia}
+            />
+            <EditLeadershipTeam leaders={leaders} setLeaders={setLeaders} />
+            <EditPhotoGallery
+              mediaUrls={mediaUrls}
+              onMediaUpload={handleMediaUpload}
+              onMediaDelete={handleMediaDelete}
+            />
+            {club && <EditUpcomingEvents clubId={club.id} />}
+            <EditSaveFooter
+              onDiscard={handleDiscard}
+              onSave={handleSave}
+              isSaving={isSaving}
+            />
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-

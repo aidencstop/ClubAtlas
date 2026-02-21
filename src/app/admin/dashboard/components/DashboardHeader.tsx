@@ -8,10 +8,10 @@ import EditProfileModal from '@/components/EditProfileModal';
 import { getUnreadCount, getMyNotifications, markNotificationAsRead, markAllNotificationsAsRead, NotificationResponse } from '@/lib/api/notifications';
 import styles from './DashboardHeader.module.css';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/14f424ba-4031-4ab3-b5b4-aca6a8ce9f8f";
-const imgIcon1 = "https://www.figma.com/api/mcp/asset/93033ad4-3a1b-4cd2-adbc-b07121312a18";
-const imgIcon2 = "https://www.figma.com/api/mcp/asset/ff119992-fa28-430d-a710-ca69f5869f0e";
-const imgIcon3 = "https://www.figma.com/api/mcp/asset/1170304d-7665-44bb-811d-db4ebefff5e1";
+const imgIcon = "/images/icons/dashboard/leader-logo.svg";
+const imgIcon1 = "/images/icons/dashboard/bell.svg";
+const imgIcon2 = "/images/icons/dashboard/settings.svg";
+const imgIcon3 = "/images/icons/dashboard/logout.svg";
 
 export default function DashboardHeader() {
   const router = useRouter();

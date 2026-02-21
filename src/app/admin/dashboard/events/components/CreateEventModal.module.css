@@ -13,7 +13,7 @@
 
 .modal {
   background: white;
-  width: 384px;
+  width: 480px;
   border-radius: 16px;
   box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04);
   animation: modalSlideIn 0.2s ease-out;
@@ -91,6 +91,44 @@
 }
 
 .input:focus {
+  background: #f3f4f6;
+}
+
+.dateTimeRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.dateInputWrapper {
+  position: relative;
+  flex: 1;
+}
+
+.dateIcon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.timeInput {
+  flex: 0 0 100px;
+  height: 48px;
+  padding: 0 16px;
+  background: #f9fafb;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #0a0a0a;
+  outline: none;
+}
+
+.timeInput:focus {
   background: #f3f4f6;
 }
 
