@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getIdToken } from '@/lib/firebase/auth';
 import styles from './SystemMaintenance.module.css';
 
-const imgIconDownload = "https://www.figma.com/api/mcp/asset/623de70c-5c70-4512-a74a-1afacf31978f";
+const downloadIcon = "/images/icons/superadmin/system/download.svg";
 
 export default function SystemMaintenance() {
   const { user } = useAuth();
@@ -90,7 +90,7 @@ export default function SystemMaintenance() {
               {backing ? 'Creating backup...' : 'Click to create backup'}
             </div>
           </div>
-          <img src={imgIconDownload} alt="Download" className={styles.icon} />
+          <img src={downloadIcon} alt="Download" className={styles.icon} />
         </button>
         
         <button 

@@ -69,10 +69,8 @@ export default function AllClubsPage() {
               className={styles.createButton}
               onClick={() => setIsModalOpen(true)}
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 5V15M5 10H15" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              Create New Club
+              <img src="/images/icons/superadmin/all-clubs/plus.svg" alt="" className={styles.createButtonIcon} />
+              + Create New Club
             </button>
           </div>
 

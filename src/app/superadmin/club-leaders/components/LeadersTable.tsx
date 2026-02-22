@@ -5,8 +5,8 @@ import styles from './LeadersTable.module.css';
 import EditLeaderModal from './EditLeaderModal';
 import { getClubLeaders, deleteClubLeader, ClubLeaderInfo } from '@/lib/api/superadmin';
 
-const imgIconEdit = "https://www.figma.com/api/mcp/asset/5c34b495-2834-4791-b0c0-a8a953f629bb";
-const imgIconDelete = "https://www.figma.com/api/mcp/asset/74f3b4d7-5e95-437b-8440-a517548fa2f3";
+const editIcon = "/images/icons/superadmin/club-leaders/edit.svg";
+const deleteIcon = "/images/icons/superadmin/club-leaders/delete.svg";
 
 interface Leader {
   id: string;
@@ -114,7 +114,7 @@ export default function LeadersTable({ key }: LeadersTableProps) {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+        <div className={styles.emptyMessage} style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
           Loading club leaders...
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function LeadersTable({ key }: LeadersTableProps) {
   if (error) {
     return (
       <div className={styles.container}>
-        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#e74c3c' }}>
+        <div className={styles.emptyMessage} style={{ padding: '40px 20px', textAlign: 'center', color: '#e74c3c' }}>
           {error}
         </div>
       </div>
@@ -181,14 +181,14 @@ export default function LeadersTable({ key }: LeadersTableProps) {
                 onClick={() => handleEdit(leader)}
                 aria-label="Edit"
               >
-                <img src={imgIconEdit} alt="Edit" className={styles.actionIcon} />
+                <img src={editIcon} alt="Edit" className={styles.actionIcon} />
               </button>
               <button
                 className={styles.actionButton}
                 onClick={() => handleDelete(leader.id)}
                 aria-label="Delete"
               >
-                <img src={imgIconDelete} alt="Delete" className={styles.actionIcon} />
+                <img src={deleteIcon} alt="Delete" className={styles.actionIcon} />
               </button>
             </div>
           </div>

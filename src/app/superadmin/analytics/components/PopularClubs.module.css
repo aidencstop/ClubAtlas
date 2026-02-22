@@ -22,17 +22,16 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .clubItem {
-  background: #f9fafb;
-  border-radius: 14px;
-  padding: 16px 16px 0 16px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  height: 84px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e5e7eb;
+  min-height: 56px;
 }
 
 .clubInfo {
@@ -64,8 +63,9 @@
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-  color: #6a7282;
+  color: #6b7280;
   letter-spacing: -0.1504px;
+  flex-shrink: 0;
 }
 
 

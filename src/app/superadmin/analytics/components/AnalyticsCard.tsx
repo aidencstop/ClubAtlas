@@ -13,7 +13,7 @@ export default function AnalyticsCard({ value, label, subtext }: AnalyticsCardPr
     <div className={styles.card}>
       <div className={styles.value}>{value}</div>
       <div className={styles.label}>{label}</div>
-      <div className={styles.subtext}>{subtext}</div>
+      {subtext ? <div className={styles.subtext}>{subtext}</div> : null}
     </div>
   );
 }

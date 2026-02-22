@@ -5,9 +5,9 @@ import styles from './EditLeaderModal.module.css';
 import { getClubs, Club } from '@/lib/api/clubs';
 import { updateClubLeader } from '@/lib/api/superadmin';
 
-const imgIconClose = "https://www.figma.com/api/mcp/asset/a7fa1ae8-ccbb-49fd-a934-d777d40b49ff";
-const imgIconInfo = "https://www.figma.com/api/mcp/asset/628cde68-3afd-40bb-8ce1-5eace05e0dc5";
-const imgIconCheck = "https://www.figma.com/api/mcp/asset/ce1e77d4-105e-411e-af23-0d9001707a88";
+const closeIcon = "/images/icons/superadmin/club-leaders/modal-close.svg";
+const infoIcon = "/images/icons/superadmin/club-leaders/icon-info.svg";
+const checkIcon = "/images/icons/superadmin/club-leaders/icon-check.svg";
 
 interface Leader {
   id: string;
@@ -116,7 +116,7 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
         <div className={styles.header}>
           <h3 className={styles.title}>Edit Leader Information</h3>
           <button className={styles.closeButton} onClick={onClose}>
-            <img src={imgIconClose} alt="Close" className={styles.closeIcon} />
+            <img src={closeIcon} alt="Close" className={styles.closeIcon} />
           </button>
         </div>
 
@@ -183,7 +183,7 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
           </div>
 
           <div className={styles.infoBox}>
-            <img src={imgIconInfo} alt="Info" className={styles.infoIcon} />
+            <img src={infoIcon} alt="Info" className={styles.infoIcon} />
             <div className={styles.infoContent}>
               <p className={styles.infoTitle}>Important Notes:</p>
               <ul className={styles.infoList}>
@@ -199,7 +199,7 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
               Cancel
             </button>
             <button type="submit" className={styles.saveButton} disabled={isLoading}>
-              <img src={imgIconCheck} alt="Save" className={styles.checkIcon} />
+              <img src={checkIcon} alt="Save" className={styles.checkIcon} />
               {isLoading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>

@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getIdToken } from '@/lib/firebase/auth';
 import styles from './TrafficChart.module.css';
 
-const imgIconChart = "https://www.figma.com/api/mcp/asset/5a8fd583-ddb0-4cff-89a8-9aa8c78528d6";
+const chartIcon = "/images/icons/superadmin/analytics/chart.svg";
 
 interface TrafficChartData {
   labels: string[];
@@ -53,7 +53,7 @@ export default function TrafficChart() {
       <h3 className={styles.title}>Traffic Overview</h3>
       <div className={styles.chartArea}>
         <div className={styles.placeholder}>
-          <img src={imgIconChart} alt="Chart" className={styles.icon} />
+          <img src={chartIcon} alt="Chart" className={styles.icon} />
           <p className={styles.text}>
             {loading ? 'Loading traffic data...' : chartData ? `${chartData.labels.length} days of traffic data loaded` : 'Traffic Chart'}
           </p>

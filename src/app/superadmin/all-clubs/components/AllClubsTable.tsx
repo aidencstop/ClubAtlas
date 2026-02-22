@@ -6,9 +6,26 @@ import { getIdToken } from '@/lib/firebase/auth';
 import styles from './AllClubsTable.module.css';
 import EditClubModal from './EditClubModal';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/24e4bd95-a117-4a3d-b4b9-c28ca4f3d370";
-const imgIconEdit = "https://www.figma.com/api/mcp/asset/76d31b28-0bf6-42e2-b7a3-601f82dbab4d";
-const imgIconDelete = "https://www.figma.com/api/mcp/asset/989a250a-757f-40c7-862d-b030d3c86498";
+const searchIcon = "/images/icons/superadmin/all-clubs/search.svg";
+const editIcon = "/images/icons/superadmin/all-clubs/edit.svg";
+const deleteIcon = "/images/icons/superadmin/all-clubs/delete.svg";
+
+const CATEGORIES = [
+  'Student Leadership and Media',
+  'Cultural Affinity Groups',
+  'Community Service and Social Justice',
+  'Gender Equity and Sexual Health',
+  'Mental Wellness',
+  'Stem Research and Olympiad',
+  'Data Science and Engineering',
+  'Finance and Economy',
+  'Humanities',
+  'Literature, Language, and Philiology',
+  'Visual Arts',
+  'Performing Arts',
+  'Food, Cooking, Cuisine',
+  'Sports and Recreations',
+];
 
 interface Club {
   id: string;
@@ -123,21 +140,11 @@ export default function AllClubsTable() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div style={{ padding: '40px', textAlign: 'center' }}>
-          Loading clubs...
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.container}>
-      <div className={styles.filterSection}>
+      <div className={styles.searchSection}>
         <div className={styles.searchContainer}>
-          <img src={imgIcon} alt="Search" className={styles.searchIcon} />
+          <img src={searchIcon} alt="Search" className={styles.searchIcon} />
           <input
             type="text"
             placeholder="Search clubs..."
@@ -146,19 +153,17 @@ export default function AllClubsTable() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select 
+        <select
           className={styles.dropdown}
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
           <option value="">All Categories</option>
-          <option value="Academic">Academic</option>
-          <option value="Arts">Arts</option>
-          <option value="Social">Social</option>
-          <option value="Sports">Sports</option>
-          <option value="Tech">Tech</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
         </select>
-        <select 
+        <select
           className={styles.dropdown}
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -180,14 +185,20 @@ export default function AllClubsTable() {
         </div>
 
         <div className={styles.tableBody}>
-          {clubs.length === 0 ? (
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+              Loading clubs...
+            </div>
+          ) : clubs.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
               No clubs found
             </div>
           ) : (
-            clubs.map((club) => (
-              <div key={club.id} className={styles.tableRow}>
-                <div className={styles.columnClubName}>{club.name}</div>
+            clubs.map((club, index) => (
+              <div key={club.id} className={`${styles.tableRow} ${index === 0 ? styles.tableRowFirst : ''}`}>
+                <div className={styles.columnClubName}>
+                  <a href={`/club/${club.id}`} className={styles.clubNameLink}>{club.name}</a>
+                </div>
                 <div className={styles.columnCategory}>
                   <span className={styles.categoryBadge}>
                     {club.categories[0] || 'N/A'}
@@ -200,7 +211,7 @@ export default function AllClubsTable() {
                 </div>
                 <div className={styles.columnMembers}>
                   <span className={styles.membersText}>
-                    {club.total_subscribers} subscriber{club.total_subscribers !== 1 ? 's' : ''}
+                    {club.total_subscribers.toLocaleString()}
                   </span>
                 </div>
                 <div className={styles.columnStatus}>
@@ -213,13 +224,13 @@ export default function AllClubsTable() {
                     className={styles.actionButton}
                     onClick={() => handleEdit(club)}
                   >
-                    <img src={imgIconEdit} alt="Edit" />
+                    <img src={editIcon} alt="Edit" />
                   </button>
                   <button 
                     className={styles.actionButton}
                     onClick={() => handleDelete(club.id)}
                   >
-                    <img src={imgIconDelete} alt="Delete" />
+                    <img src={deleteIcon} alt="Delete" />
                   </button>
                 </div>
               </div>

@@ -169,7 +169,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/student/login');
+      router.push('/welcome');
     } catch (error) {
       console.error('Logout failed:', error);
     }

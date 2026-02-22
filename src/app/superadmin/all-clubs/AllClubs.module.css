@@ -1,14 +1,16 @@
 .container {
   position: relative;
+  background: #F1FFF6;
+  min-height: 100vh;
 }
 
 .mainContent {
-  padding-top: 112px;
-  padding-left: 94.5px;
-  padding-right: 94.5px;
+  padding-top: 120px;
+  padding-left: 87px;
+  padding-right: 87px;
   display: flex;
   gap: 24px;
-  min-height: calc(100vh - 112px);
+  min-height: calc(100vh - 120px);
   padding-bottom: 48px;
 }
 
@@ -57,6 +59,11 @@
 
 .createButton:hover {
   opacity: 0.9;
+}
+
+.createButtonIcon {
+  width: 20px;
+  height: 20px;
 }
 
 @media (max-width: 1200px) {

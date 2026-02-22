@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getIdToken } from '@/lib/firebase/auth';
 import styles from './CreateClubModal.module.css';
 
-const imgIconClose = "https://www.figma.com/api/mcp/asset/29d3442c-325b-48d6-a958-1f58d1a32374";
+const closeIcon = "/images/icons/superadmin/all-clubs/modal-close.svg";
 
 interface EditClubModalProps {
   isOpen: boolean;
@@ -111,7 +111,7 @@ export default function EditClubModal({
         <div className={styles.header}>
           <h3 className={styles.title}>Edit Club</h3>
           <button className={styles.closeButton} onClick={onClose}>
-            <img src={imgIconClose} alt="Close" className={styles.closeIcon} />
+            <img src={closeIcon} alt="Close" className={styles.closeIcon} />
           </button>
         </div>
 

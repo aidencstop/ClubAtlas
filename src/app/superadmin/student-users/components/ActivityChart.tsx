@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getIdToken } from '@/lib/firebase/auth';
 import styles from './ActivityChart.module.css';
 
-const imgIconChart = "https://www.figma.com/api/mcp/asset/63c0c552-db4a-4d6c-9d0e-dc92254947e1";
+const chartIcon = "/images/icons/superadmin/student-users/chart.svg";
 
 interface ActivityChartData {
   labels: string[];
@@ -53,7 +53,7 @@ export default function ActivityChart() {
       <h3 className={styles.title}>User Activity Trends</h3>
       <div className={styles.chartArea}>
         <div className={styles.placeholder}>
-          <img src={imgIconChart} alt="Chart" className={styles.icon} />
+          <img src={chartIcon} alt="Chart" className={styles.icon} />
           <p className={styles.text}>
             {loading ? 'Loading chart data...' : chartData ? `${chartData.labels.length} days of activity data loaded` : 'User Activity Chart Visualization'}
           </p>

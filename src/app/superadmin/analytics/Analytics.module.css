@@ -1,15 +1,17 @@
 .container {
   position: relative;
+  background: linear-gradient(134.55deg, #f1fff6 0%, #eaf5f2 50%, #f1fff6 100%);
+  min-height: 100vh;
 }
 
 .mainContent {
-  padding-top: 112px;
-  padding-left: 94.5px;
-  padding-right: 94.5px;
+  padding-top: 120px;
+  padding-left: 87px;
+  padding-right: 87px;
   display: flex;
   gap: 24px;
-  min-height: calc(100vh - 112px);
-  padding-bottom: 48px;
+  min-height: calc(100vh - 120px);
+  padding-bottom: 80px;
 }
 
 .contentArea {
@@ -39,10 +41,17 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
+  width: 900px;
+  max-width: 100%;
   height: 376px;
 }
 
 @media (max-width: 1200px) {
+  .mainContent {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
   }

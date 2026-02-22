@@ -3,12 +3,12 @@
 }
 
 .mainContent {
-  padding-top: 112px;
-  padding-left: 94.5px;
-  padding-right: 94.5px;
+  padding-top: 120px;
+  padding-left: 87px;
+  padding-right: 87px;
   display: flex;
   gap: 24px;
-  min-height: calc(100vh - 112px);
+  min-height: calc(100vh - 120px);
   padding-bottom: 48px;
 }
 
@@ -17,6 +17,8 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
+  overflow-x: visible;
 }
 
 .header {
@@ -63,6 +65,11 @@
   transform: translateY(1px);
 }
 
+.assignButtonIcon {
+  width: 20px;
+  height: 20px;
+}
+
 .tabs {
   display: flex;
   gap: 4px;
@@ -95,6 +102,8 @@
 }
 
 .tableWrapper {
+  width: 900px;
+  box-sizing: border-box;
   background: white;
   border-radius: 16px;
   padding: 16px;

@@ -4,18 +4,21 @@
   gap: 24px;
 }
 
-.filterSection {
+.searchSection {
   background: white;
   border-radius: 16px;
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
   padding: 16px;
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .searchContainer {
-  flex: 1;
+  width: 100%;
+  max-width: 520px;
   background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   height: 48px;
   display: flex;
@@ -58,14 +61,11 @@
   background: white;
   cursor: pointer;
   outline: none;
+  min-width: 140px;
 }
 
-.dropdown:first-of-type {
-  width: 157px;
-}
-
-.dropdown:last-of-type {
-  width: 125px;
+.dropdown:hover {
+  border-color: #d1d5db;
 }
 
 .tableContainer {
@@ -76,7 +76,8 @@
 }
 
 .tableHeader {
-  background: #f9fafb;
+  background: #F9FAFB;
+  font-weight: 600;
   border-bottom: 1px solid #e5e7eb;
   height: 57px;
   display: flex;
@@ -101,10 +102,29 @@
   padding: 0 24px;
   height: 65px;
   border-bottom: 1px solid #e5e7eb;
+  background: #FFFFFF;
 }
 
 .tableRow:last-child {
   border-bottom: none;
+}
+
+.tableRowFirst {
+  background: #FFFFFF;
+}
+
+.clubNameLink {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #0a0a0a;
+  text-decoration: underline;
+  letter-spacing: -0.3125px;
+}
+
+.clubNameLink:hover {
+  color: #2d6a4e;
 }
 
 .columnClubName {
@@ -140,8 +160,8 @@
 }
 
 .categoryBadge {
-  background: #dbeafe;
-  color: #1447e6;
+  background: #ebf8ff;
+  color: #3182ce;
   padding: 4px 12px;
   border-radius: 9999px;
   font-family: 'Inter', sans-serif;
@@ -180,13 +200,18 @@
 }
 
 .statusACTIVE {
-  background: #dcfce7;
-  color: #008236;
+  background: #d4edda;
+  color: #198754;
 }
 
 .statusPENDING {
-  background: #fef9c2;
-  color: #a65f00;
+  background: #fff3cd;
+  color: #856404;
+}
+
+.statusINACTIVE {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .actionButton {

@@ -5,7 +5,7 @@ import styles from './AssignLeaderModal.module.css';
 import { getClubs, Club } from '@/lib/api/clubs';
 import { assignClubLeader } from '@/lib/api/superadmin';
 
-const imgIconClose = "https://www.figma.com/api/mcp/asset/2a5b716d-8aba-49c7-af7f-2044b39bf661";
+const closeIcon = "/images/icons/superadmin/club-leaders/modal-close.svg";
 
 interface AssignLeaderModalProps {
   isOpen: boolean;
@@ -80,7 +80,7 @@ export default function AssignLeaderModal({ isOpen, onClose, onSuccess }: Assign
         <div className={styles.header}>
           <h3 className={styles.title}>Assign New Leader</h3>
           <button className={styles.closeButton} onClick={onClose}>
-            <img src={imgIconClose} alt="Close" className={styles.closeIcon} />
+            <img src={closeIcon} alt="Close" className={styles.closeIcon} />
           </button>
         </div>
 

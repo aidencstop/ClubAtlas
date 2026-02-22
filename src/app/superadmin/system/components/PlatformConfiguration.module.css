@@ -1,12 +1,13 @@
 .container {
+  width: 900px;
+  max-width: 100%;
   background: white;
   border-radius: 16px;
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1);
-  padding: 24px 24px 0 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  height: 378px;
 }
 
 .title {
@@ -22,17 +23,17 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .item {
   border: 1px solid #e5e7eb;
   border-radius: 14px;
-  padding: 1px 17px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 82px;
+  min-height: 72px;
 }
 
 .info {
@@ -78,7 +79,7 @@
 }
 
 .statusButton.enabled {
-  background: #00a63e;
+  background: #34C759;
   color: white;
 }
 

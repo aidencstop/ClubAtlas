@@ -21,13 +21,13 @@
 
 .chartArea {
   flex: 1;
-  border: 1px solid #ffe2e2;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
-  background: linear-gradient(159.81deg, #eff6ff 0%, #faf5ff 100%);
+  background: #f9fafb;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1px;
+  padding: 24px;
 }
 
 .placeholder {
@@ -47,7 +47,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
-  color: #6a7282;
+  color: #6b7280;
   margin: 0;
   letter-spacing: -0.3125px;
   text-align: center;

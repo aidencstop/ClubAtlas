@@ -9,7 +9,6 @@ import styles from './SuperAdminHeader.module.css';
 
 const logoIcon = "/images/icons/superadmin/header-shield.svg";
 const settingsIcon = "/images/icons/superadmin/header-settings.svg";
-const globeButtonIcon = "/images/icons/superadmin/header-globe-button.svg";
 const logoutIcon = "/images/icons/superadmin/header-logout.svg";
 
 export default function SuperAdminHeader() {
@@ -20,7 +19,7 @@ export default function SuperAdminHeader() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/admin/login');
+      router.push('/welcome');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -43,7 +42,6 @@ export default function SuperAdminHeader() {
           <img src={settingsIcon} alt="Settings" className={styles.icon} />
         </button>
         <a href="/welcome" className={styles.textButton}>
-          <img src={globeButtonIcon} alt="" className={styles.globeIcon} />
           View Public Site
         </a>
         <div className={styles.userProfile}>

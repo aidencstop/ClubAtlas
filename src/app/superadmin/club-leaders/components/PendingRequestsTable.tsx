@@ -9,8 +9,8 @@ import styles from './PendingRequestsTable.module.css';
 import ApproveRequestModal from './ApproveRequestModal';
 import RejectRequestModal from './RejectRequestModal';
 
-const imgIconCheck = "https://www.figma.com/api/mcp/asset/5c34b495-2834-4791-b0c0-a8a953f629bb";
-const imgIconClose = "https://www.figma.com/api/mcp/asset/74f3b4d7-5e95-437b-8440-a517548fa2f3";
+const approveIcon = "/images/icons/superadmin/club-leaders/icon-check.svg";
+const rejectIcon = "/images/icons/superadmin/club-leaders/icon-reject.svg";
 
 export default function PendingRequestsTable() {
   const { user } = useAuth();
@@ -128,7 +128,7 @@ export default function PendingRequestsTable() {
                   aria-label="Approve"
                   title="Approve"
                 >
-                  <img src={imgIconCheck} alt="Approve" className={styles.actionIcon} />
+                  <img src={approveIcon} alt="Approve" className={styles.actionIcon} />
                 </button>
                 <button
                   className={styles.rejectButton}
@@ -136,7 +136,7 @@ export default function PendingRequestsTable() {
                   aria-label="Reject"
                   title="Reject"
                 >
-                  <img src={imgIconClose} alt="Reject" className={styles.actionIcon} />
+                  <img src={rejectIcon} alt="Reject" className={styles.actionIcon} />
                 </button>
               </div>
             </div>

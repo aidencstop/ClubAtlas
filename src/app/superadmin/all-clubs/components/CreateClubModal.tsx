@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import styles from './CreateClubModal.module.css';
 
-const imgIconClose = "https://www.figma.com/api/mcp/asset/29d3442c-325b-48d6-a958-1f58d1a32374";
+const closeIcon = "/images/icons/superadmin/all-clubs/modal-close.svg";
 
 interface CreateClubModalProps {
   isOpen: boolean;
@@ -51,7 +51,7 @@ export default function CreateClubModal({
         <div className={styles.header}>
           <h3 className={styles.title}>Create New Club</h3>
           <button className={styles.closeButton} onClick={onClose}>
-            <img src={imgIconClose} alt="Close" className={styles.closeIcon} />
+            <img src={closeIcon} alt="Close" className={styles.closeIcon} />
           </button>
         </div>
 

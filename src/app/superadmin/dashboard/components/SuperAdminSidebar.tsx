@@ -13,7 +13,6 @@ const navItems = [
   { label: 'Student Users', href: '/superadmin/student-users', icon: '/images/icons/superadmin/nav-student-users.svg' },
   { label: 'Analytics', href: '/superadmin/analytics', icon: '/images/icons/superadmin/nav-analytics.svg' },
   { label: 'System', href: '/superadmin/system', icon: '/images/icons/superadmin/nav-system.svg' },
-  { label: 'Password Requests', href: '/superadmin/password-requests', icon: '/images/icons/superadmin/nav-password-requests.svg' },
 ];
 
 interface SuperAdminSidebarProps {

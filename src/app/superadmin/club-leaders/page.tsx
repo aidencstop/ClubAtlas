@@ -44,10 +44,8 @@ export default function ClubLeadersPage() {
             <h1 className={styles.title}>Club Leaders Management</h1>
             {activeTab === 'current' && (
               <button className={styles.assignButton} onClick={handleOpenModal}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 5V15M5 10H15" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                Assign New Leader
+                <img src="/images/icons/superadmin/club-leaders/plus.svg" alt="" className={styles.assignButtonIcon} />
+                + Assign New Leader
               </button>
             )}
           </div>
@@ -68,12 +66,10 @@ export default function ClubLeadersPage() {
           </div>
 
           {activeTab === 'current' && (
-            <>
+            <div className={styles.tableWrapper}>
               <div className={styles.searchSection}>
                 <div className={styles.searchContainer}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={styles.searchIcon}>
-                    <path d="M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z" stroke="#6B7280" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <img src="/images/icons/superadmin/club-leaders/search.svg" alt="Search" className={styles.searchIcon} />
                   <input
                     type="text"
                     placeholder="Search leaders by name or email..."
@@ -89,7 +85,7 @@ export default function ClubLeadersPage() {
               </div>
 
               <LeadersTable key={refreshKey} />
-            </>
+            </div>
           )}
 
           {activeTab === 'pending' && (
