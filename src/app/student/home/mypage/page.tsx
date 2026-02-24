@@ -719,7 +719,7 @@ export default function MyPagePage() {
                 ) : recommendationsError ? (
                   <div style={{ padding: '40px 20px', textAlign: 'center', color: '#e74c3c' }}>
                     <p>{recommendationsError}</p>
-                    {recommendationsError.includes('선호도') && (
+                    {recommendationsError.toLowerCase().includes('preference') && (
                       <Link 
                         href="/student/home/ai-recommendations" 
                         style={{ 

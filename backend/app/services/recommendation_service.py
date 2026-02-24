@@ -99,7 +99,7 @@ class RecommendationService:
             if not all_reasons:
                 all_reasons.append(RecommendationReason(
                     type="available_club",
-                    description="캠퍼스에서 활동 중인 동아리",
+                    description="Active club on campus",
                     score_contribution=0.0
                 ))
             
@@ -158,7 +158,7 @@ class RecommendationService:
                 if jaccard > 0:
                     reasons.append(RecommendationReason(
                         type="category_match",
-                        description=f"관심 카테고리 {int(jaccard * 100)}% 일치",
+                        description=f"Category match: {int(jaccard * 100)}%",
                         score_contribution=category_score
                     ))
         
@@ -178,7 +178,7 @@ class RecommendationService:
                 matched_types_str = ', '.join(matched_types)
                 reasons.append(RecommendationReason(
                     type="activity_type_match",
-                    description=f"{matched_types_str} 활동 선호",
+                    description=f"Matches your preferred activity: {matched_types_str}",
                     score_contribution=activity_score
                 ))
         
@@ -197,7 +197,7 @@ class RecommendationService:
                     score += time_score
                     reasons.append(RecommendationReason(
                         type="time_match",
-                        description=f"시간대 {overlap}개 겹침",
+                        description=f"Time slot overlap: {overlap} slot(s)",
                         score_contribution=time_score
                     ))
         
@@ -250,13 +250,19 @@ class RecommendationService:
                 score = total_weighted_score / len(similar_users)
                 
                 if score > 0:
+                    _action_labels = {
+                        'view_club': 'viewed',
+                        'subscribe_club': 'subscribed',
+                        'attend_event': 'attended',
+                        'click_detail': 'viewed details'
+                    }
                     behavior_desc = ", ".join([
-                        f"{count}명 {act_type}" 
+                        f"{count} {_action_labels.get(act_type, act_type)}"
                         for act_type, count in behavior_counts.items()
                     ])
                     reasons.append(RecommendationReason(
                         type="user_behavior",
-                        description=f"비슷한 학생들이 선택 ({behavior_desc})",
+                        description=f"Similar students chose this ({behavior_desc})",
                         score_contribution=score
                     ))
         

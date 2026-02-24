@@ -39,7 +39,7 @@ async def get_recommendations(
     if not user_profile:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사용자 프로필을 찾을 수 없습니다"
+            detail="User profile not found"
         )
     
     # 추천 선호도 확인
@@ -48,7 +48,7 @@ async def get_recommendations(
     if not rec_prefs_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="추천 선호도가 설정되지 않았습니다. AI 추천 페이지에서 먼저 선호도를 입력해주세요."
+            detail="Recommendation preferences are not set. Please set your preferences on the AI Recommendations page first."
         )
     
     # RecommendationPreferences 객체 생성
@@ -94,7 +94,7 @@ async def save_recommendation_result(
     if not user_profile:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사용자 프로필을 찾을 수 없습니다"
+            detail="User profile not found"
         )
     
     rec_prefs_data = user_profile.get('recommendation_preferences')
@@ -102,7 +102,7 @@ async def save_recommendation_result(
     if not rec_prefs_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="추천 선호도가 설정되지 않았습니다"
+            detail="Recommendation preferences are not set"
         )
     
     preferences = RecommendationPreferences(
@@ -138,7 +138,7 @@ async def save_recommendation_result(
     )
     
     return {
-        "message": "추천 결과가 저장되었습니다",
+        "message": "Recommendation result saved",
         "recommendation_id": recommendation_id,
         "total_recommendations": len(result.recommendations)
     }
