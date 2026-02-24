@@ -10,13 +10,11 @@ from app.config import settings
 def initialize_firebase_admin():
     """Firebase Admin SDK 초기화"""
     if not firebase_admin._apps:
-        # 환경 변수에서 Firebase 설정 가져오기
         project_id = os.getenv("FIREBASE_PROJECT_ID")
         private_key = os.getenv("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n")
         client_email = os.getenv("FIREBASE_CLIENT_EMAIL")
-        
+
         if project_id and private_key and client_email:
-            # 서비스 계정 키를 사용한 초기화
             cred = credentials.Certificate({
                 "type": "service_account",
                 "project_id": project_id,
@@ -30,11 +28,12 @@ def initialize_firebase_admin():
                 "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL", ""),
             })
             firebase_admin.initialize_app(cred)
-            return firebase_admin.get_app()
         else:
-            print("⚠️  Firebase 환경 변수가 설정되지 않았습니다. 개발 모드로 실행합니다.")
-            return None
-    
+            options = {"projectId": project_id} if project_id else {}
+            firebase_admin.initialize_app(options=options)
+
+        return firebase_admin.get_app()
+
     return firebase_admin.get_app() if firebase_admin._apps else None
 
 
