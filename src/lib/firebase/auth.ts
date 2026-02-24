@@ -43,6 +43,7 @@ export function getCurrentUser(): User | null {
  * ID 토큰 가져오기 (API 요청 시 사용)
  */
 export async function getIdToken(forceRefresh = false): Promise<string | null> {
+  if (!auth) return null;
   const user = auth.currentUser;
   if (!user) return null;
   return user.getIdToken(forceRefresh);
