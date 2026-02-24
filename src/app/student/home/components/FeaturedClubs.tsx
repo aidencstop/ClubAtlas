@@ -54,7 +54,7 @@ export default function FeaturedClubs() {
             categoryColor: 'rgba(255, 255, 255, 0.9)',
             image: club.logo_url || '/default-club-logo.png',
             schedule: schedule,
-            members: `${club.subscriber_count || 0}+ members`,
+            members: `${club.stats?.total_subscribers || 0}+ members`,
           };
         });
 

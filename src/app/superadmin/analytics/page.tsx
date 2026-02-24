@@ -65,12 +65,12 @@ export default function AnalyticsPage() {
 
           <div className={styles.statsGrid}>
             <AnalyticsCard
-              value={loading ? "..." : analytics?.total_page_views.toLocaleString() || "0"}
+              value={loading ? "..." : (analytics?.total_page_views ?? 0).toLocaleString()}
               label="Total Page Views"
               subtext=""
             />
             <AnalyticsCard
-              value={loading ? "..." : analytics?.club_profile_views.toLocaleString() || "0"}
+              value={loading ? "..." : (analytics?.club_profile_views ?? 0).toLocaleString()}
               label="Club Profile Views"
               subtext=""
             />

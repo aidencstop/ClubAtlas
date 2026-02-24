@@ -64,25 +64,25 @@ export default function StudentUsersPage() {
 
           <div className={styles.statsGrid}>
             <StatCard
-              value={loading ? "..." : stats?.total_users.toLocaleString() || "0"}
+              value={loading ? "..." : (stats?.total_users ?? 0).toLocaleString()}
               label="Total Users"
               subtext={loading ? "" : `+${stats?.new_this_week || 0} this week`}
               subtextColor="green"
             />
             <StatCard
-              value={loading ? "..." : stats?.active_this_month.toLocaleString() || "0"}
+              value={loading ? "..." : (stats?.active_this_month ?? 0).toLocaleString()}
               label="Active This Month"
               subtext={loading ? "" : stats ? `${Math.round((stats.active_this_month / stats.total_users) * 100)}% of total` : ""}
               subtextColor="gray"
             />
             <StatCard
-              value={loading ? "..." : stats?.new_this_week.toString() || "0"}
+              value={loading ? "..." : (stats?.new_this_week ?? 0).toString()}
               label="New This Week"
               subtext=""
               subtextColor="green"
             />
             <StatCard
-              value={loading ? "..." : stats?.avg_subscriptions.toString() || "0"}
+              value={loading ? "..." : (stats?.avg_subscriptions ?? 0).toString()}
               label="Avg Subscriptions"
               subtext="Per user"
               subtextColor="gray"

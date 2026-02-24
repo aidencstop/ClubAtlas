@@ -83,28 +83,28 @@ export default function SuperAdminDashboard() {
           <div className={styles.statsGrid}>
             <StatCard
               icon={statTotalClubs}
-              value={loading ? "..." : stats?.total_clubs.toString() || "0"}
+              value={loading ? "..." : (stats?.total_clubs ?? 0).toString()}
               label="Total Clubs"
               sublabel={loading ? "" : `${stats?.active_clubs || 0} active`}
               bgColor="#dcfce7"
             />
             <StatCard
               icon={statActiveLeaders}
-              value={loading ? "..." : stats?.active_leaders.toString() || "0"}
+              value={loading ? "..." : (stats?.active_leaders ?? 0).toString()}
               label="Active Leaders"
               sublabel={loading ? "" : `${stats?.pending_leader_requests || 0} pending`}
               bgColor="#dcfce7"
             />
             <StatCard
               icon={statStudentUsers}
-              value={loading ? "..." : stats?.total_students.toLocaleString() || "0"}
+              value={loading ? "..." : (stats?.total_students ?? 0).toLocaleString()}
               label="Student Users"
               sublabel={loading ? "" : `+${stats?.new_students_this_week || 0} this week`}
               bgColor="#dcfce7"
             />
             <StatCard
               icon={statTotalEvents}
-              value={loading ? "..." : stats?.total_events.toString() || "0"}
+              value={loading ? "..." : (stats?.total_events ?? 0).toString()}
               label="Total Events"
               sublabel="This semester"
               bgColor="#dcfce7"
