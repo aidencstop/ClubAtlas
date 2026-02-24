@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         // 사용자가 로그인한 경우 프로필 조회
         try {
-          const token = await getIdToken();
+          const token = await firebaseUser.getIdToken();
           if (token) {
             const response = await getCurrentUserProfile(token);
             if (response.data) {
