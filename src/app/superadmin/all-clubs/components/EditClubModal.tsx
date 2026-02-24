@@ -15,7 +15,7 @@ interface EditClubModalProps {
     name: string;
     description?: string;
     categories: string[];
-    activity_type: string;
+    activity_type: string[];
   } | null;
   onSuccess: () => void;
 }
