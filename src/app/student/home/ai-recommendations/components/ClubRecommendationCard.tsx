@@ -24,7 +24,7 @@ interface ClubData {
   description: string;
   tagline?: string;
   categories: string[];
-  tags: string[];
+  tags?: string[];
   activity_type: string[];
 }
 
