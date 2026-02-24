@@ -151,7 +151,7 @@ export default function EditClubProfilePage() {
     if (!club) return;
     try {
       const response = await uploadClubMedia(club.id, file);
-      if (response.data) setMediaUrls((prev) => [...prev, response.data.file_url]);
+      if (response.data) setMediaUrls((prev) => [...prev, response.data!.file_url]);
     } catch (err) {
       console.error('Failed to upload media:', err);
       setError('Failed to upload media');

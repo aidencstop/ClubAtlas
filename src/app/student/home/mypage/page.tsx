@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './MyPage.module.css';
-import { getMySubscriptions, unsubscribeFromClub, updateNotificationSettings, Subscription } from '@/lib/api/subscriptions';
-import { getClub, Club, subscribeToClub } from '@/lib/api/clubs';
+import { getMySubscriptions, subscribeToClub, unsubscribeFromClub, updateNotificationSettings, Subscription } from '@/lib/api/subscriptions';
+import { getClub, Club } from '@/lib/api/clubs';
 import { getMyAttendanceHistory, getMyCalendarEvents, AttendanceRecord, AttendanceStats, Event } from '@/lib/api/events';
 import { getMyBookmarks, deleteBookmark, createBookmark, BookmarkedClub } from '@/lib/api/bookmarks';
 import { getRecommendations, ClubRecommendation } from '@/lib/api/recommendations';
