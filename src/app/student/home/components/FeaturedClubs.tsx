@@ -40,8 +40,8 @@ export default function FeaturedClubs() {
         );
 
         const featured = sortedClubs.slice(0, 3).map((club: Club) => {
-          const dayName = getDayName(club.meeting_schedule?.day);
-          const timeSlot = club.meeting_schedule?.time_slots?.[0] || '';
+          const dayName = getDayName(club.meeting_schedule?.[0]?.day);
+          const timeSlot = club.meeting_schedule?.[0]?.time_slots?.[0] || '';
           const schedule = dayName && timeSlot 
             ? `Every ${dayName} ${timeSlot}` 
             : 'Schedule TBA';
