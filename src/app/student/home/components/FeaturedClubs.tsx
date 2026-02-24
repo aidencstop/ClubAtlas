@@ -36,7 +36,7 @@ export default function FeaturedClubs() {
 
       if (response.data && !response.error) {
         const sortedClubs = [...response.data.clubs].sort((a, b) => 
-          (b.subscriber_count || 0) - (a.subscriber_count || 0)
+          (b.stats?.total_subscribers || 0) - (a.stats?.total_subscribers || 0)
         );
 
         const featured = sortedClubs.slice(0, 3).map((club: Club) => {
