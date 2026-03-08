@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/firebase/auth';
-import EditProfileModal from '@/components/EditProfileModal';
 import { getMyNotifications, getUnreadCount, markNotificationAsRead, markAllNotificationsAsRead, NotificationResponse } from '@/lib/api/notifications';
 import { getClubs, Club } from '@/lib/api/clubs';
 import { getEvents, Event } from '@/lib/api/events';
@@ -22,7 +21,6 @@ export default function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -173,11 +171,6 @@ export default function Header() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
-  };
-
-  const handleEditProfile = () => {
-    setShowProfileMenu(false);
-    setShowEditModal(true);
   };
 
   return (
@@ -387,12 +380,6 @@ export default function Header() {
                 )}
                 <button 
                   className={styles.profileMenuItem}
-                  onClick={handleEditProfile}
-                >
-                  Edit Profile
-                </button>
-                <button 
-                  className={styles.profileMenuItem}
                   onClick={handleLogout}
                 >
                   Logout
@@ -403,10 +390,6 @@ export default function Header() {
         </div>
       </div>
 
-      <EditProfileModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-      />
     </header>
   );
 }

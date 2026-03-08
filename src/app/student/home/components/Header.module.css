@@ -154,7 +154,7 @@
 
 .profileMenuHeader {
   padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid transparent;
   margin-bottom: 4px;
 }
 
@@ -182,6 +182,7 @@
 .profileMenuItem {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;

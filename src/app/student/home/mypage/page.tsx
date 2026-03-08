@@ -8,6 +8,7 @@ import { getClub, Club } from '@/lib/api/clubs';
 import { getMyAttendanceHistory, getMyCalendarEvents, AttendanceRecord, AttendanceStats, Event } from '@/lib/api/events';
 import { getMyBookmarks, deleteBookmark, createBookmark, BookmarkedClub } from '@/lib/api/bookmarks';
 import { getRecommendations, ClubRecommendation } from '@/lib/api/recommendations';
+import { fetchMyProfile, UserProfile } from '@/lib/api/users';
 import { useAuth } from '@/contexts/AuthContext';
 import EditProfileModal from '@/components/EditProfileModal';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
@@ -28,26 +29,25 @@ const savedClubsIcon = "/images/icons/mypage/saved-clubs.svg";
 const calendarIconBlue = "/images/icons/mypage/calendar-blue.svg";
 const clockIcon = "/images/icons/mypage/calendar-small.svg";
 const heartIcon = "/images/icons/mypage/bookmark.svg";
+const heartIconFilled = "/images/icons/mypage/bookmark-filled.svg";
 
 // Subscribed 탭 아이콘
-const checkIcon = "https://www.figma.com/api/mcp/asset/a10af64b-bdf3-48e7-8a33-eb26119adc3c";
-const notificationIcon = "https://www.figma.com/api/mcp/asset/e4e15446-57a6-4f70-9168-97347620bfa5";
+const checkIcon = "/images/icons/mypage/check-circle.svg";
+const notificationIcon = "/images/icons/mypage/notification.svg";
 
 // History 탭 아이콘
-const eventsAttendedIconGreen = "https://www.figma.com/api/mcp/asset/c2603490-f4ff-4e3b-aef5-0e9f27cbd014";
-const eventsMissedIconRed = "https://www.figma.com/api/mcp/asset/baa6039f-f018-4afc-9a74-6622527f3228";
-const attendanceRateIconBlue = "https://www.figma.com/api/mcp/asset/bfdb0d48-97a6-4933-b834-5d3fd1a8afbc";
-const eventCheckIcon = "https://www.figma.com/api/mcp/asset/ea9c1071-7c96-438b-a18c-95d22f4c8d13";
-const eventXIcon = "https://www.figma.com/api/mcp/asset/e135f0ff-8493-43ad-aa18-a3944ccca728";
+const eventsAttendedIconGreen = "/images/icons/mypage/events-attended-green.svg";
+const eventsMissedIconRed = "/images/icons/mypage/events-missed-red.svg";
+const attendanceRateIconBlue = "/images/icons/mypage/attendance-rate-blue.svg";
+const eventCheckIcon = "/images/icons/mypage/event-check.svg";
+const eventXIcon = "/images/icons/mypage/event-x.svg";
 
 // Saved 탭 아이콘 및 이미지
-const removeIcon = "https://www.figma.com/api/mcp/asset/b0bdc92e-b7b4-4a5b-95fe-3bb61fadee36";
-const computerScienceImage = "https://www.figma.com/api/mcp/asset/413a64fa-85e4-49b5-8871-247a1a387913";
-const makerSpaceImage = "https://www.figma.com/api/mcp/asset/908f2a50-f8c7-40e6-8b8c-1d619f9d8367";
-const dramaSocietyImage = "https://www.figma.com/api/mcp/asset/69187ad4-3095-48ad-96fb-fd0afbf85f5a";
+const removeIcon = "/images/icons/mypage/remove.svg";
+const computerScienceImage = "/images/default-club.svg";
 
 // Settings 탭 아이콘
-const passwordIcon = "https://www.figma.com/api/mcp/asset/33a04ed2-c07f-4e0b-b3e7-1aa53efb7099";
+const passwordIcon = "/images/icons/mypage/password.svg";
 
 // 클럽 이미지 (Overview 탭용)
 const roboticsImage = "https://www.figma.com/api/mcp/asset/4ba38dbe-026b-4fd0-bc00-b3d0131f693c";
@@ -64,7 +64,7 @@ interface SubscribedClubData extends Subscription {
 }
 
 export default function MyPagePage() {
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [subscriptions, setSubscriptions] = useState<SubscribedClubData[]>([]);
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
@@ -88,7 +88,6 @@ export default function MyPagePage() {
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     eventReminders: true,
-    weeklyDigest: false
   });
   
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
@@ -100,9 +99,10 @@ export default function MyPagePage() {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationsError, setRecommendationsError] = useState<string | null>(null);
   const [savingBookmarkId, setSavingBookmarkId] = useState<string | null>(null);
+  const [fullUserProfile, setFullUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    if (activeTab === 'subscribed' || activeTab === 'overview') {
+    if (activeTab === 'subscribed' || activeTab === 'overview' || activeTab === 'saved') {
       loadSubscribedClubs();
     }
     if (activeTab === 'history') {
@@ -112,8 +112,12 @@ export default function MyPagePage() {
       loadBookmarkedClubs();
     }
     if (activeTab === 'overview') {
+      loadAttendanceHistory();
       loadUpcomingEvents();
       loadRecommendations();
+    }
+    if (activeTab === 'settings') {
+      loadFullUserProfile();
     }
   }, [activeTab]);
 
@@ -122,6 +126,17 @@ export default function MyPagePage() {
       loadAttendanceHistory();
     }
   }, [historyFilter]);
+
+  const loadFullUserProfile = async () => {
+    try {
+      const response = await fetchMyProfile();
+      if (response.data) {
+        setFullUserProfile(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to load user profile:', err);
+    }
+  };
 
   const loadSubscribedClubs = async () => {
     setIsLoadingSubscriptions(true);
@@ -333,25 +348,30 @@ export default function MyPagePage() {
 
   const handleSaveRecommendation = async (clubId: string) => {
     setSavingBookmarkId(clubId);
+    const isAlreadySaved = bookmarkedClubs.some(b => b.club_id === clubId);
     try {
-      const response = await createBookmark(clubId);
-      
-      if (response.error) {
-        alert(response.error);
-        return;
+      if (isAlreadySaved) {
+        const response = await deleteBookmark(clubId);
+        if (response.error) {
+          alert(response.error);
+          return;
+        }
+      } else {
+        const response = await createBookmark(clubId);
+        if (response.error) {
+          alert(response.error);
+          return;
+        }
       }
-
       await loadBookmarkedClubs();
-      alert('Club bookmarked successfully!');
     } catch (err) {
-      console.error('Failed to save bookmark:', err);
-      alert('Failed to bookmark club');
+      console.error('Failed to toggle bookmark:', err);
     } finally {
       setSavingBookmarkId(null);
     }
   };
 
-  const handleToggleNotification = (type: 'emailNotifications' | 'eventReminders' | 'weeklyDigest') => {
+  const handleToggleNotification = (type: 'emailNotifications' | 'eventReminders') => {
     setNotificationSettings(prev => ({
       ...prev,
       [type]: !prev[type]
@@ -471,18 +491,24 @@ export default function MyPagePage() {
                 </p>
                 <div className={styles.profileStats}>
                   <div className={styles.statTag} style={{ background: '#eff6ff' }}>
-                    <span className={styles.statLabel}>Following:</span>
+                    <span className={styles.statLabel}>Subscribed:</span>
                     <span className={styles.statValue} style={{ color: '#155dfc' }}>
                       {subscribedCount} clubs
                     </span>
                   </div>
                   <div className={styles.statTag} style={{ background: '#f0fdf4' }}>
                     <span className={styles.statLabel}>Events:</span>
-                    <span className={styles.statValue} style={{ color: '#00a63e' }}>3 attended</span>
+                    <span className={styles.statValue} style={{ color: '#00a63e' }}>
+                      {attendanceStats ? `${attendanceStats.attended} attended` : '0 attended'}
+                    </span>
                   </div>
                   <div className={styles.statTag} style={{ background: '#faf5ff' }}>
                     <span className={styles.statLabel}>Member since:</span>
-                    <span className={styles.statValue} style={{ color: '#9810fa' }}>Nov 2025</span>
+                    <span className={styles.statValue} style={{ color: '#9810fa' }}>
+                      {user?.metadata?.creationTime
+                        ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                        : '-'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -542,7 +568,7 @@ export default function MyPagePage() {
                       {isLoadingSubscriptions ? '-' : subscribedCount}
                     </span>
                   </div>
-                  <p className={styles.statLabel}>Clubs Following</p>
+                  <p className={styles.statLabel}>Clubs Subscribed</p>
                 </div>
 
                 <div className={styles.statCard}>
@@ -750,7 +776,10 @@ export default function MyPagePage() {
                   </div>
                 ) : (
                   <div className={styles.recommendedGrid}>
-                    {recommendedClubsData.slice(0, 3).map((club) => {
+                    {recommendedClubsData
+                      .filter(club => !activeSubscriptions.some(sub => sub.club_id === club.id))
+                      .slice(0, 3)
+                      .map((club) => {
                       const recommendation = recommendations.find(r => r.club_id === club.id);
                       const matchScore = recommendation ? Math.round((recommendation.score / 13.5) * 100) : 0;
                       
@@ -772,7 +801,10 @@ export default function MyPagePage() {
                               onClick={() => handleSaveRecommendation(club.id)}
                               disabled={savingBookmarkId === club.id}
                             >
-                              <img src={heartIcon} alt="Save" />
+                              <img
+                                src={bookmarkedClubs.some(b => b.club_id === club.id) ? heartIconFilled : heartIcon}
+                                alt="Save"
+                              />
                             </button>
                           </div>
                         </div>
@@ -1117,6 +1149,8 @@ export default function MyPagePage() {
                       const description = club.match_reason || club.club_tagline || club.club_description;
                       const isRemoving = removingBookmarkId === club.club_id;
                       const isSubscribing = subscribingFromBookmark === club.club_id;
+                      const isAlreadySubscribed = subscriptions.some(sub => sub.club_id === club.club_id);
+                      const isUnsubscribing = unsubscribingClubId === club.club_id;
 
                       return (
                         <div key={club.bookmark_id} className={styles.savedClubItem}>
@@ -1138,13 +1172,23 @@ export default function MyPagePage() {
                                 >
                                   View Profile
                                 </Link>
-                                <button 
-                                  className={styles.subscribeButton}
-                                  onClick={() => handleSubscribeFromBookmark(club.club_id)}
-                                  disabled={isSubscribing}
-                                >
-                                  {isSubscribing ? 'Subscribing...' : 'Subscribe'}
-                                </button>
+                                {isAlreadySubscribed ? (
+                                  <button
+                                    className={styles.unsubscribeButton}
+                                    onClick={() => handleUnsubscribe(club.club_id)}
+                                    disabled={isUnsubscribing}
+                                  >
+                                    {isUnsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+                                  </button>
+                                ) : (
+                                  <button 
+                                    className={styles.subscribeButton}
+                                    onClick={() => handleSubscribeFromBookmark(club.club_id)}
+                                    disabled={isSubscribing}
+                                  >
+                                    {isSubscribing ? 'Subscribing...' : 'Subscribe'}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1172,14 +1216,25 @@ export default function MyPagePage() {
               <div className={styles.settingsSection}>
                 <h2 className={styles.settingsSectionTitle}>Account Information</h2>
                 <div className={styles.accountInfoForm}>
-                  <div className={styles.formField}>
-                    <label className={styles.formLabel}>Display Name</label>
-                    <input 
-                      type="text" 
-                      className={styles.formInput} 
-                      value={userProfile?.display_name || ''} 
-                      disabled
-                    />
+                  <div className={styles.formNameRow}>
+                    <div className={styles.formField}>
+                      <label className={styles.formLabel}>First Name</label>
+                      <input
+                        type="text"
+                        className={`${styles.formInput} ${styles.formInputDisabled}`}
+                        value={fullUserProfile?.first_name || ''}
+                        disabled
+                      />
+                    </div>
+                    <div className={styles.formField}>
+                      <label className={styles.formLabel}>Last Name</label>
+                      <input
+                        type="text"
+                        className={`${styles.formInput} ${styles.formInputDisabled}`}
+                        value={fullUserProfile?.last_name || ''}
+                        disabled
+                      />
+                    </div>
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Email</label>
@@ -1187,6 +1242,15 @@ export default function MyPagePage() {
                       type="email" 
                       className={styles.formInput} 
                       value={userProfile?.email || ''} 
+                      disabled
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Student ID</label>
+                    <input 
+                      type="text" 
+                      className={`${styles.formInput} ${styles.formInputDisabled}`}
+                      value={fullUserProfile?.student_id || ''}
                       disabled
                     />
                   </div>
@@ -1258,18 +1322,6 @@ export default function MyPagePage() {
                       onClick={() => handleToggleNotification('eventReminders')}
                     >
                       {notificationSettings.eventReminders ? 'Enabled' : 'Disabled'}
-                    </button>
-                  </div>
-                  <div className={styles.notificationItem}>
-                    <div className={styles.notificationInfo}>
-                      <p className={styles.notificationTitle}>Weekly Digest</p>
-                      <p className={styles.notificationDescription}>Receive weekly summary of club activities</p>
-                    </div>
-                    <button 
-                      className={notificationSettings.weeklyDigest ? styles.notificationButtonEnabled : styles.notificationButtonDisabled}
-                      onClick={() => handleToggleNotification('weeklyDigest')}
-                    >
-                      {notificationSettings.weeklyDigest ? 'Enabled' : 'Disabled'}
                     </button>
                   </div>
                 </div>

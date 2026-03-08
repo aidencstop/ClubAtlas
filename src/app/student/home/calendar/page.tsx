@@ -18,7 +18,6 @@ const createIcon = "/images/icons/calendar/create.svg";
 const prevArrowIcon = "/images/icons/calendar/arrow-left.svg";
 const nextArrowIcon = "/images/icons/calendar/arrow-right.svg";
 const upcomingIcon = "/images/icons/calendar/upcoming.svg";
-const exportIcon = "/images/icons/calendar/export.svg";
 const logoIcon = "/images/icons/logo.svg"; // 공용 로고
 const searchIcon = "/images/icons/search.svg"; // 공용 검색
 const profileIcon = "/images/icons/profile.svg"; // 공용 프로필
@@ -171,71 +170,25 @@ export default function CalendarPage() {
   };
 
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
+    if (viewMode === 'week') {
+      const prev = new Date(currentDate);
+      prev.setDate(prev.getDate() - 7);
+      setCurrentDate(prev);
+    } else {
+      setCurrentDate(new Date(year, month - 1, 1));
+    }
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
-
-  const handleExportCalendar = () => {
-    if (events.length === 0) {
-      alert('No events to export');
-      return;
+    if (viewMode === 'week') {
+      const next = new Date(currentDate);
+      next.setDate(next.getDate() + 7);
+      setCurrentDate(next);
+    } else {
+      setCurrentDate(new Date(year, month + 1, 1));
     }
-
-    const icalContent = generateICalContent(events);
-    const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `club-calendar-${monthName.replace(' ', '-')}.ics`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
   };
 
-  const generateICalContent = (events: CalendarEvent[]): string => {
-    const lines = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//ClubAtlas//Student Calendar//EN',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      'X-WR-CALNAME:ClubAtlas Events',
-      'X-WR-TIMEZONE:America/New_York',
-    ];
-
-    events.forEach((event) => {
-      const start = new Date(event.start_datetime);
-      const end = new Date(start.getTime() + 60 * 60 * 1000);
-
-      const formatDateForICal = (date: Date): string => {
-        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      };
-
-      lines.push('BEGIN:VEVENT');
-      lines.push(`UID:${event.id}@clubatlas.com`);
-      lines.push(`DTSTAMP:${formatDateForICal(new Date())}`);
-      lines.push(`DTSTART:${formatDateForICal(start)}`);
-      lines.push(`DTEND:${formatDateForICal(end)}`);
-      lines.push(`SUMMARY:${event.title}`);
-      
-      if (event.location) {
-        lines.push(`LOCATION:${event.location}`);
-      }
-      
-      if (event.description) {
-        lines.push(`DESCRIPTION:${event.description.replace(/\n/g, '\\n')}`);
-      }
-      
-      lines.push('END:VEVENT');
-    });
-
-    lines.push('END:VCALENDAR');
-    return lines.join('\r\n');
-  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -312,16 +265,6 @@ export default function CalendarPage() {
                 </div>
               </div>
 
-              {/* Export Calendar Button */}
-              <button className={styles.exportButton} onClick={handleExportCalendar}>
-                <img src={exportIcon} alt="" width="20" height="20" />
-                Export Calendar
-              </button>
-
-              {/* Subscribe Button */}
-              <button className={styles.subscribeButton}>
-                Subscribe to Calendar
-              </button>
             </div>
 
             {/* Main Calendar Area */}

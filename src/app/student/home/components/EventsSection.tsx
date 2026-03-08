@@ -7,7 +7,7 @@ import EventCard from './EventCard';
 import { getEvents, Event } from '@/lib/api/events';
 import { getClub } from '@/lib/api/clubs';
 
-const arrowIcon = "/images/icons/arrow-right.svg";
+const arrowIcon = "/images/icons/arrow-right-green.svg";
 
 const dateColors = [
   'linear-gradient(132.27deg, rgba(219, 234, 254, 1) 0%, rgba(190, 219, 255, 1) 100%)',

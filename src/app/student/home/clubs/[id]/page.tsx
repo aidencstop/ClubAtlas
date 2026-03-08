@@ -20,7 +20,6 @@ const emailSmallIcon = "/images/icons/club-detail/email-small.svg";
 const calendarIcon = "/images/icons/club-detail/calendar.svg";
 const arrowRightIcon = "/images/icons/club-detail/arrow-right.svg";
 const locationIcon = "/images/icons/club-detail/location.svg";
-const mapIcon = "/images/icons/club-detail/map.svg";
 const attendeesIcon = "/images/icons/club-detail/attendees.svg";
 const usersRedIcon = "/images/icons/club-detail/users-red.svg";
 const clockBlueIcon = "/images/icons/club-detail/clock-blue.svg";
@@ -28,8 +27,6 @@ const contactGreenIcon = "/images/icons/club-detail/contact-green.svg";
 const bellIcon = "/images/icons/club-detail/bell.svg";
 const emailIcon = "/images/icons/club-detail/email.svg";
 
-const commentUserIcon = "https://www.figma.com/api/mcp/asset/f2f7159c-e58e-4d36-9276-0170acd5746e";
-const starIcon = "https://www.figma.com/api/mcp/asset/f83cd3b3-46b9-407f-8bd4-e88d6f0242e1";
 
 interface ClubProfilePageProps {
   params: Promise<{ id: string }>;
@@ -119,7 +116,7 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
         }
 
         setIsSubscribed(false);
-        alert('구독이 취소되었습니다.');
+        alert('Successfully unsubscribed.');
         loadClubData();
       } else {
         const response = await subscribeToClub(id);
@@ -130,12 +127,12 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
         }
 
         setIsSubscribed(true);
-        alert('구독되었습니다!');
+        alert('Successfully subscribed!');
         loadClubData();
       }
     } catch (err) {
       console.error('Subscribe/Unsubscribe failed:', err);
-      alert(isSubscribed ? '구독 취소에 실패했습니다.' : '구독에 실패했습니다.');
+      alert(isSubscribed ? 'Failed to unsubscribe. Please try again.' : 'Failed to subscribe. Please try again.');
     } finally {
       setIsSubscribing(false);
     }
@@ -187,10 +184,12 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
       {/* Fixed Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <div className={styles.logo}>
-            <img src={logoIcon} alt="ClubAtlas" width="24" height="24" />
+          <Link href="/student/home" className={styles.logo}>
+            <div className={styles.logoIcon}>
+              <img src={logoIcon} alt="ClubAtlas" width="24" height="24" />
+            </div>
             <span className={styles.logoText}>ClubAtlas</span>
-          </div>
+          </Link>
           <Link href="/student/home/clubs" className={styles.backButton}>
             <img src={backArrowIcon} alt="" width="16" height="16" />
             Back to Browse
@@ -379,10 +378,6 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                         </span>
                       </div>
                     </div>
-                    <button className={styles.meetingButtonGreen}>
-                      <img src={mapIcon} alt="" width="16" height="16" />
-                      View on Campus Map
-                    </button>
                   </div>
                 </div>
               </section>
@@ -523,29 +518,6 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
               </div>
             </div>
           </div>
-
-          {/* Community Comments - Coming Soon */}
-          <section className={styles.commentsSection}>
-            <div className={styles.commentsHeader}>
-              <h2>Community Comments</h2>
-            </div>
-            <div className={styles.commentsContent}>
-              <div style={{ 
-                padding: '60px 40px', 
-                textAlign: 'center', 
-                color: '#666',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '12px'
-              }}>
-                <p style={{ fontSize: '16px', marginBottom: '8px' }}>
-                  💬 Community comments feature coming soon!
-                </p>
-                <p style={{ fontSize: '14px', color: '#999' }}>
-                  Share your thoughts and experiences with other students
-                </p>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
 

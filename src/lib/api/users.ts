@@ -7,7 +7,10 @@ export interface UserProfile {
   uid: string;
   email: string;
   display_name?: string;
+  first_name?: string;
+  last_name?: string;
   role: string;
+  student_id?: string;
   interests?: string[];
   recommendation_preferences?: any;
   created_at?: string;
@@ -35,6 +38,10 @@ export async function getMyProfile(token: string): Promise<ApiResponse<UserProfi
       Authorization: `Bearer ${token}`,
     },
   });
+}
+
+export async function fetchMyProfile(): Promise<ApiResponse<UserProfile>> {
+  return apiClient.get('/api/users/profile');
 }
 
 export async function updateProfile(

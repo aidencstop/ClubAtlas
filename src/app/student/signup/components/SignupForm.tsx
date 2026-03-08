@@ -7,6 +7,9 @@ import styles from './SignupForm.module.css';
 import { signIn } from '@/lib/firebase/auth';
 import { signupStudent } from '@/lib/api/auth';
 
+const userPlusIcon = "/images/icons/signup/user-plus.svg";
+const arrowLeftIcon = "/images/icons/signup/arrow-left.svg";
+
 export default function SignupForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -14,7 +17,6 @@ export default function SignupForm() {
     lastName: '',
     email: '',
     studentId: '',
-    department: '',
     password: '',
     confirmPassword: '',
     agreeToTerms: false,
@@ -78,7 +80,6 @@ export default function SignupForm() {
         password: formData.password,
         display_name: displayName,
         student_id: formData.studentId || undefined,
-        department: formData.department || undefined,
       });
       
       if (response.error) {
@@ -183,25 +184,8 @@ export default function SignupForm() {
             name="studentId"
             type="text"
             className={styles.input}
-            placeholder="STU123456"
+            placeholder="ca*********"
             value={formData.studentId}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        {/* Department / Major */}
-        <div className={styles.fieldGroup}>
-          <label htmlFor="department" className={styles.label}>
-            Department / Major
-          </label>
-          <input
-            id="department"
-            name="department"
-            type="text"
-            className={styles.input}
-            placeholder="Computer Science"
-            value={formData.department}
             onChange={handleChange}
             required
           />
@@ -262,11 +246,7 @@ export default function SignupForm() {
 
         {/* Submit Button */}
         <button type="submit" className={styles.submitButton} disabled={loading}>
-          <img 
-            src="https://www.figma.com/api/mcp/asset/8ce620cf-a55a-4363-898d-8661cdb6c01d" 
-            alt="user"
-            className={styles.userIcon}
-          />
+          <img src={userPlusIcon} alt="" className={styles.userIcon} />
           <span>{loading ? 'Creating Account...' : 'Create Student Account'}</span>
         </button>
       </form>
@@ -281,11 +261,7 @@ export default function SignupForm() {
       </div>
 
       <Link href="/welcome" className={styles.backLink}>
-        <img 
-          src="https://www.figma.com/api/mcp/asset/422e1e8f-2a3a-46e9-808b-1c238a5d2c25" 
-          alt="arrow"
-          className={styles.backIcon}
-        />
+        <img src={arrowLeftIcon} alt="" className={styles.backIcon} />
         <span>Back to Home</span>
       </Link>
     </div>

@@ -77,11 +77,26 @@ async def get_my_profile(current_user: dict = Depends(get_current_user)):
             detail="Profile not found. Please create a profile first."
         )
     
+    display_name = profile.get('display_name') or ''
+    stored_first = profile.get('first_name')
+    stored_last = profile.get('last_name')
+
+    if stored_first is None and stored_last is None and display_name:
+        parts = display_name.split(' ', 1)
+        derived_first = parts[0]
+        derived_last = parts[1] if len(parts) > 1 else ''
+    else:
+        derived_first = stored_first
+        derived_last = stored_last
+
     return UserProfileResponse(
         uid=profile['id'],
         email=profile['email'],
-        display_name=profile.get('display_name'),
+        display_name=display_name or None,
+        first_name=derived_first,
+        last_name=derived_last,
         role=profile.get('role', 'student'),
+        student_id=profile.get('student_id'),
         interests=profile.get('interests', []),
         recommendation_preferences=profile.get('recommendation_preferences'),
         created_at=profile.get('created_at'),

@@ -6,7 +6,7 @@ import styles from './FeaturedClubs.module.css';
 import ClubCard from './ClubCard';
 import { getClubs, Club } from '@/lib/api/clubs';
 
-const arrowIcon = "/images/icons/arrow-right.svg";
+const arrowIcon = "/images/icons/arrow-right-green.svg";
 
 function getDayName(day?: string): string {
   const days: { [key: string]: string } = {

@@ -1,12 +1,12 @@
 .panel {
   position: relative;
   width: 512px;
-  min-width: 512px; /* 고정 너비 보장 */
-  height: 1218px;
+  min-width: 512px;
   background: linear-gradient(112.8deg, rgba(17, 61, 44, 1) 0%, rgba(42, 100, 77, 1) 100%);
   border-radius: 24px 0 0 24px;
   overflow: hidden;
   flex-shrink: 0;
+  align-self: stretch;
 }
 
 /* 배경 장식 원형 */
@@ -26,7 +26,8 @@
   width: 192px;
   height: 192px;
   left: -96px;
-  top: 1025.39px;
+  bottom: 0;
+  transform: translateY(50%);
   background: white;
   border-radius: 33554400px;
   opacity: 0.1;
@@ -138,22 +139,5 @@
   margin: 0;
 }
 
-.joinBox {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
-  padding: 17px;
-  margin-top: 8px;
-}
-
-.joinText {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  letter-spacing: -0.1504px;
-}
 
 

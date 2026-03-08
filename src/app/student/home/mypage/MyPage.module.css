@@ -260,7 +260,7 @@
   height: 16px;
 }
 
-.tab:hover {
+.tab:hover:not(.activeTab) {
   background: #f9fafb;
 }
 
@@ -268,6 +268,10 @@
   background: linear-gradient(to right, #13412f 0%, #2a644d 100%);
   box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
   color: white;
+}
+
+.activeTab img {
+  filter: brightness(0) invert(1);
 }
 
 /* Overview Content */
@@ -610,7 +614,8 @@
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 16px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .recommendedImage {
@@ -618,26 +623,25 @@
   height: 128px;
   border-radius: 10px;
   object-fit: cover;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .matchBadge {
-  position: absolute;
-  top: 158px;
-  left: 16px;
+  align-self: flex-start;
   background: #dcfce7;
   color: #008236;
   font-size: 12px;
   line-height: 16px;
   padding: 4px 8px;
   border-radius: 9999px;
+  margin-bottom: 8px;
 }
 
 .recommendedName {
   font-size: 16px;
   line-height: 24px;
   color: #0a0a0a;
-  margin: 8px 0 12px 0;
+  margin: 0 0 12px 0;
   font-weight: 400;
 }
 
@@ -894,6 +898,7 @@
   transition: background 0.2s;
   width: fit-content;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .viewClubProfileButton:hover {
@@ -1251,6 +1256,7 @@
   box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: opacity 0.2s;
+  text-decoration: none;
 }
 
 .getRecommendationsButton:hover {
@@ -1371,6 +1377,7 @@
   transition: background 0.2s;
   width: fit-content;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .viewProfileButtonBlue:hover {
@@ -1394,6 +1401,26 @@
 
 .subscribeButton:hover {
   background: #4a7a15;
+}
+
+.unsubscribeButton {
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  padding: 8px 24px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: fit-content;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.unsubscribeButton:hover {
+  background: #e5e7eb;
 }
 
 .removeButton {
@@ -1463,6 +1490,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.formNameRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .formLabel {

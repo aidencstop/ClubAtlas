@@ -51,7 +51,10 @@ class UserProfileResponse(BaseModel):
     uid: str
     email: str
     display_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     role: str
+    student_id: Optional[str] = None
     interests: List[str]
     recommendation_preferences: Optional[RecommendationPreferences]
     created_at: Optional[datetime]

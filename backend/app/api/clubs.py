@@ -10,7 +10,7 @@ from app.models.club import (
     ClubListResponse
 )
 from app.api.dependencies import get_current_user, require_admin, require_club_leader, get_current_user_optional
-from app.services.firestore_service import club_service, user_service
+from app.services.firestore_service import club_service, user_service, subscription_service
 import uuid
 
 router = APIRouter(prefix="/api/clubs", tags=["clubs"])
@@ -106,7 +106,18 @@ async def get_club(
         )
     
     await club_service.increment_view_count(club_id)
-    
+
+    try:
+        active_subscribers = await subscription_service.get_club_subscribers(club_id, active_only=True)
+        live_subscriber_count = len(active_subscribers)
+    except Exception:
+        live_subscriber_count = None
+
+    raw_stats = club_data.get('stats', {}) or {}
+    if live_subscriber_count is not None:
+        raw_stats = dict(raw_stats)
+        raw_stats['total_subscribers'] = live_subscriber_count
+
     return Club(
         id=club_data['id'],
         name=club_data['name'],
@@ -118,7 +129,7 @@ async def get_club(
         meeting_schedule=club_data.get('meeting_schedule'),
         leaders=club_data.get('leaders', []),
         contact_email=club_data.get('contact_email'),
-        stats=club_data.get('stats', {}),
+        stats=raw_stats,
         logo_url=club_data.get('logo_url'),
         banner_url=club_data.get('banner_url'),
         media_urls=club_data.get('media_urls', []),

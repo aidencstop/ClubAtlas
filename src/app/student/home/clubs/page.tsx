@@ -13,7 +13,6 @@ const clockIcon = "/images/icons/clubs/clock.svg";
 const locationIcon = "/images/icons/clubs/location.svg";
 const usersIcon1 = "/images/icons/clubs/users.svg";
 const usersIcon2 = "/images/icons/clubs/users.svg";
-const shareIcon = "/images/icons/clubs/share.svg";
 const logoIcon = "/images/icons/logo.svg";
 const headerSearchIcon = "/images/icons/search.svg";
 const profileIcon = "/images/icons/profile.svg";
@@ -434,27 +433,6 @@ export default function BrowseClubsPage() {
                       <img src={displayImage} alt={club.name} className={styles.clubImage} />
                       <div className={styles.clubImageOverlay}></div>
                       <span className={styles.clubCategory}>{mainCategory}</span>
-                      <button 
-                        className={styles.favoriteButton}
-                        onClick={() => handleSubscribeToggle(club.id)}
-                        disabled={isSubscribing}
-                        style={{
-                          opacity: isSubscribing ? 0.5 : 1,
-                          backgroundColor: isSubscribed ? '#ff4444' : 'rgba(255,255,255,0.9)',
-                          cursor: isSubscribing ? 'not-allowed' : 'pointer'
-                        }}
-                        title={isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-                      >
-                        <img 
-                          src={heartIcon} 
-                          alt={isSubscribed ? 'Subscribed' : 'Subscribe'} 
-                          width="20" 
-                          height="20"
-                          style={{
-                            filter: isSubscribed ? 'brightness(0) invert(1)' : 'none'
-                          }}
-                        />
-                      </button>
                       <h3 className={styles.clubName}>{club.name}</h3>
                     </div>
 
@@ -485,8 +463,24 @@ export default function BrowseClubsPage() {
                         <Link href={`/student/home/clubs/${club.id}`} className={styles.viewButton}>
                           View Profile
                         </Link>
-                        <button className={styles.shareButton}>
-                          <img src={shareIcon} alt="Share" width="20" height="20" />
+                        <button
+                          className={styles.shareButton}
+                          onClick={() => handleSubscribeToggle(club.id)}
+                          disabled={isSubscribing}
+                          style={{
+                            opacity: isSubscribing ? 0.5 : 1,
+                            backgroundColor: isSubscribed ? '#ff4444' : undefined,
+                            cursor: isSubscribing ? 'not-allowed' : 'pointer'
+                          }}
+                          title={isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                        >
+                          <img
+                            src={heartIcon}
+                            alt={isSubscribed ? 'Subscribed' : 'Subscribe'}
+                            width="20"
+                            height="20"
+                            style={{ filter: isSubscribed ? 'brightness(0) invert(1)' : 'none' }}
+                          />
                         </button>
                       </div>
                     </div>

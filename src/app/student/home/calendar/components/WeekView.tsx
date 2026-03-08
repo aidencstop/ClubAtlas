@@ -52,7 +52,7 @@ const getWeekDays = (currentDate: Date) => {
 };
 
 const hours = [
-  '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM',
+  '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM',
   '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM',
   '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'
 ];
@@ -119,7 +119,7 @@ export default function WeekView({ onEventClick, currentDate, events }: WeekView
                     const eventDate = event.start_datetime;
                     const startHour = eventDate.getHours() + eventDate.getMinutes() / 60;
                     const duration = 1;
-                    const topPosition = ((startHour - 7) * 64);
+                    const topPosition = ((startHour - 6) * 64);
                     const height = duration * 64;
                     
                     return (
