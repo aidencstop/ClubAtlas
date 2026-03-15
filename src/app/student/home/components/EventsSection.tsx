@@ -109,7 +109,7 @@ export default function EventsSection() {
             });
 
             return {
-              id: event.id,
+              id: event.id as string,
               day: dayName,
               date: dateNum,
               dateColor: dateColors[index % dateColors.length],
