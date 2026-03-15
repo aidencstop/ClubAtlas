@@ -7,6 +7,7 @@ import CreateEventModal, { EventFormData } from './CreateEventModal';
 import EditEventModal from './EditEventModal';
 import EventDetailsModal from './EventDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 import { getEvents, createEvent, updateEvent, Event as ApiEvent } from '@/lib/api';
 
 const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
@@ -62,6 +63,7 @@ const mockEvents: Event[] = [
 
 export default function EventsSection() {
   const { userProfile } = useAuth();
+  const { selectedClubId } = useSelectedClub();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<'upcoming' | 'past'>('upcoming');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -74,11 +76,13 @@ export default function EventsSection() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadEvents();
-  }, [userProfile]);
+    if (selectedClubId) {
+      loadEvents();
+    }
+  }, [selectedClubId]);
 
   const loadEvents = async () => {
-    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+    if (!selectedClubId) {
       setEvents([]);
       setIsLoading(false);
       return;
@@ -88,8 +92,7 @@ export default function EventsSection() {
       setIsLoading(true);
       setError(null);
 
-      const clubId = userProfile.managed_club_ids[0];
-      const response = await getEvents({ club_id: clubId, limit: 100 });
+      const response = await getEvents({ club_id: selectedClubId, limit: 100 });
 
       if (response.data) {
         const now = new Date();
@@ -138,19 +141,17 @@ export default function EventsSection() {
   };
 
   const handleEventCreate = async (eventData: EventFormData) => {
-    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+    if (!selectedClubId) {
       alert('No managed clubs found');
       return;
     }
 
     try {
-      const clubId = userProfile.managed_club_ids[0];
-      
       const startDateTime = new Date(eventData.dateTime).toISOString();
       const endDateTime = new Date(new Date(eventData.dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
 
       const response = await createEvent({
-        club_id: clubId,
+        club_id: selectedClubId,
         title: eventData.title,
         description: eventData.description,
         event_type: 'meeting',

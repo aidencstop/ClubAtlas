@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 import { logout } from '@/lib/firebase/auth';
 import EditProfileModal from '@/components/EditProfileModal';
 import { getUnreadCount, getMyNotifications, markNotificationAsRead, markAllNotificationsAsRead, NotificationResponse } from '@/lib/api/notifications';
+import { getClub, Club } from '@/lib/api/clubs';
 import styles from './DashboardHeader.module.css';
 
 const imgIcon = "/images/icons/dashboard/leader-logo.svg";
@@ -16,16 +18,23 @@ const imgIcon3 = "/images/icons/dashboard/logout.svg";
 export default function DashboardHeader() {
   const router = useRouter();
   const { userProfile, isAuthenticated } = useAuth();
+  const { selectedClubId, setSelectedClubId } = useSelectedClub();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showClubDropdown, setShowClubDropdown] = useState(false);
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [managedClubs, setManagedClubs] = useState<Club[]>([]);
   const notificationRef = useRef<HTMLDivElement>(null);
+  const clubDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
+      }
+      if (clubDropdownRef.current && !clubDropdownRef.current.contains(event.target as Node)) {
+        setShowClubDropdown(false);
       }
     }
 
@@ -38,6 +47,24 @@ export default function DashboardHeader() {
       loadUnreadCount();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (userProfile?.managed_club_ids && userProfile.managed_club_ids.length > 0) {
+      loadManagedClubs(userProfile.managed_club_ids);
+    }
+  }, [userProfile]);
+
+  const loadManagedClubs = async (clubIds: string[]) => {
+    try {
+      const responses = await Promise.all(clubIds.map(id => getClub(id)));
+      const clubs = responses
+        .filter(r => r.data && !r.error)
+        .map(r => r.data!);
+      setManagedClubs(clubs);
+    } catch (err) {
+      console.error('Failed to load managed clubs:', err);
+    }
+  };
 
   const loadUnreadCount = async () => {
     try {
@@ -113,7 +140,50 @@ export default function DashboardHeader() {
         </div>
         <div className={styles.titleSection}>
           <h1 className={styles.title}>Leader Dashboard</h1>
-          <p className={styles.subtitle}>Robotics Club</p>
+          {managedClubs.length > 1 ? (
+            <div className={styles.clubSwitcherContainer} ref={clubDropdownRef}>
+              <button
+                className={styles.subtitleButton}
+                onClick={() => setShowClubDropdown(prev => !prev)}
+              >
+                <span>{managedClubs.find(c => c.id === selectedClubId)?.name ?? '...'}</span>
+                <svg
+                  className={`${styles.chevron} ${showClubDropdown ? styles.chevronOpen : ''}`}
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                >
+                  <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {showClubDropdown && (
+                <div className={styles.clubDropdown}>
+                  {managedClubs.map(club => (
+                    <button
+                      key={club.id}
+                      className={`${styles.clubDropdownItem} ${club.id === selectedClubId ? styles.clubDropdownItemActive : ''}`}
+                      onClick={() => {
+                        setSelectedClubId(club.id);
+                        setShowClubDropdown(false);
+                      }}
+                    >
+                      {club.id === selectedClubId && (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={styles.checkIcon}>
+                          <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                      {club.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className={styles.subtitle}>
+              {managedClubs.find(c => c.id === selectedClubId)?.name ?? '...'}
+            </p>
+          )}
         </div>
       </div>
       

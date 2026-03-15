@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import styles from './AnalyticsSection.module.css';
 import EngagementChart from './EngagementChart';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 import { getClubSubscribers } from '@/lib/api/subscriptions';
 import { getAnnouncements } from '@/lib/api/announcements';
 import { getAnalyticsTrends } from '@/lib/api/analytics';
@@ -16,6 +17,7 @@ const PERIOD_OPTIONS = [
 
 export default function AnalyticsSection() {
   const { userProfile } = useAuth();
+  const { selectedClubId } = useSelectedClub();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscribers, setSubscribers] = useState(0);
@@ -45,11 +47,13 @@ export default function AnalyticsSection() {
   });
 
   useEffect(() => {
-    loadAnalytics();
-  }, [userProfile, periodMonths]);
+    if (selectedClubId) {
+      loadAnalytics();
+    }
+  }, [selectedClubId, periodMonths]);
 
   const loadAnalytics = async () => {
-    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+    if (!selectedClubId) {
       setChartData(getDefaultChartData(6));
       setIsLoading(false);
       return;
@@ -58,12 +62,11 @@ export default function AnalyticsSection() {
     try {
       setIsLoading(true);
       setError(null);
-      const clubId = userProfile.managed_club_ids[0];
 
       const [subscribersRes, announcementsRes, trendsRes] = await Promise.all([
-        getClubSubscribers(clubId),
-        getAnnouncements({ club_id: clubId, limit: 100 }),
-        getAnalyticsTrends(clubId, periodMonths),
+        getClubSubscribers(selectedClubId),
+        getAnnouncements({ club_id: selectedClubId, limit: 100 }),
+        getAnalyticsTrends(selectedClubId, periodMonths),
       ]);
 
       if (subscribersRes.data) {

@@ -2,19 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
 import styles from './AIRecommendations.module.css';
-import { logout } from '@/lib/firebase/auth';
+import Header from '../components/Header';
 import ClubRecommendationCard from './components/ClubRecommendationCard';
 import { createRecommendationPreferences } from '@/lib/api/users';
 import { getRecommendations } from '@/lib/api/recommendations';
 import { getClub, Club } from '@/lib/api/clubs';
-
-const logoIcon = "/images/icons/logo.svg";
-const bellIcon = "/images/icons/bell.svg";
-const userIcon = "/images/icons/profile.svg";
-const logoutIcon = "/images/icons/mypage/logout.svg";
 
 // AI Recommendations 페이지 전용 아이콘
 const aiStarIcon = "/images/icons/ai/star.svg";
@@ -70,16 +64,6 @@ interface ClubRecommendation {
 }
 
 export default function AIRecommendationsPage() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/welcome');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>([]);
@@ -192,37 +176,7 @@ export default function AIRecommendationsPage() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContainer}>
-          <Link href="/student/home" className={styles.logoButton}>
-            <div className={styles.logoIcon}>
-              <img src={logoIcon} alt="ClubAtlas" />
-            </div>
-            <span className={styles.logoText}>ClubAtlas</span>
-          </Link>
-
-          <nav className={styles.navigation}>
-            <Link href="/student/home" className={styles.navLink}>Home</Link>
-            <Link href="/student/home/clubs" className={styles.navLink}>Browse Clubs</Link>
-            <Link href="/student/home/calendar" className={styles.navLink}>Calendar</Link>
-            <Link href="/student/home/ai-recommendations" className={`${styles.navLink} ${styles.activeNavLink}`}>AI Recommendations</Link>
-            <Link href="/student/home/mypage" className={styles.navLink}>My Page</Link>
-          </nav>
-
-          <div className={styles.headerActions}>
-            <button className={styles.iconButton}>
-              <img src={bellIcon} alt="Notifications" />
-            </button>
-            <button className={styles.userButton}>
-              <img src={userIcon} alt="User" />
-            </button>
-            <button className={styles.iconButton} onClick={handleLogout}>
-              <img src={logoutIcon} alt="Logout" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className={styles.mainWrapper}>

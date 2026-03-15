@@ -126,7 +126,7 @@
 /* Main Content */
 .mainWrapper {
   flex: 1;
-  padding-top: 72px;
+  padding-top: 0;
   padding-left: 63px;
   padding-right: 63px;
   width: 100%;

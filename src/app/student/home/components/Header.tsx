@@ -194,9 +194,6 @@ export default function Header() {
           <Link href="/student/home/ai-recommendations" className={styles.navLink}>
             AI Recommendations
           </Link>
-          <Link href="/student/home/collaborations" className={styles.navLink}>
-            Collaborations
-          </Link>
           <Link href="/student/home/mypage" className={styles.navLink}>
             My Page
           </Link>

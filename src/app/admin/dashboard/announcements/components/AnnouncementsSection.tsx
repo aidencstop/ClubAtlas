@@ -6,6 +6,7 @@ import AnnouncementCard from './AnnouncementCard';
 import CreateAnnouncementModal, { AnnouncementFormData } from './CreateAnnouncementModal';
 import EditAnnouncementModal, { EditAnnouncementFormData } from './EditAnnouncementModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 import { getAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement, Announcement as ApiAnnouncement, getClubSubscribers } from '@/lib/api';
 
 const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
@@ -22,6 +23,7 @@ interface Announcement {
 
 export default function AnnouncementsSection() {
   const { userProfile } = useAuth();
+  const { selectedClubId } = useSelectedClub();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<EditAnnouncementFormData | null>(null);
@@ -31,11 +33,13 @@ export default function AnnouncementsSection() {
   const [subscriberCount, setSubscriberCount] = useState(0);
 
   useEffect(() => {
-    loadAnnouncements();
-  }, [userProfile]);
+    if (selectedClubId) {
+      loadAnnouncements();
+    }
+  }, [selectedClubId]);
 
   const loadAnnouncements = async () => {
-    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+    if (!selectedClubId) {
       setAnnouncements([]);
       setIsLoading(false);
       return;
@@ -45,10 +49,9 @@ export default function AnnouncementsSection() {
       setIsLoading(true);
       setError(null);
 
-      const clubId = userProfile.managed_club_ids[0];
       const [response, subscribersRes] = await Promise.all([
-        getAnnouncements({ club_id: clubId, limit: 100, status_filter: 'active' }),
-        getClubSubscribers(clubId),
+        getAnnouncements({ club_id: selectedClubId, limit: 100, status_filter: 'active' }),
+        getClubSubscribers(selectedClubId),
       ]);
 
       if (subscribersRes.data) {
@@ -95,16 +98,14 @@ export default function AnnouncementsSection() {
   };
 
   const handleAnnouncementCreate = async (announcementData: AnnouncementFormData) => {
-    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+    if (!selectedClubId) {
       alert('No managed clubs found');
       return;
     }
 
     try {
-      const clubId = userProfile.managed_club_ids[0];
-
       const response = await createAnnouncement({
-        club_id: clubId,
+        club_id: selectedClubId,
         title: announcementData.title,
         content: announcementData.content,
       });

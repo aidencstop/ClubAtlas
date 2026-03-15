@@ -6,6 +6,7 @@ import StatCard from './StatCard';
 import SubscriberRow from './SubscriberRow';
 import SubscriberDetailsModal from './SubscriberDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 import { getClubSubscribers, Subscriber as ApiSubscriber } from '@/lib/api';
 
 const imgIconSearch = "/images/icons/dashboard/icon-search.svg";
@@ -21,6 +22,7 @@ interface Subscriber {
 
 export default function SubscribersSection() {
   const { userProfile } = useAuth();
+  const { selectedClubId } = useSelectedClub();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null);
@@ -31,11 +33,13 @@ export default function SubscribersSection() {
   const [weeklyGrowth, setWeeklyGrowth] = useState(0);
 
   useEffect(() => {
-    loadSubscribers();
-  }, [userProfile]);
+    if (selectedClubId) {
+      loadSubscribers();
+    }
+  }, [selectedClubId]);
 
   const loadSubscribers = async () => {
-    if (!userProfile?.managed_club_ids || userProfile.managed_club_ids.length === 0) {
+    if (!selectedClubId) {
       setSubscribers([]);
       setIsLoading(false);
       return;
@@ -45,8 +49,7 @@ export default function SubscribersSection() {
       setIsLoading(true);
       setError(null);
 
-      const clubId = userProfile.managed_club_ids[0];
-      const response = await getClubSubscribers(clubId);
+      const response = await getClubSubscribers(selectedClubId);
 
       if (response.data) {
         const mappedSubscribers: Subscriber[] = response.data.subscribers.map((apiSubscriber: ApiSubscriber) => {

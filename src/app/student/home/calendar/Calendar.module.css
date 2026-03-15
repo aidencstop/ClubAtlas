@@ -122,7 +122,6 @@
 
 /* Main Wrapper */
 .mainWrapper {
-  margin-top: 72px;
   flex: 1;
   background: linear-gradient(131.86deg, rgba(241, 255, 246, 1) 0%, rgba(218, 237, 225, 1) 100%);
   padding: 48px 63px 70px;

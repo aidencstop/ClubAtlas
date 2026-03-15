@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './Calendar.module.css';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import WeekView from './components/WeekView';
+import Header from '../components/Header';
 import { useAuth } from '@/contexts/AuthContext';
 import { getMyCalendarEvents, Event as ApiEvent } from '@/lib/api';
 import { getClub } from '@/lib/api/clubs';
-import { logout } from '@/lib/firebase/auth';
 
 // 로컬 아이콘 경로
 const viewModeIcon = "/images/icons/calendar/view-mode.svg";
@@ -20,10 +20,6 @@ const createIcon = "/images/icons/calendar/create.svg";
 const prevArrowIcon = "/images/icons/calendar/arrow-left.svg";
 const nextArrowIcon = "/images/icons/calendar/arrow-right.svg";
 const upcomingIcon = "/images/icons/calendar/upcoming.svg";
-const logoIcon = "/images/icons/logo.svg";
-const searchIcon = "/images/icons/search.svg";
-const profileIcon = "/images/icons/profile.svg";
-const logoutIcon = "/images/icons/mypage/logout.svg";
 
 interface CalendarEvent {
   id: string;
@@ -62,18 +58,9 @@ const categoryColors: { [key: string]: string } = {
 const eventColors = ['#615fff', '#00c950', '#2b7fff', '#ad46ff', '#f59e0b', '#ef4444'];
 
 export default function CalendarPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, userProfile } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/welcome');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
   const isClubLeader = userProfile?.role === 'club-leader' || userProfile?.role === 'admin';
 
   const pendingEventIdRef = useRef<string | null>(null);
@@ -236,37 +223,7 @@ export default function CalendarPage() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Fixed Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <Link href="/student/home" className={styles.logo}>
-            <div className={styles.logoIcon}>
-              <img src={logoIcon} alt="ClubAtlas" />
-            </div>
-            <span className={styles.logoText}>ClubAtlas</span>
-          </Link>
-          
-          <nav className={styles.nav}>
-            <Link href="/student/home" className={styles.navLink}>Home</Link>
-            <Link href="/student/home/clubs" className={styles.navLink}>Browse Clubs</Link>
-            <Link href="/student/home/calendar" className={styles.navLinkActive}>Calendar</Link>
-            <Link href="/student/home/ai-recommendations" className={styles.navLink}>AI Recommendations</Link>
-            <Link href="/student/home/mypage" className={styles.navLink}>My Page</Link>
-          </nav>
-
-          <div className={styles.headerActions}>
-            <button className={styles.notificationButton}>
-              <img src={searchIcon} alt="Search" width="20" height="20" />
-            </button>
-            <button className={styles.profileButton}>
-              <img src={profileIcon} alt="Profile" width="20" height="20" />
-            </button>
-            <button className={styles.notificationButton} onClick={handleLogout}>
-              <img src={logoutIcon} alt="Logout" width="20" height="20" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <div className={styles.mainWrapper}>

@@ -8,13 +8,15 @@ import QuickActions from './QuickActions';
 import UpcomingEvents from './UpcomingEvents';
 import CreateEventModal, { EventFormData } from '../events/components/CreateEventModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getMyManagedClub, Club } from '@/lib/api/clubs';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
+import { getClub, Club } from '@/lib/api/clubs';
 import { getClubSubscribers, Subscriber } from '@/lib/api/subscriptions';
 import { getEvents, createEvent, Event } from '@/lib/api/events';
 import { getAnnouncements, Announcement } from '@/lib/api/announcements';
 
 export default function OverviewSection() {
   const { userProfile } = useAuth();
+  const { selectedClubId } = useSelectedClub();
   const [club, setClub] = useState<Club | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
@@ -24,15 +26,19 @@ export default function OverviewSection() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
-    loadDashboardData();
-  }, [userProfile]);
+    if (selectedClubId) {
+      loadDashboardData();
+    }
+  }, [selectedClubId]);
 
   const loadDashboardData = async () => {
+    if (!selectedClubId) return;
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const clubResponse = await getMyManagedClub();
+      const clubResponse = await getClub(selectedClubId);
       if (!clubResponse.data) {
         setError('No managed club found');
         return;

@@ -68,6 +68,90 @@
   letter-spacing: -0.1504px;
 }
 
+.clubSwitcherContainer {
+  position: relative;
+}
+
+.subtitleButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #6a7282;
+  letter-spacing: -0.1504px;
+  transition: color 0.15s;
+}
+
+.subtitleButton:hover {
+  color: #3f5f1d;
+}
+
+.chevron {
+  color: #6a7282;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.clubDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 200;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+.clubDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.clubDropdownItem:hover {
+  background: #f3f4f6;
+}
+
+.clubDropdownItemActive {
+  color: #3f5f1d;
+  font-weight: 500;
+}
+
+.clubDropdownItemActive:hover {
+  background: #f0fdf4;
+}
+
+.checkIcon {
+  color: #609c22;
+  flex-shrink: 0;
+}
+
 .rightSection {
   display: flex;
   align-items: center;

@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './BrowseClubs.module.css';
 import { getClubs, Club, MeetingSchedule } from '@/lib/api/clubs';
 import { subscribeToClub, unsubscribeFromClub, getMySubscriptions } from '@/lib/api/subscriptions';
-import { logout } from '@/lib/firebase/auth';
+import Header from '../components/Header';
 
 const searchIcon = "/images/icons/clubs/search.svg";
 const filterIcon = "/images/icons/clubs/filter.svg";
@@ -15,23 +14,8 @@ const clockIcon = "/images/icons/clubs/clock.svg";
 const locationIcon = "/images/icons/clubs/location.svg";
 const usersIcon1 = "/images/icons/clubs/users.svg";
 const usersIcon2 = "/images/icons/clubs/users.svg";
-const logoIcon = "/images/icons/logo.svg";
-const headerSearchIcon = "/images/icons/search.svg";
-const profileIcon = "/images/icons/profile.svg";
-const logoutIcon = "/images/icons/mypage/logout.svg";
 
 export default function BrowseClubsPage() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/welcome');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedActivityType, setSelectedActivityType] = useState('All');
@@ -242,37 +226,7 @@ export default function BrowseClubsPage() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Fixed Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <Link href="/student/home" className={styles.logo}>
-            <div className={styles.logoIcon}>
-              <img src={logoIcon} alt="ClubAtlas" />
-            </div>
-            <span className={styles.logoText}>ClubAtlas</span>
-          </Link>
-          
-          <nav className={styles.nav}>
-            <Link href="/student/home" className={styles.navLink}>Home</Link>
-            <Link href="/student/home/clubs" className={styles.navLinkActive}>Browse Clubs</Link>
-            <Link href="/student/home/calendar" className={styles.navLink}>Calendar</Link>
-            <Link href="/student/home/ai-recommendations" className={styles.navLink}>AI Recommendations</Link>
-            <Link href="/student/home/mypage" className={styles.navLink}>My Page</Link>
-          </nav>
-
-          <div className={styles.headerActions}>
-            <button className={styles.notificationButton}>
-              <img src={headerSearchIcon} alt="Search" width="20" height="20" />
-            </button>
-            <button className={styles.profileButton}>
-              <img src={profileIcon} alt="Profile" width="20" height="20" />
-            </button>
-            <button className={styles.notificationButton} onClick={handleLogout}>
-              <img src={logoutIcon} alt="Logout" width="20" height="20" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <div className={styles.mainWrapper}>

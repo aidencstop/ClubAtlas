@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './MyPage.module.css';
-import { logout } from '@/lib/firebase/auth';
+import Header from '../components/Header';
 import { getMySubscriptions, subscribeToClub, unsubscribeFromClub, updateNotificationSettings, Subscription } from '@/lib/api/subscriptions';
 import { getClub, Club } from '@/lib/api/clubs';
 import { getMyAttendanceHistory, getMyCalendarEvents, AttendanceRecord, AttendanceStats, Event } from '@/lib/api/events';
@@ -16,9 +15,6 @@ import EditProfileModal from '@/components/EditProfileModal';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 
 // 로컬 아이콘 및 이미지 경로
-const logoIcon = "/images/icons/mypage/logo.svg";
-const bellIcon = "/images/icons/mypage/bell.svg";
-const logoutIcon = "/images/icons/mypage/logout.svg";
 const overviewIcon = "/images/icons/mypage/overview.svg";
 const subscribeIcon = "/images/icons/mypage/subscribed.svg";
 const historyIcon = "/images/icons/mypage/history.svg";
@@ -66,7 +62,6 @@ interface SubscribedClubData extends Subscription {
 }
 
 export default function MyPagePage() {
-  const router = useRouter();
   const { user, userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [subscriptions, setSubscriptions] = useState<SubscribedClubData[]>([]);
@@ -129,15 +124,6 @@ export default function MyPagePage() {
       loadAttendanceHistory();
     }
   }, [historyFilter]);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/welcome');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   const loadFullUserProfile = async () => {
     try {
@@ -457,35 +443,7 @@ export default function MyPagePage() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContainer}>
-          <Link href="/student/home" className={styles.logoButton}>
-            <div className={styles.logoIcon}>
-              <img src={logoIcon} alt="ClubAtlas" />
-            </div>
-            <span className={styles.logoText}>ClubAtlas</span>
-          </Link>
-
-          <nav className={styles.navigation}>
-            <Link href="/student/home" className={styles.navLink}>Home</Link>
-            <Link href="/student/home/clubs" className={styles.navLink}>Browse Clubs</Link>
-            <Link href="/student/home/calendar" className={styles.navLink}>Calendar</Link>
-            <Link href="/student/home/ai-recommendations" className={styles.navLink}>AI Recommendations</Link>
-            <Link href="/student/home/mypage" className={`${styles.navLink} ${styles.activeNavLink}`}>My Page</Link>
-          </nav>
-
-          <div className={styles.headerActions}>
-            <button className={styles.iconButton}>
-              <img src={bellIcon} alt="Notifications" />
-              <span className={styles.badge}>3</span>
-            </button>
-            <button className={styles.iconButton} onClick={handleLogout}>
-              <img src={logoutIcon} alt="Logout" />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className={styles.mainWrapper}>
