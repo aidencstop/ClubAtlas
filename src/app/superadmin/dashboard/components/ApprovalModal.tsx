@@ -2,8 +2,8 @@
 
 import styles from './ApprovalModal.module.css';
 
-const imgIcon = "https://www.figma.com/api/mcp/asset/a0461b76-814b-47b3-863b-336253a2c396";
-const imgIconClose = "https://www.figma.com/api/mcp/asset/4020a0a7-dbb2-45de-a566-894ef593ce49";
+const imgIcon = "/images/icons/superadmin/dashboard/modal-warning.svg";
+const imgIconClose = "/images/icons/superadmin/dashboard/modal-close.svg";
 
 interface ApprovalModalProps {
   isOpen: boolean;

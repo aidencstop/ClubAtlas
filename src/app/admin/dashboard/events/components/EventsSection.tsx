@@ -34,6 +34,7 @@ const mockEvents: Event[] = [
     location: 'Engineering 201',
     description: 'Regular weekly team meeting',
     notificationsSent: 32,
+    attendeesCount: 0,
   },
   {
     id: '2',
@@ -44,6 +45,7 @@ const mockEvents: Event[] = [
     location: 'Lab 305',
     description: 'Prepare for upcoming robotics competition',
     notificationsSent: 18,
+    attendeesCount: 0,
   },
   {
     id: '3',
@@ -54,6 +56,7 @@ const mockEvents: Event[] = [
     location: 'Main Auditorium',
     description: 'Special guest speaker from industry',
     notificationsSent: 45,
+    attendeesCount: 0,
   },
 ];
 
