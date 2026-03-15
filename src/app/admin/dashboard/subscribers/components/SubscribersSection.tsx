@@ -6,7 +6,7 @@ import StatCard from './StatCard';
 import SubscriberRow from './SubscriberRow';
 import SubscriberDetailsModal from './SubscriberDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { getClubSubscribers, Subscriber as ApiSubscriber, getAnnouncements } from '@/lib/api';
+import { getClubSubscribers, Subscriber as ApiSubscriber } from '@/lib/api';
 
 const imgIconSearch = "/images/icons/dashboard/icon-search.svg";
 
@@ -29,7 +29,6 @@ export default function SubscribersSection() {
   const [error, setError] = useState<string | null>(null);
   const [totalSubscribers, setTotalSubscribers] = useState(0);
   const [weeklyGrowth, setWeeklyGrowth] = useState(0);
-  const [avgOpenRate, setAvgOpenRate] = useState(0);
 
   useEffect(() => {
     loadSubscribers();
@@ -47,16 +46,7 @@ export default function SubscribersSection() {
       setError(null);
 
       const clubId = userProfile.managed_club_ids[0];
-      const [response, announcementsRes] = await Promise.all([
-        getClubSubscribers(clubId),
-        getAnnouncements({ club_id: clubId, limit: 100 }),
-      ]);
-
-      if (announcementsRes.data?.announcements?.length) {
-        const totalSent = announcementsRes.data.announcements.reduce((s, a) => s + (a.sent_to || 0), 0);
-        const totalOpens = announcementsRes.data.announcements.reduce((s, a) => s + (a.opens || 0), 0);
-        setAvgOpenRate(totalSent > 0 ? Math.round((totalOpens / totalSent) * 100) : 0);
-      }
+      const response = await getClubSubscribers(clubId);
 
       if (response.data) {
         const mappedSubscribers: Subscriber[] = response.data.subscribers.map((apiSubscriber: ApiSubscriber) => {
@@ -113,10 +103,6 @@ export default function SubscribersSection() {
     subscriber.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeRate = totalSubscribers > 0
-    ? Math.round((subscribers.filter(s => s.notificationEnabled).length / totalSubscribers) * 100)
-    : 0;
-
   return (
     <>
       <div className={styles.subscribersSection}>
@@ -134,18 +120,6 @@ export default function SubscribersSection() {
                 label="Total Subscribers"
                 subtext={weeklyGrowth > 0 ? `+${weeklyGrowth} this week` : 'No new this week'}
                 subtextColor={weeklyGrowth > 0 ? 'green' : 'gray'}
-              />
-              <StatCard
-                value={`${activeRate}%`}
-                label="Active Rate"
-                subtext="Opened recent email"
-                subtextColor="gray"
-              />
-              <StatCard
-                value={`${avgOpenRate}%`}
-                label="Avg. Open Rate"
-                subtext="Email engagement"
-                subtextColor="gray"
               />
             </div>
 

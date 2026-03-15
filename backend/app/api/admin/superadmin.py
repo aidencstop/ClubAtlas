@@ -349,6 +349,72 @@ async def assign_club_leader(
         )
 
 
+@router.delete("/club-leaders/{uid}/clubs/{club_id}")
+async def remove_leader_from_club(
+    uid: str,
+    club_id: str,
+    current_user: dict = Depends(require_super_admin)
+):
+    """
+    특정 클럽에 대한 리더 권한만 제거 (SuperAdmin 전용)
+
+    - managed_club_ids에서 해당 club_id만 제거
+    - 이후 managed_club_ids가 비어있으면 role을 'student'로 강등
+    """
+    try:
+        user = await user_service.get_user_profile(uid)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        if user.get('role') not in ['club-leader', 'admin']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User is not a club leader"
+            )
+
+        managed_club_ids = user.get('managed_club_ids', [])
+        if club_id not in managed_club_ids:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User is not a leader of this club"
+            )
+
+        new_managed_clubs = [cid for cid in managed_club_ids if cid != club_id]
+
+        await user_service.update_document(
+            user_service.COLLECTION,
+            uid,
+            {'managed_club_ids': new_managed_clubs}
+        )
+
+        if not new_managed_clubs:
+            role_updated = await set_user_role(uid, 'student')
+            if not role_updated:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to set user role in Firebase"
+                )
+
+        return {
+            "message": "Leader removed from club successfully",
+            "uid": uid,
+            "club_id": club_id,
+            "remaining_clubs": new_managed_clubs
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to remove leader from club: {str(e)}"
+        )
+
+
 @router.delete("/club-leaders/{uid}")
 async def delete_club_leader(
     uid: str,
@@ -356,45 +422,43 @@ async def delete_club_leader(
 ):
     """
     Club Leader 삭제 (SuperAdmin 전용)
-    
+
     - 사용자의 role을 'student'로 변경
     - managed_club_ids를 빈 배열로 설정
     """
     try:
         user = await user_service.get_user_profile(uid)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         if user.get('role') not in ['club-leader', 'admin']:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User is not a club leader"
             )
-        
-        # Firebase custom claims와 Firestore role 업데이트
+
         role_updated = await set_user_role(uid, 'student')
         if not role_updated:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to set user role in Firebase"
             )
-        
-        # managed_club_ids 초기화
+
         await user_service.update_document(
             user_service.COLLECTION,
             uid,
             {'managed_club_ids': []}
         )
-        
+
         return {
             "message": "Club leader removed successfully",
             "uid": uid
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:

@@ -87,6 +87,16 @@ export async function assignClubLeader(data: {
   );
 }
 
+export async function removeLeaderFromClub(
+  uid: string,
+  clubId: string
+): Promise<ApiResponse<{ message: string; uid: string; club_id: string; remaining_clubs: string[] }>> {
+  return apiRequest<{ message: string; uid: string; club_id: string; remaining_clubs: string[] }>(
+    `/api/superadmin/club-leaders/${uid}/clubs/${clubId}`,
+    { method: 'DELETE' }
+  );
+}
+
 export async function deleteClubLeader(
   uid: string
 ): Promise<ApiResponse<{ message: string; uid: string }>> {

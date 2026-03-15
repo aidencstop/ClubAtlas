@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import styles from './AnnouncementsSection.module.css';
 import AnnouncementCard from './AnnouncementCard';
 import CreateAnnouncementModal, { AnnouncementFormData } from './CreateAnnouncementModal';
+import EditAnnouncementModal, { EditAnnouncementFormData } from './EditAnnouncementModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement, Announcement as ApiAnnouncement, getClubSubscribers } from '@/lib/api';
 
@@ -22,6 +23,8 @@ interface Announcement {
 export default function AnnouncementsSection() {
   const { userProfile } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<EditAnnouncementFormData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +47,7 @@ export default function AnnouncementsSection() {
 
       const clubId = userProfile.managed_club_ids[0];
       const [response, subscribersRes] = await Promise.all([
-        getAnnouncements({ club_id: clubId, limit: 100 }),
+        getAnnouncements({ club_id: clubId, limit: 100, status_filter: 'active' }),
         getClubSubscribers(clubId),
       ]);
 
@@ -118,6 +121,40 @@ export default function AnnouncementsSection() {
     }
   };
 
+  const handleEditClick = (announcement: Announcement) => {
+    setEditingAnnouncement({
+      id: announcement.id,
+      title: announcement.title,
+      content: announcement.content || '',
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+    setEditingAnnouncement(null);
+  };
+
+  const handleAnnouncementUpdate = async (data: EditAnnouncementFormData) => {
+    try {
+      const response = await updateAnnouncement(data.id, {
+        title: data.title,
+        content: data.content,
+      });
+
+      if (response.data) {
+        setIsEditModalOpen(false);
+        setEditingAnnouncement(null);
+        await loadAnnouncements();
+      } else {
+        alert(response.error || 'Failed to update announcement');
+      }
+    } catch (err) {
+      console.error('Failed to update announcement:', err);
+      alert('Failed to update announcement');
+    }
+  };
+
   const handleDeleteAnnouncement = async (announcementId: string) => {
     if (!confirm('Are you sure you want to delete this announcement?')) {
       return;
@@ -166,9 +203,10 @@ export default function AnnouncementsSection() {
         ) : (
           <div className={styles.announcementsGrid}>
             {announcements.map((announcement) => (
-              <AnnouncementCard 
-                key={announcement.id} 
-                announcement={announcement} 
+              <AnnouncementCard
+                key={announcement.id}
+                announcement={announcement}
+                onEdit={handleEditClick}
                 onDelete={handleDeleteAnnouncement}
               />
             ))}
@@ -180,6 +218,13 @@ export default function AnnouncementsSection() {
         isOpen={isCreateModalOpen}
         onClose={handleModalClose}
         onCreateAnnouncement={handleAnnouncementCreate}
+      />
+
+      <EditAnnouncementModal
+        isOpen={isEditModalOpen}
+        onClose={handleEditModalClose}
+        onUpdateAnnouncement={handleAnnouncementUpdate}
+        announcementData={editingAnnouncement}
       />
     </>
   );

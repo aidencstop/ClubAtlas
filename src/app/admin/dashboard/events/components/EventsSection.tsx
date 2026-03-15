@@ -5,6 +5,7 @@ import styles from './EventsSection.module.css';
 import EventCard from './EventCard';
 import CreateEventModal, { EventFormData } from './CreateEventModal';
 import EditEventModal from './EditEventModal';
+import EventDetailsModal from './EventDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEvents, createEvent, updateEvent, Event as ApiEvent } from '@/lib/api';
 
@@ -17,6 +18,7 @@ interface Event {
   status: 'upcoming' | 'completed' | 'cancelled';
   date: string;
   notificationsSent: number;
+  attendeesCount: number;
   dateTime?: string;
   location?: string;
   description?: string;
@@ -62,6 +64,8 @@ export default function EventsSection() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +112,7 @@ export default function EventsSection() {
           location: apiEvent.location,
           description: apiEvent.description,
           notificationsSent: apiEvent.attendees?.length || 0,
+          attendeesCount: apiEvent.attendees?.length || 0,
         };
         });
 
@@ -161,6 +166,16 @@ export default function EventsSection() {
       console.error('Failed to create event:', err);
       alert('Failed to create event');
     }
+  };
+
+  const handleViewDetails = (event: Event) => {
+    setViewingEvent(event);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleDetailsModalClose = () => {
+    setIsDetailsModalOpen(false);
+    setViewingEvent(null);
   };
 
   const handleEditEvent = (event: Event) => {
@@ -265,7 +280,7 @@ export default function EventsSection() {
         ) : (
           <div className={styles.eventsGrid}>
             {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} onEdit={handleEditEvent} />
+              <EventCard key={event.id} event={event} onEdit={handleEditEvent} onViewDetails={handleViewDetails} />
             ))}
           </div>
         )}
@@ -288,6 +303,13 @@ export default function EventsSection() {
           location: editingEvent.location || '',
           description: editingEvent.description || '',
         } : null}
+      />
+
+      <EventDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleDetailsModalClose}
+        onEdit={handleEditEvent}
+        event={viewingEvent}
       />
     </>
   );

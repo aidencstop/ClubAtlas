@@ -16,7 +16,7 @@ import EditPhotoGallery from './components/EditPhotoGallery';
 import EditUpcomingEvents from './components/EditUpcomingEvents';
 import EditSaveFooter from './components/EditSaveFooter';
 import { getMyManagedClub, updateClub, Club, MeetingSchedule, ClubLeader } from '@/lib/api/clubs';
-import { uploadClubLogo, uploadClubBanner, uploadClubMedia, deleteClubMedia } from '@/lib/api';
+import { uploadClubLogo, uploadClubBanner, uploadClubMedia, deleteClubMedia, uploadLeaderAvatar } from '@/lib/api';
 
 export default function EditClubProfilePage() {
   const router = useRouter();
@@ -67,6 +67,8 @@ export default function EditClubProfilePage() {
         setCategories(clubData.categories);
         setTags(clubData.tags || []);
         setContactEmail(clubData.contact_email || '');
+        setWebsite(clubData.website || '');
+        setSocialMedia(clubData.social_media || '');
         setMeetingSchedule(clubData.meeting_schedule || []);
         setLeaders(clubData.leaders || []);
         setLogoUrl(clubData.logo_url);
@@ -99,6 +101,8 @@ export default function EditClubProfilePage() {
         tags,
         activity_type: activityTypes,
         contact_email: contactEmail,
+        website: website || undefined,
+        social_media: socialMedia || undefined,
         meeting_schedule: meetingSchedule,
         leaders,
       });
@@ -127,34 +131,97 @@ export default function EditClubProfilePage() {
 
   const handleLogoUpload = async (file: File) => {
     if (!club) return;
+    const localUrl = URL.createObjectURL(file);
+    setLogoUrl(localUrl);
     try {
       const response = await uploadClubLogo(club.id, file);
-      if (response.data) setLogoUrl(response.data.file_url);
+      if (response.data) {
+        URL.revokeObjectURL(localUrl);
+        setLogoUrl(response.data.file_url);
+      } else {
+        URL.revokeObjectURL(localUrl);
+        setLogoUrl(club.logo_url);
+        setError(response.error || 'Failed to upload logo');
+      }
     } catch (err) {
       console.error('Failed to upload logo:', err);
+      URL.revokeObjectURL(localUrl);
+      setLogoUrl(club.logo_url);
       setError('Failed to upload logo');
     }
   };
 
   const handleBannerUpload = async (file: File) => {
     if (!club) return;
+    const localUrl = URL.createObjectURL(file);
+    setBannerUrl(localUrl);
     try {
       const response = await uploadClubBanner(club.id, file);
-      if (response.data) setBannerUrl(response.data.file_url);
+      if (response.data) {
+        URL.revokeObjectURL(localUrl);
+        setBannerUrl(response.data.file_url);
+      } else {
+        URL.revokeObjectURL(localUrl);
+        setBannerUrl(club.banner_url);
+        setError(response.error || 'Failed to upload banner');
+      }
     } catch (err) {
       console.error('Failed to upload banner:', err);
+      URL.revokeObjectURL(localUrl);
+      setBannerUrl(club.banner_url);
       setError('Failed to upload banner');
     }
   };
 
   const handleMediaUpload = async (file: File) => {
     if (!club) return;
+    const localUrl = URL.createObjectURL(file);
+    setMediaUrls((prev) => [...prev, localUrl]);
     try {
       const response = await uploadClubMedia(club.id, file);
-      if (response.data) setMediaUrls((prev) => [...prev, response.data!.file_url]);
+      if (response.data) {
+        URL.revokeObjectURL(localUrl);
+        setMediaUrls((prev) => prev.map((url) => url === localUrl ? response.data!.file_url : url));
+      } else {
+        URL.revokeObjectURL(localUrl);
+        setMediaUrls((prev) => prev.filter((url) => url !== localUrl));
+        setError(response.error || 'Failed to upload media');
+      }
     } catch (err) {
       console.error('Failed to upload media:', err);
+      URL.revokeObjectURL(localUrl);
+      setMediaUrls((prev) => prev.filter((url) => url !== localUrl));
       setError('Failed to upload media');
+    }
+  };
+
+  const handleLeaderAvatarUpload = async (leaderIdx: number, file: File) => {
+    if (!club) return;
+    const localUrl = URL.createObjectURL(file);
+    setLeaders((prev) =>
+      prev.map((l, i) => (i === leaderIdx ? { ...l, avatar_url: localUrl } : l))
+    );
+    try {
+      const response = await uploadLeaderAvatar(club.id, file);
+      if (response.data) {
+        URL.revokeObjectURL(localUrl);
+        setLeaders((prev) =>
+          prev.map((l, i) => (i === leaderIdx ? { ...l, avatar_url: response.data!.file_url } : l))
+        );
+      } else {
+        URL.revokeObjectURL(localUrl);
+        setLeaders((prev) =>
+          prev.map((l, i) => (i === leaderIdx ? { ...l, avatar_url: undefined } : l))
+        );
+        setError(response.error || 'Failed to upload avatar');
+      }
+    } catch (err) {
+      console.error('Failed to upload leader avatar:', err);
+      URL.revokeObjectURL(localUrl);
+      setLeaders((prev) =>
+        prev.map((l, i) => (i === leaderIdx ? { ...l, avatar_url: undefined } : l))
+      );
+      setError('Failed to upload leader avatar');
     }
   };
 
@@ -235,7 +302,7 @@ export default function EditClubProfilePage() {
               socialMedia={socialMedia}
               setSocialMedia={setSocialMedia}
             />
-            <EditLeadershipTeam leaders={leaders} setLeaders={setLeaders} />
+            <EditLeadershipTeam leaders={leaders} setLeaders={setLeaders} onAvatarUpload={handleLeaderAvatarUpload} />
             <EditPhotoGallery
               mediaUrls={mediaUrls}
               onMediaUpload={handleMediaUpload}

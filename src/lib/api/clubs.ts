@@ -14,6 +14,7 @@ export interface ClubLeader {
   name: string;
   role: string;
   email?: string;
+  avatar_url?: string;
 }
 
 export interface ClubStats {
@@ -35,6 +36,8 @@ export interface Club {
   meeting_schedule?: MeetingSchedule[];
   leaders?: ClubLeader[];
   contact_email?: string;
+  website?: string;
+  social_media?: string;
   stats?: ClubStats;
   logo_url?: string;
   banner_url?: string;
@@ -87,6 +90,8 @@ export interface ClubUpdate {
   meeting_schedule?: MeetingSchedule[];
   leaders?: ClubLeader[];
   contact_email?: string;
+  website?: string;
+  social_media?: string;
   logo_url?: string;
   banner_url?: string;
   media_urls?: string[];

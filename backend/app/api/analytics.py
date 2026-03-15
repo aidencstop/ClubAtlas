@@ -7,37 +7,33 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel
 
 from app.api.dependencies import require_club_leader
-from app.services.firestore_service import subscription_service, event_service, user_service
+from app.services.firestore_service import subscription_service, user_service
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
-
-
-class MonthlyTrendItem(BaseModel):
-    month: str
-    year: int
-    subscribers: int
-    events: int
 
 
 class AnalyticsTrendsResponse(BaseModel):
     months: list[str]
     subscribers: list[int]
-    events: list[int]
 
 
 def _to_datetime(val) -> Optional[datetime]:
-    """Firestore timestamp/datetime을 datetime으로 변환"""
+    """Firestore timestamp/datetime을 naive UTC datetime으로 변환"""
     if val is None:
         return None
+    if hasattr(val, "seconds") and not isinstance(val, datetime):
+        return datetime.utcfromtimestamp(val.seconds + getattr(val, "nanoseconds", 0) / 1e9)
     if isinstance(val, datetime):
+        if val.tzinfo is not None:
+            # timezone-aware → naive UTC
+            import calendar
+            return datetime.utcfromtimestamp(calendar.timegm(val.utctimetuple()))
         return val
     if hasattr(val, "timestamp"):
         return datetime.utcfromtimestamp(val.timestamp())
-    if hasattr(val, "seconds"):
-        return datetime.utcfromtimestamp(val.seconds + getattr(val, "nanoseconds", 0) / 1e9)
     if isinstance(val, str):
         try:
-            return datetime.fromisoformat(val.replace("Z", "+00:00"))
+            return datetime.fromisoformat(val.replace("Z", "+00:00")).replace(tzinfo=None)
         except ValueError:
             return None
     return None
@@ -50,9 +46,7 @@ async def get_club_analytics_trends(
     current_user: dict = Depends(require_club_leader),
 ):
     """
-    동아리 월별 시계열 통계
-    - Subscribers: 해당 월 말 기준 누적 구독자 수
-    - Events: 해당 월 말 기준 누적 이벤트 수
+    동아리 월별 구독자 통계 - 구독한 월 기준 비누적 집계
     """
     user_id = current_user["uid"]
     user_profile = await user_service.get_user_profile(user_id)
@@ -76,43 +70,26 @@ async def get_club_analytics_trends(
             month_keys.append((y, m))
 
         subscribers = await subscription_service.get_club_subscribers(club_id, active_only=True)
-        events = await event_service.query_documents(
-            event_service.COLLECTION,
-            filters=[("club_id", "==", club_id)],
-            limit=None,
-        )
 
         subs_by_month: dict[tuple[int, int], int] = {(y, m): 0 for y, m in month_keys}
-        events_by_month: dict[tuple[int, int], int] = {(y, m): 0 for y, m in month_keys}
 
         for sub in subscribers:
-            dt = _to_datetime(sub.get("subscribed_at"))
+            dt = _to_datetime(sub.get("subscribed_at")) or _to_datetime(sub.get("created_at"))
             if not dt:
                 continue
-            for i, (y, m) in enumerate(month_keys):
-                if dt.year < y or (dt.year == y and dt.month <= m):
-                    subs_by_month[(y, m)] += 1
-
-        for evt in events:
-            dt = _to_datetime(evt.get("start_datetime")) or _to_datetime(evt.get("created_at"))
-            if not dt:
-                continue
-            for i, (y, m) in enumerate(month_keys):
-                if dt.year < y or (dt.year == y and dt.month <= m):
-                    events_by_month[(y, m)] += 1
+            key = (dt.year, dt.month)
+            if key in subs_by_month:
+                subs_by_month[key] += 1
 
         month_labels = []
         subs_data = []
-        events_data = []
         for y, m in month_keys:
             month_labels.append(datetime(y, m, 1).strftime("%b"))
             subs_data.append(subs_by_month[(y, m)])
-            events_data.append(events_by_month[(y, m)])
 
         return AnalyticsTrendsResponse(
             months=month_labels,
             subscribers=subs_data,
-            events=events_data,
         )
     except Exception as e:
         print(f"Analytics trends error: {e}")

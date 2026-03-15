@@ -284,7 +284,45 @@
 .chatHeaderContent {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.chatHeaderLeft {
+  display: flex;
+  align-items: center;
   gap: 16px;
+}
+
+/* Header Progress Indicator */
+.headerProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.headerProgressText {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.headerProgressBar {
+  width: 120px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.headerProgressFill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  transition: width 0.3s ease;
+  border-radius: 3px;
 }
 
 .assistantIcon {
@@ -336,12 +374,12 @@
 /* Chat Messages */
 .chatMessages {
   background: linear-gradient(158.48deg, #f9fafb 0%, rgba(250, 245, 255, 0.3) 100%);
-  padding: 24px 24px 24px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   min-height: 400px;
-  max-height: 600px;
+  max-height: 900px;
   overflow-y: auto;
 }
 
@@ -442,6 +480,30 @@
   margin: 0;
 }
 
+/* User answer bubble (selection tags) */
+.userAnswerBubble {
+  background: linear-gradient(90deg, #288e66 0%, #05623d 100%);
+  border-radius: 16px;
+  box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1), 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+  padding: 14px 16px;
+  max-width: 600px;
+}
+
+.userAnswerTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.userAnswerTag {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
 .userAvatar {
   width: 40px;
   height: 40px;
@@ -540,36 +602,10 @@
   margin: 0;
 }
 
-/* Progress Indicator */
-.progressIndicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin: 24px 0;
-  padding: 0 40px;
-}
-
-.progressBar {
-  width: 100%;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: linear-gradient(90deg, #288e66 0%, #4ec27d 100%);
-  transition: width 0.3s ease;
-  border-radius: 3px;
-}
-
-.progressText {
-  font-size: 14px;
-  font-weight: 500;
-  color: #667085;
-  margin: 0;
+.bubbleDivider {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 16px 0;
 }
 
 /* Selection Grid */
@@ -656,6 +692,41 @@
   font-weight: 600;
   background: linear-gradient(90deg, #7aa4e5 0%, #7f72e4 100%);
   color: white;
+}
+
+/* Button Row (Back + Next side by side) */
+.buttonRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.buttonRow .nextButton {
+  margin-top: 0;
+}
+
+/* Back Button */
+.backButton {
+  padding: 14px 24px;
+  border-radius: 12px;
+  background: white;
+  color: #364153;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid #d1d5dc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.backButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Next/Submit Button */

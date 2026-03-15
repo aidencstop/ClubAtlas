@@ -3,26 +3,28 @@
 import { useState, useEffect } from 'react';
 import styles from './LeadersTable.module.css';
 import EditLeaderModal from './EditLeaderModal';
-import { getClubLeaders, deleteClubLeader, ClubLeaderInfo } from '@/lib/api/superadmin';
+import { getClubLeaders, removeLeaderFromClub, ClubLeaderInfo } from '@/lib/api/superadmin';
 
 const editIcon = "/images/icons/superadmin/club-leaders/edit.svg";
 const deleteIcon = "/images/icons/superadmin/club-leaders/delete.svg";
 
 interface Leader {
   id: string;
+  rowKey: string;
   name: string;
   initial: string;
   email: string;
   club: string;
+  clubId: string;
   role: string;
   status: 'ACTIVE' | 'INACTIVE';
 }
 
 interface LeadersTableProps {
-  key?: number;
+  searchQuery?: string;
 }
 
-export default function LeadersTable({ key }: LeadersTableProps) {
+export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,24 +48,29 @@ export default function LeadersTable({ key }: LeadersTableProps) {
       }
 
       if (response.data) {
-        const mappedLeaders: Leader[] = response.data.leaders.map((leaderInfo: ClubLeaderInfo) => {
-          const clubName = leaderInfo.managed_club_names.length > 0
-            ? leaderInfo.managed_club_names[0]
-            : 'No Club';
-
+        const mappedLeaders: Leader[] = response.data.leaders.flatMap((leaderInfo: ClubLeaderInfo) => {
           const initial = leaderInfo.display_name
             ? leaderInfo.display_name.charAt(0).toUpperCase()
             : leaderInfo.email.charAt(0).toUpperCase();
 
-          return {
+          const clubNames = leaderInfo.managed_club_names.length > 0
+            ? leaderInfo.managed_club_names
+            : ['No Club'];
+          const clubIds = leaderInfo.managed_club_ids.length > 0
+            ? leaderInfo.managed_club_ids
+            : [''];
+
+          return clubNames.map((clubName, idx) => ({
             id: leaderInfo.uid,
+            rowKey: `${leaderInfo.uid}_${clubIds[idx] || clubName}`,
             name: leaderInfo.display_name || leaderInfo.email,
-            initial: initial,
+            initial,
             email: leaderInfo.email,
             club: clubName,
+            clubId: clubIds[idx] || '',
             role: leaderInfo.role === 'admin' ? 'Admin' : 'President',
             status: leaderInfo.status.toUpperCase() as 'ACTIVE' | 'INACTIVE',
-          };
+          }));
         });
 
         setLeaders(mappedLeaders);
@@ -90,24 +97,23 @@ export default function LeadersTable({ key }: LeadersTableProps) {
     await loadLeaders();
   };
 
-  const handleDelete = async (leaderId: string) => {
-    if (!confirm('Are you sure you want to remove this club leader? They will be reverted to student role.')) {
+  const handleDelete = async (leaderId: string, clubId: string, clubName: string) => {
+    if (!confirm(`Are you sure you want to remove this leader from "${clubName}"? If this is their only club, they will be reverted to student role.`)) {
       return;
     }
 
     try {
-      const response = await deleteClubLeader(leaderId);
+      const response = await removeLeaderFromClub(leaderId, clubId);
 
       if (response.error) {
-        alert(`Failed to delete leader: ${response.error}`);
+        alert(`Failed to remove leader: ${response.error}`);
         return;
       }
 
-      alert('Club leader removed successfully');
       await loadLeaders();
     } catch (err) {
-      console.error('Failed to delete leader:', err);
-      alert('Failed to delete club leader');
+      console.error('Failed to remove leader from club:', err);
+      alert('Failed to remove leader from club');
     }
   };
 
@@ -131,6 +137,15 @@ export default function LeadersTable({ key }: LeadersTableProps) {
     );
   }
 
+  const query = searchQuery.toLowerCase();
+  const filteredLeaders = query
+    ? leaders.filter(
+        (l) =>
+          l.name.toLowerCase().includes(query) ||
+          l.email.toLowerCase().includes(query)
+      )
+    : leaders;
+
   return (
     <div className={styles.container}>
       <div className={styles.tableHeader}>
@@ -143,13 +158,13 @@ export default function LeadersTable({ key }: LeadersTableProps) {
       </div>
 
       <div className={styles.tableBody}>
-        {leaders.length === 0 ? (
+        {filteredLeaders.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
-            No active club leaders found.
+            {query ? 'No leaders found matching your search.' : 'No active club leaders found.'}
           </div>
         ) : (
-          leaders.map((leader) => (
-          <div key={leader.id} className={styles.tableRow}>
+          filteredLeaders.map((leader) => (
+          <div key={leader.rowKey} className={styles.tableRow}>
             <div className={styles.nameCell} style={{ width: '205.5px' }}>
               <div className={styles.avatar}>
                 {leader.initial}
@@ -185,7 +200,7 @@ export default function LeadersTable({ key }: LeadersTableProps) {
               </button>
               <button
                 className={styles.actionButton}
-                onClick={() => handleDelete(leader.id)}
+                onClick={() => handleDelete(leader.id, leader.clubId, leader.club)}
                 aria-label="Delete"
               >
                 <img src={deleteIcon} alt="Delete" className={styles.actionIcon} />

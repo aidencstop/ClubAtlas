@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import styles from './EventDetailModal.module.css';
+import { useAuth } from '@/contexts/AuthContext';
+import { attendEvent, cancelAttendance } from '@/lib/api/events';
 
 // 로컬 아이콘 및 이미지 경로
 const roboticsImage = "https://www.figma.com/api/mcp/asset/e4e2b0f4-0057-43dc-9d3f-e5ca513f6c4b"; // 클럽 썸네일 이미지 (Figma 유지)
@@ -22,6 +24,7 @@ interface CalendarEvent {
   description: string;
   location: string;
   start_datetime: Date;
+  attendees?: string[];
 }
 
 interface EventDetailModalProps {
@@ -30,14 +33,35 @@ interface EventDetailModalProps {
 }
 
 export default function EventDetailModal({ onClose, event }: EventDetailModalProps) {
-  const [attendanceStatus, setAttendanceStatus] = useState<'planning' | 'checked-in' | 'cannot'>('planning');
+  const { user } = useAuth();
+  const [attendanceStatus, setAttendanceStatus] = useState<'planning' | 'checked-in' | 'cannot'>('cannot');
   const [showSavedNotification, setShowSavedNotification] = useState(false);
 
-  const handleAttendanceChange = (status: 'planning' | 'checked-in' | 'cannot') => {
+  useEffect(() => {
+    if (user && event.attendees?.includes(user.uid)) {
+      setAttendanceStatus('planning');
+    } else {
+      setAttendanceStatus('cannot');
+    }
+  }, [event.id, user]);
+
+  const handleAttendanceChange = async (status: 'planning' | 'checked-in' | 'cannot') => {
+    const prev = attendanceStatus;
     setAttendanceStatus(status);
+
+    try {
+      if (status === 'planning' && prev !== 'planning') {
+        await attendEvent(event.id);
+      } else if (status === 'cannot' && prev === 'planning') {
+        await cancelAttendance(event.id);
+      }
+    } catch (err) {
+      console.error('Failed to update attendance:', err);
+      setAttendanceStatus(prev);
+      return;
+    }
+
     setShowSavedNotification(true);
-    
-    // 3초 후 알림 자동으로 사라지게
     setTimeout(() => {
       setShowSavedNotification(false);
     }, 3000);

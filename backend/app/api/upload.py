@@ -213,6 +213,53 @@ async def upload_club_media(
         )
 
 
+@router.post("/leader-avatar")
+async def upload_leader_avatar(
+    club_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(require_club_leader)
+):
+    user_id = current_user['uid']
+
+    user_profile = await user_service.get_user_profile(user_id)
+    managed_clubs = user_profile.get('managed_club_ids', [])
+
+    if club_id not in managed_clubs and current_user.get('role') != 'super-admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only upload avatars for clubs you manage"
+        )
+
+    club = await club_service.get_club(club_id)
+    if not club:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Club not found"
+        )
+
+    try:
+        file_url = await storage_service.upload_file(
+            file=file,
+            folder='leader-avatars',
+            club_id=club_id,
+            allowed_types=ALLOWED_IMAGE_TYPES
+        )
+
+        return {
+            "message": "Leader avatar uploaded successfully",
+            "file_url": file_url
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Upload leader avatar error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to upload leader avatar"
+        )
+
+
 @router.delete("/club-media")
 async def delete_club_media(
     club_id: str,

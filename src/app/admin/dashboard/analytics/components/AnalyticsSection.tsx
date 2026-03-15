@@ -6,7 +6,6 @@ import EngagementChart from './EngagementChart';
 import { useAuth } from '@/contexts/AuthContext';
 import { getClubSubscribers } from '@/lib/api/subscriptions';
 import { getAnnouncements } from '@/lib/api/announcements';
-import { getEvents } from '@/lib/api/events';
 import { getAnalyticsTrends } from '@/lib/api/analytics';
 
 const PERIOD_OPTIONS = [
@@ -20,7 +19,6 @@ export default function AnalyticsSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscribers, setSubscribers] = useState(0);
-  const [saveCount, setSaveCount] = useState(0);
   const [engagement, setEngagement] = useState(0);
   const [periodMonths, setPeriodMonths] = useState<number>(6);
   const getDefaultChartData = useCallback((monthsCount: number) => {
@@ -32,9 +30,9 @@ export default function AnalyticsSection() {
       months.push(d.toLocaleDateString('en-US', { month: 'short' }));
       zeros.push(0);
     }
-    return { months, subscribers: zeros, save: zeros };
+    return { months, subscribers: zeros };
   }, []);
-  const [chartData, setChartData] = useState<{ months: string[]; subscribers: number[]; save: number[] }>(() => {
+  const [chartData, setChartData] = useState<{ months: string[]; subscribers: number[] }>(() => {
     const now = new Date();
     const months: string[] = [];
     const zeros: number[] = [];
@@ -43,7 +41,7 @@ export default function AnalyticsSection() {
       months.push(d.toLocaleDateString('en-US', { month: 'short' }));
       zeros.push(0);
     }
-    return { months, subscribers: zeros, save: zeros };
+    return { months, subscribers: zeros };
   });
 
   useEffect(() => {
@@ -62,19 +60,14 @@ export default function AnalyticsSection() {
       setError(null);
       const clubId = userProfile.managed_club_ids[0];
 
-      const [subscribersRes, announcementsRes, eventsRes, trendsRes] = await Promise.all([
+      const [subscribersRes, announcementsRes, trendsRes] = await Promise.all([
         getClubSubscribers(clubId),
         getAnnouncements({ club_id: clubId, limit: 100 }),
-        getEvents({ club_id: clubId, limit: 100 }),
         getAnalyticsTrends(clubId, periodMonths),
       ]);
 
       if (subscribersRes.data) {
         setSubscribers(subscribersRes.data.total);
-      }
-
-      if (eventsRes.data) {
-        setSaveCount(eventsRes.data.events?.length || 0);
       }
 
       if (announcementsRes.data && subscribersRes.data) {
@@ -93,7 +86,6 @@ export default function AnalyticsSection() {
         setChartData({
           months: trendsRes.data.months,
           subscribers: trendsRes.data.subscribers,
-          save: trendsRes.data.events,
         });
       } else {
         setChartData(getDefaultChartData(periodMonths));
@@ -122,10 +114,6 @@ export default function AnalyticsSection() {
         <div className={styles.statCard}>
           <div className={styles.statValue}>{subscribers.toLocaleString()}</div>
           <div className={styles.statLabel}>Subscribers</div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{saveCount.toLocaleString()}</div>
-          <div className={styles.statLabel}>Save</div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statValue}>{engagement}%</div>
@@ -157,7 +145,6 @@ export default function AnalyticsSection() {
         <EngagementChart
           months={chartData.months}
           subscribersData={chartData.subscribers}
-          saveData={chartData.save}
         />
       </div>
     </div>

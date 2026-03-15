@@ -6,10 +6,11 @@ import StatCard from './StatCard';
 import RecentActivity from './RecentActivity';
 import QuickActions from './QuickActions';
 import UpcomingEvents from './UpcomingEvents';
+import CreateEventModal, { EventFormData } from '../events/components/CreateEventModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { getMyManagedClub, Club } from '@/lib/api/clubs';
 import { getClubSubscribers, Subscriber } from '@/lib/api/subscriptions';
-import { getEvents, Event } from '@/lib/api/events';
+import { getEvents, createEvent, Event } from '@/lib/api/events';
 import { getAnnouncements, Announcement } from '@/lib/api/announcements';
 
 export default function OverviewSection() {
@@ -20,6 +21,7 @@ export default function OverviewSection() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -79,7 +81,33 @@ export default function OverviewSection() {
     }
   };
 
-  const totalSubscribers = club?.stats?.total_subscribers || 0;
+  const handleEventCreate = async (eventData: EventFormData) => {
+    if (!club) return;
+    try {
+      const startDateTime = new Date(eventData.dateTime).toISOString();
+      const endDateTime = new Date(new Date(eventData.dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const response = await createEvent({
+        club_id: club.id,
+        title: eventData.title,
+        description: eventData.description,
+        event_type: 'meeting',
+        start_datetime: startDateTime,
+        end_datetime: endDateTime,
+        location: eventData.location,
+      });
+      if (response.data) {
+        setIsCreateModalOpen(false);
+        await loadDashboardData();
+      } else {
+        alert(response.error || 'Failed to create event');
+      }
+    } catch (err) {
+      console.error('Failed to create event:', err);
+      alert('Failed to create event');
+    }
+  };
+
+  const totalSubscribers = subscribers.length;
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
   const weeklyNewSubscribers = subscribers.filter(sub => {
@@ -144,22 +172,6 @@ export default function OverviewSection() {
           change={thisWeekEvents > 0 ? `${thisWeekEvents} this week` : 'None this week'}
           changePositive={thisWeekEvents > 0}
         />
-        <StatCard
-          icon="/images/icons/dashboard/stat-profile-views.svg"
-          iconBg="#dcfce7"
-          value={profileViews.toString()}
-          label="Profile Views"
-          change="Total views"
-          changePositive={true}
-        />
-        <StatCard
-          icon="/images/icons/dashboard/nav-analytics.svg"
-          iconBg="#ffedd4"
-          value={`${engagementRate}%`}
-          label="Engagement Rate"
-          change="Announcement engagement"
-          changePositive={engagementRate > 0}
-        />
       </div>
 
       <div className={styles.contentGrid}>
@@ -168,10 +180,16 @@ export default function OverviewSection() {
           events={upcomingEvents}
           announcements={announcements}
         />
-        <QuickActions />
+        <QuickActions onCreateEvent={() => setIsCreateModalOpen(true)} />
       </div>
 
       <UpcomingEvents events={upcomingEvents} clubId={club.id} />
+
+      <CreateEventModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreateEvent={handleEventCreate}
+      />
     </div>
   );
 }

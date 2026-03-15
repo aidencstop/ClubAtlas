@@ -3,56 +3,39 @@
 import Link from 'next/link';
 import styles from './QuickActions.module.css';
 
-interface Action {
-  icon: string;
-  iconBg: string;
-  label: string;
-  href: string;
+interface QuickActionsProps {
+  onCreateEvent: () => void;
 }
 
-const actions: Action[] = [
-  {
-    icon: "/images/icons/dashboard/nav-events.svg",
-    iconBg: "#dbeafe",
-    label: "Create Event",
-    href: "/admin/dashboard/events"
-  },
-  {
-    icon: "/images/icons/dashboard/nav-announcements.svg",
-    iconBg: "#f3e8ff",
-    label: "New Announcement",
-    href: "/admin/dashboard/announcements"
-  },
-  {
-    icon: "/images/icons/dashboard/nav-club-profile.svg",
-    iconBg: "#dcfce7",
-    label: "Edit Profile",
-    href: "/admin/dashboard/profile/edit"
-  },
-  {
-    icon: "/images/icons/dashboard/nav-subscribers.svg",
-    iconBg: "#ffedd4",
-    label: "View Subscribers",
-    href: "/admin/dashboard/subscribers"
-  },
-];
-
-export default function QuickActions() {
+export default function QuickActions({ onCreateEvent }: QuickActionsProps) {
   return (
     <div className={styles.card}>
       <h3 className={styles.title}>Quick Actions</h3>
       <div className={styles.actions}>
-        {actions.map((action, index) => (
-          <Link key={index} href={action.href} className={styles.actionButton}>
-            <div
-              className={styles.actionIconContainer}
-              style={{ backgroundColor: action.iconBg }}
-            >
-              <img src={action.icon} alt={action.label} className={styles.actionIcon} />
-            </div>
-            <span className={styles.actionLabel}>{action.label}</span>
-          </Link>
-        ))}
+        <button type="button" onClick={onCreateEvent} className={styles.actionButton}>
+          <div className={styles.actionIconContainer} style={{ backgroundColor: "#dbeafe" }}>
+            <img src="/images/icons/dashboard/nav-events.svg" alt="Create Event" className={styles.actionIcon} />
+          </div>
+          <span className={styles.actionLabel}>Create Event</span>
+        </button>
+        <Link href="/admin/dashboard/announcements" className={styles.actionButton}>
+          <div className={styles.actionIconContainer} style={{ backgroundColor: "#f3e8ff" }}>
+            <img src="/images/icons/dashboard/nav-announcements.svg" alt="New Announcement" className={styles.actionIcon} />
+          </div>
+          <span className={styles.actionLabel}>New Announcement</span>
+        </Link>
+        <Link href="/admin/dashboard/profile/edit" className={styles.actionButton}>
+          <div className={styles.actionIconContainer} style={{ backgroundColor: "#dcfce7" }}>
+            <img src="/images/icons/dashboard/nav-club-profile.svg" alt="Edit Profile" className={styles.actionIcon} />
+          </div>
+          <span className={styles.actionLabel}>Edit Profile</span>
+        </Link>
+        <Link href="/admin/dashboard/subscribers" className={styles.actionButton}>
+          <div className={styles.actionIconContainer} style={{ backgroundColor: "#ffedd4" }}>
+            <img src="/images/icons/dashboard/nav-subscribers.svg" alt="View Subscribers" className={styles.actionIcon} />
+          </div>
+          <span className={styles.actionLabel}>View Subscribers</span>
+        </Link>
       </div>
     </div>
   );

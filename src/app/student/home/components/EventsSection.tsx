@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './EventsSection.module.css';
 import EventCard from './EventCard';
+import EventDetailModal from '../calendar/components/EventDetailModal';
 import { getEvents, Event } from '@/lib/api/events';
 import { getClub } from '@/lib/api/clubs';
 
@@ -16,13 +17,60 @@ const dateColors = [
   'linear-gradient(132.27deg, rgba(252, 231, 243, 1) 0%, rgba(252, 206, 232, 1) 100%)',
 ];
 
+const eventColors = ['#615fff', '#00c950', '#2b7fff', '#ad46ff'];
+
+interface HomeEvent {
+  id: string;
+  day: string;
+  date: string;
+  dateColor: string;
+  time: string;
+  clubName: string;
+  eventType: string;
+  description: string;
+  location: string;
+  startDatetime: Date;
+  clubId: string;
+  color: string;
+  attendees: string[];
+}
+
+interface CalendarEvent {
+  id: string;
+  date: number;
+  time: string;
+  title: string;
+  color: string;
+  club_id: string;
+  description: string;
+  location: string;
+  start_datetime: Date;
+  attendees?: string[];
+}
+
 export default function EventsSection() {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<HomeEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
     loadThisWeeksEvents();
   }, []);
+
+  const handleDetailsClick = (event: HomeEvent) => {
+    setSelectedEvent({
+      id: event.id,
+      date: event.startDatetime.getDate(),
+      time: event.time,
+      title: event.eventType,
+      color: event.color,
+      club_id: event.clubId,
+      description: event.description,
+      location: event.location,
+      start_datetime: event.startDatetime,
+      attendees: event.attendees,
+    });
+  };
 
   const loadThisWeeksEvents = async () => {
     setLoading(true);
@@ -68,6 +116,12 @@ export default function EventsSection() {
               time: time,
               clubName: clubName,
               eventType: event.title,
+              description: event.description,
+              location: event.location,
+              startDatetime: eventDate,
+              clubId: event.club_id,
+              color: eventColors[index % eventColors.length],
+              attendees: event.attendees || [],
             };
           })
         );
@@ -114,11 +168,22 @@ export default function EventsSection() {
         ) : (
           <div className={styles.eventsGrid}>
             {events.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard
+                key={event.id}
+                event={event}
+                onDetailsClick={() => handleDetailsClick(event)}
+              />
             ))}
           </div>
         )}
       </div>
+
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
     </section>
   );
 }

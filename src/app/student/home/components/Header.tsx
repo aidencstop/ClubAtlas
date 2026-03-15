@@ -14,6 +14,7 @@ const logoIcon = "/images/icons/logo.svg";
 const searchIcon = "/images/icons/search.svg";
 const bellIcon = "/images/icons/bell.svg";
 const profileIcon = "/images/icons/profile.svg";
+const logoutIcon = "/images/icons/mypage/logout.svg";
 
 export default function Header() {
   const router = useRouter();
@@ -387,6 +388,13 @@ export default function Header() {
               </div>
             )}
           </div>
+          <button
+            className={styles.iconButton}
+            aria-label="Logout"
+            onClick={handleLogout}
+          >
+            <img src={logoutIcon} alt="Logout" />
+          </button>
         </div>
       </div>
 

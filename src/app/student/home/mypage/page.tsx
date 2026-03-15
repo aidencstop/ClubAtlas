@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './MyPage.module.css';
+import { logout } from '@/lib/firebase/auth';
 import { getMySubscriptions, subscribeToClub, unsubscribeFromClub, updateNotificationSettings, Subscription } from '@/lib/api/subscriptions';
 import { getClub, Club } from '@/lib/api/clubs';
 import { getMyAttendanceHistory, getMyCalendarEvents, AttendanceRecord, AttendanceStats, Event } from '@/lib/api/events';
@@ -64,6 +66,7 @@ interface SubscribedClubData extends Subscription {
 }
 
 export default function MyPagePage() {
+  const router = useRouter();
   const { user, userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [subscriptions, setSubscriptions] = useState<SubscribedClubData[]>([]);
@@ -126,6 +129,15 @@ export default function MyPagePage() {
       loadAttendanceHistory();
     }
   }, [historyFilter]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/welcome');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const loadFullUserProfile = async () => {
     try {
@@ -468,8 +480,8 @@ export default function MyPagePage() {
               <img src={bellIcon} alt="Notifications" />
               <span className={styles.badge}>3</span>
             </button>
-            <button className={styles.iconButton}>
-              <img src={logoutIcon} alt="Profile" />
+            <button className={styles.iconButton} onClick={handleLogout}>
+              <img src={logoutIcon} alt="Logout" />
             </button>
           </div>
         </div>
@@ -1221,46 +1233,46 @@ export default function MyPagePage() {
                       <label className={styles.formLabel}>First Name</label>
                       <input
                         type="text"
-                        className={`${styles.formInput} ${styles.formInputDisabled}`}
+                        className={styles.formInput}
                         value={fullUserProfile?.first_name || ''}
-                        disabled
+                        readOnly
                       />
                     </div>
                     <div className={styles.formField}>
                       <label className={styles.formLabel}>Last Name</label>
                       <input
                         type="text"
-                        className={`${styles.formInput} ${styles.formInputDisabled}`}
+                        className={styles.formInput}
                         value={fullUserProfile?.last_name || ''}
-                        disabled
+                        readOnly
                       />
                     </div>
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Email</label>
-                    <input 
-                      type="email" 
-                      className={styles.formInput} 
-                      value={userProfile?.email || ''} 
-                      disabled
+                    <input
+                      type="email"
+                      className={styles.formInput}
+                      value={fullUserProfile?.email || userProfile?.email || ''}
+                      readOnly
                     />
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Student ID</label>
-                    <input 
-                      type="text" 
-                      className={`${styles.formInput} ${styles.formInputDisabled}`}
+                    <input
+                      type="text"
+                      className={styles.formInput}
                       value={fullUserProfile?.student_id || ''}
-                      disabled
+                      readOnly
                     />
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.formLabel}>Role</label>
-                    <input 
-                      type="text" 
-                      className={`${styles.formInput} ${styles.formInputDisabled}`} 
-                      value={userProfile?.role === 'student' ? 'Student' : userProfile?.role || 'Student'} 
-                      disabled 
+                    <input
+                      type="text"
+                      className={`${styles.formInput} ${styles.formInputDisabled}`}
+                      value={userProfile?.role === 'student' ? 'Student' : userProfile?.role || 'Student'}
+                      disabled
                     />
                   </div>
                   <div className={styles.formActions}>

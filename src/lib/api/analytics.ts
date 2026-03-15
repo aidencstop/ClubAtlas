@@ -6,7 +6,6 @@ import { apiClient, ApiResponse } from './client';
 export interface AnalyticsTrendsResponse {
   months: string[];
   subscribers: number[];
-  events: number[];
 }
 
 export async function getAnalyticsTrends(

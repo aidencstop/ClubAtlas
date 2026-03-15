@@ -124,6 +124,10 @@ export async function cancelAttendance(eventId: string): Promise<ApiResponse<voi
   return apiRequest<void>(`/api/events/${eventId}/attend`, { method: 'DELETE' });
 }
 
+export async function sendEventReminder(eventId: string): Promise<ApiResponse<{ sent: number; message: string }>> {
+  return apiRequest<{ sent: number; message: string }>(`/api/events/${eventId}/remind`, { method: 'POST' });
+}
+
 export async function getMyAttendanceHistory(params?: {
   status_filter?: 'attended' | 'missed' | 'all';
 }): Promise<ApiResponse<AttendanceHistoryResponse>> {

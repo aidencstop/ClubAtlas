@@ -14,7 +14,7 @@ from app.models.event import (
     AttendanceHistoryResponse
 )
 from app.api.dependencies import get_current_user, require_club_leader, get_current_user_optional
-from app.services.firestore_service import event_service, club_service, user_service
+from app.services.firestore_service import event_service, club_service, user_service, subscription_service, notification_service
 import uuid
 
 router = APIRouter(prefix="/api/events", tags=["events"])
@@ -353,6 +353,72 @@ async def cancel_attendance(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to cancel attendance"
+        )
+
+
+@router.post("/{event_id}/remind")
+async def send_event_reminder(
+    event_id: str,
+    current_user: dict = Depends(require_club_leader)
+):
+    """
+    이벤트 리마인더 발송
+
+    - 이벤트 참석 예정자(attendees) + 클럽 구독자(subscribers) 전원에게 알림 생성
+    - 동아리 리더 전용
+    """
+    user_id = current_user['uid']
+
+    event = await event_service.get_event(event_id)
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+
+    user_profile = await user_service.get_user_profile(user_id)
+    managed_clubs = user_profile.get('managed_club_ids', [])
+    if event['club_id'] not in managed_clubs and current_user.get('role') != 'super-admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only send reminders for events of clubs you manage")
+
+    try:
+        club = await club_service.get_club(event['club_id'])
+        club_name = club['name'] if club else 'Club'
+
+        subscribers = await subscription_service.get_club_subscribers(event['club_id'], active_only=True)
+        subscriber_ids = {sub['user_id'] for sub in subscribers}
+
+        attendee_ids = set(event.get('attendees', []))
+
+        recipient_ids = list(subscriber_ids | attendee_ids)
+
+        if not recipient_ids:
+            return {"sent": 0, "message": "No recipients found"}
+
+        start_dt = event['start_datetime']
+        try:
+            formatted_date = start_dt.strftime('%b %d, %I:%M %p')
+        except Exception:
+            formatted_date = str(start_dt)
+
+        event_year = start_dt.year if hasattr(start_dt, 'year') else ''
+        event_month = start_dt.month if hasattr(start_dt, 'month') else ''
+
+        sent = await notification_service.create_bulk_notifications(
+            user_ids=recipient_ids,
+            type='event_reminder',
+            title=f"Reminder: {event['title']}",
+            content=f"{event['title']} is coming up on {formatted_date} at {event.get('location', 'TBD')}.",
+            club_id=event['club_id'],
+            club_name=club_name,
+            reference_id=event_id,
+            link=f"/student/home/calendar?eventId={event_id}&year={event_year}&month={event_month}"
+        )
+
+        return {"sent": sent, "message": f"Reminder sent to {sent} recipient(s)"}
+
+    except Exception as e:
+        print(f"Send reminder error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send reminder: {str(e)}"
         )
 
 

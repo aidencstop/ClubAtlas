@@ -61,6 +61,20 @@
   padding: 24px;
 }
 
+.fetchLoading {
+  padding: 40px 0;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .formGroup {
   margin-bottom: 20px;
 }

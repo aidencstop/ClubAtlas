@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import styles from './EventCard.module.css';
+import { sendEventReminder } from '@/lib/api/events';
 
 const imgIconCalendar = "/images/icons/dashboard/icon-calendar.svg";
 const imgIconPeople = "/images/icons/dashboard/icon-people.svg";
@@ -14,20 +16,41 @@ interface Event {
   status: 'upcoming' | 'completed' | 'cancelled';
   date: string;
   notificationsSent: number;
+  attendeesCount: number;
+  location?: string;
+  description?: string;
 }
 
 interface EventCardProps {
   event: Event;
   onEdit: (event: Event) => void;
+  onViewDetails: (event: Event) => void;
 }
 
-export default function EventCard({ event, onEdit }: EventCardProps) {
+export default function EventCard({ event, onEdit, onViewDetails }: EventCardProps) {
+  const [reminderSending, setReminderSending] = useState(false);
+  const [reminderSent, setReminderSent] = useState(false);
+
   const handleViewDetails = () => {
-    console.log('View details:', event.id);
+    onViewDetails(event);
   };
 
-  const handleSendReminder = () => {
-    console.log('Send reminder:', event.id);
+  const handleSendReminder = async () => {
+    if (reminderSending || reminderSent) return;
+    setReminderSending(true);
+    try {
+      const response = await sendEventReminder(event.id);
+      if (response.error) {
+        alert(response.error);
+      } else {
+        setReminderSent(true);
+        setTimeout(() => setReminderSent(false), 3000);
+      }
+    } catch {
+      alert('Failed to send reminder');
+    } finally {
+      setReminderSending(false);
+    }
   };
 
   const handleEdit = () => {
@@ -83,21 +106,31 @@ export default function EventCard({ event, onEdit }: EventCardProps) {
             <button onClick={handleViewDetails} className={styles.viewButton}>
               View Details
             </button>
-            <button onClick={handleSendReminder} className={styles.reminderButton}>
-              <img src={imgIconMail} alt="" className={styles.actionIcon} />
-              <span>Send Reminder</span>
-            </button>
+            {event.status === 'upcoming' && (
+              <button
+                onClick={handleSendReminder}
+                className={styles.reminderButton}
+                disabled={reminderSending || reminderSent}
+              >
+                <img src={imgIconMail} alt="" className={styles.actionIcon} />
+                <span>
+                  {reminderSending ? 'Sending...' : reminderSent ? 'Sent!' : 'Send Reminder'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
-        <div className={styles.rightSection}>
-          <button onClick={handleEdit} className={styles.iconButton}>
-            <img src={imgIconEdit} alt="Edit" className={styles.buttonIcon} />
-          </button>
-          <button onClick={handleDelete} className={styles.iconButton}>
-            <img src={imgIconDelete} alt="Delete" className={styles.buttonIcon} />
-          </button>
-        </div>
+        {event.status === 'upcoming' && (
+          <div className={styles.rightSection}>
+            <button onClick={handleEdit} className={styles.iconButton}>
+              <img src={imgIconEdit} alt="Edit" className={styles.buttonIcon} />
+            </button>
+            <button onClick={handleDelete} className={styles.iconButton}>
+              <img src={imgIconDelete} alt="Delete" className={styles.buttonIcon} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

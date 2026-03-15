@@ -22,6 +22,13 @@ export interface UpdateProfileData {
   interests?: string[];
 }
 
+export interface ProfileEditData {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  student_id?: string;
+}
+
 export interface UpdateInterestsData {
   interests: string[];
 }
@@ -55,6 +62,12 @@ export async function updateProfile(
   });
 }
 
+export async function editProfile(
+  data: ProfileEditData
+): Promise<ApiResponse<UserProfile>> {
+  return apiClient.put('/api/users/profile', data);
+}
+
 export async function updateInterests(
   data: UpdateInterestsData,
   token: string
@@ -75,6 +88,13 @@ export async function createRecommendationPreferences(
       Authorization: `Bearer ${token}`,
     },
   });
+}
+
+export async function checkEmailExists(
+  email: string
+): Promise<ApiResponse<{ exists: boolean; role?: string }>> {
+  const params = new URLSearchParams({ email });
+  return apiClient.get(`/api/users/check-email?${params}`);
 }
 
 export async function updateRecommendationPreferences(

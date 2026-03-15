@@ -14,16 +14,18 @@ interface Announcement {
   sentTo: number;
   opens: number;
   openRate: number;
+  content?: string;
 }
 
 interface AnnouncementCardProps {
   announcement: Announcement;
+  onEdit?: (announcement: Announcement) => void;
   onDelete?: (id: string) => void;
 }
 
-export default function AnnouncementCard({ announcement, onDelete }: AnnouncementCardProps) {
+export default function AnnouncementCard({ announcement, onEdit, onDelete }: AnnouncementCardProps) {
   const handleEdit = () => {
-    console.log('Edit announcement:', announcement.id);
+    if (onEdit) onEdit(announcement);
   };
 
   const handleDelete = () => {

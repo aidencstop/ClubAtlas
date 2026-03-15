@@ -1,17 +1,38 @@
 """
 Users API 엔드포인트
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.models.user import (
     UserProfileCreate,
     UserProfileUpdate,
     UserProfileResponse,
+    ProfileEditRequest,
     RecommendationPreferencesUpdate
 )
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_user, get_current_user_optional
 from app.services.firestore_service import user_service
 
 router = APIRouter(prefix="/api/users", tags=["users"])
+
+
+@router.get("/check-email")
+async def check_email_exists(
+    email: str = Query(..., description="확인할 이메일 주소"),
+    current_user: dict = Depends(get_current_user_optional)
+):
+    """
+    이메일로 사용자 계정 존재 여부 확인
+    - 존재하면 exists: true, role 반환
+    - 없으면 exists: false
+    """
+    users = await user_service.query_documents(
+        user_service.COLLECTION,
+        filters=[('email', '==', email)],
+        limit=1
+    )
+    if not users:
+        return {"exists": False}
+    return {"exists": True, "role": users[0].get('role', 'student')}
 
 
 @router.post("/profile", response_model=UserProfileResponse, status_code=status.HTTP_201_CREATED)
@@ -101,6 +122,62 @@ async def get_my_profile(current_user: dict = Depends(get_current_user)):
         recommendation_preferences=profile.get('recommendation_preferences'),
         created_at=profile.get('created_at'),
         updated_at=profile.get('updated_at')
+    )
+
+
+@router.put("/profile", response_model=UserProfileResponse)
+async def edit_profile(
+    profile_data: ProfileEditRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    프로필 편집 (Edit Profile 모달)
+
+    - first_name, last_name, email, student_id 수정
+    - first_name/last_name 변경 시 display_name도 자동 업데이트
+    """
+    uid = current_user['uid']
+
+    profile = await user_service.get_user_profile(uid)
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found"
+        )
+
+    updated_data = {}
+    if profile_data.first_name is not None:
+        updated_data['first_name'] = profile_data.first_name
+    if profile_data.last_name is not None:
+        updated_data['last_name'] = profile_data.last_name
+    if profile_data.email is not None:
+        updated_data['email'] = profile_data.email
+    if profile_data.student_id is not None:
+        updated_data['student_id'] = profile_data.student_id
+
+    if 'first_name' in updated_data or 'last_name' in updated_data:
+        new_first = updated_data.get('first_name', profile.get('first_name', ''))
+        new_last = updated_data.get('last_name', profile.get('last_name', ''))
+        updated_data['display_name'] = f"{new_first} {new_last}".strip()
+
+    result = await user_service.update_document(
+        user_service.COLLECTION,
+        uid,
+        updated_data
+    )
+
+    return UserProfileResponse(
+        uid=result['id'],
+        email=result['email'],
+        display_name=result.get('display_name'),
+        first_name=result.get('first_name'),
+        last_name=result.get('last_name'),
+        role=result.get('role', 'student'),
+        student_id=result.get('student_id'),
+        interests=result.get('interests', []),
+        recommendation_preferences=result.get('recommendation_preferences'),
+        created_at=result.get('created_at'),
+        updated_at=result.get('updated_at')
     )
 
 

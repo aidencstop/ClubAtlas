@@ -40,6 +40,7 @@ class SignupStudentResponse(BaseModel):
 
 class LeaderAccessRequest(BaseModel):
     """동아리 리더 권한 요청"""
+    email: Optional[str] = Field(None, description="요청자 이메일 (비로그인 시 사용)")
     requested_club_id: Optional[str] = Field(None, description="기존 동아리 ID (선택 시)")
     requested_club_name: Optional[str] = Field(None, description="신규 동아리 이름 (생성 요청 시)")
     requested_role: str = Field(..., description="요청할 직책 (President, Vice President 등)")

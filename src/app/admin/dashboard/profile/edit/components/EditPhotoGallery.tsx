@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import styles from './EditPhotoGallery.module.css';
 
-const imgIconUpload = "/images/icons/dashboard/icon-add-image.svg";
+const imgIconUpload = "/images/icons/dashboard/icon-image-placeholder.svg";
 const imgIconDelete = "/images/icons/dashboard/icon-delete.svg";
 
 interface PhotoSlotProps {
@@ -70,34 +70,11 @@ interface EditPhotoGalleryProps {
 export default function EditPhotoGallery({ mediaUrls, onMediaUpload, onMediaDelete }: EditPhotoGalleryProps) {
   const totalSlots = 6;
   const emptySlots = Math.max(0, totalSlots - mediaUrls.length);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleUploadClick = () => {
-    inputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onMediaUpload(file);
-    }
-    e.target.value = '';
-  };
 
   return (
     <div className={styles.section}>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Photo Gallery</h2>
-        <button type="button" className={styles.uploadButton} onClick={handleUploadClick}>
-          + Upload Photos
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
       </div>
 
       <div className={styles.galleryGrid}>

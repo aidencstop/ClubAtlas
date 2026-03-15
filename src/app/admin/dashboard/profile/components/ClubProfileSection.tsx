@@ -197,11 +197,11 @@ export default function ClubProfileSection() {
           </div>
           <div className={styles.infoItem}>
             <p className={styles.infoLabel}>Website</p>
-            <p className={styles.infoValue}>Not set</p>
+            <p className={styles.infoValue}>{club.website || 'Not set'}</p>
           </div>
           <div className={styles.infoItem}>
             <p className={styles.infoLabel}>Social Media</p>
-            <p className={styles.infoValue}>Not set</p>
+            <p className={styles.infoValue}>{club.social_media || 'Not set'}</p>
           </div>
         </div>
       </div>
@@ -215,7 +215,11 @@ export default function ClubProfileSection() {
             {leaders.map((leader: ClubLeader) => (
               <div key={leader.uid} className={styles.leaderCard}>
                 <div className={styles.avatar}>
-                  <span className={styles.avatarText}>{getInitials(leader.name)}</span>
+                  {leader.avatar_url ? (
+                    <img src={leader.avatar_url} alt={leader.name} className={styles.avatarImage} />
+                  ) : (
+                    <span className={styles.avatarText}>{getInitials(leader.name)}</span>
+                  )}
                 </div>
                 <div className={styles.leaderInfo}>
                   <p className={styles.leaderName}>{leader.name}</p>

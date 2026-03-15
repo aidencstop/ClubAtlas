@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getIdToken } from '@/lib/firebase/auth';
-import { updateProfile } from '@/lib/api/users';
+import { fetchMyProfile, editProfile } from '@/lib/api/users';
 import styles from './EditProfileModal.module.css';
 
 interface EditProfileModalProps {
@@ -17,25 +16,47 @@ export default function EditProfileModal({
   onClose,
   onSuccess,
 }: EditProfileModalProps) {
-  const { userProfile, refreshUserProfile } = useAuth();
-  const [displayName, setDisplayName] = useState('');
+  const { refreshUserProfile } = useAuth();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [studentId, setStudentId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (isOpen && userProfile) {
-      setDisplayName(userProfile.display_name || '');
-      setError('');
-      setSuccess(false);
-    }
-  }, [isOpen, userProfile]);
+    if (!isOpen) return;
+
+    setError('');
+    setSuccess(false);
+
+    const loadProfile = async () => {
+      setFetchLoading(true);
+      try {
+        const response = await fetchMyProfile();
+        if (response.data) {
+          setFirstName(response.data.first_name || '');
+          setLastName(response.data.last_name || '');
+          setEmail(response.data.email || '');
+          setStudentId(response.data.student_id || '');
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!displayName.trim()) {
-      setError('Display name is required');
+    if (!firstName.trim()) {
+      setError('First name is required');
       return;
     }
 
@@ -44,16 +65,12 @@ export default function EditProfileModal({
       setError('');
       setSuccess(false);
 
-      const token = await getIdToken();
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
-
-      const response = await updateProfile(
-        { display_name: displayName.trim() },
-        token
-      );
+      const response = await editProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
+        student_id: studentId.trim(),
+      });
 
       if (response.error) {
         setError(response.error);
@@ -62,13 +79,13 @@ export default function EditProfileModal({
 
       setSuccess(true);
       await refreshUserProfile();
-      
+
       setTimeout(() => {
         onSuccess?.();
         onClose();
       }, 1500);
-    } catch (error) {
-      console.error('Failed to update profile:', error);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
       setError('Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
@@ -91,40 +108,77 @@ export default function EditProfileModal({
 
         <form onSubmit={handleSubmit}>
           <div className={styles.content}>
-            <div className={styles.formGroup}>
-              <label htmlFor="displayName" className={styles.label}>
-                Display Name <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="displayName"
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className={styles.input}
-                placeholder="Enter your display name"
-                disabled={loading}
-                required
-              />
-            </div>
+            {fetchLoading ? (
+              <div className={styles.fetchLoading}>Loading profile...</div>
+            ) : (
+              <>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="firstName" className={styles.label}>
+                      First Name <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      id="firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className={styles.input}
+                      placeholder="First name"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Email</label>
-              <input
-                type="email"
-                value={userProfile?.email || ''}
-                className={styles.input}
-                disabled
-              />
-              <p className={styles.hint}>Email cannot be changed</p>
-            </div>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="lastName" className={styles.label}>
+                      Last Name
+                    </label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className={styles.input}
+                      placeholder="Last name"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
 
-            {error && (
-              <div className={styles.error}>{error}</div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email" className={styles.label}>
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={styles.input}
+                    placeholder="your@email.com"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="studentId" className={styles.label}>
+                    Student ID
+                  </label>
+                  <input
+                    id="studentId"
+                    type="text"
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    className={styles.input}
+                    placeholder="Student ID"
+                    disabled={loading}
+                  />
+                </div>
+              </>
             )}
 
-            {success && (
-              <div className={styles.success}>Profile updated successfully!</div>
-            )}
+            {error && <div className={styles.error}>{error}</div>}
+            {success && <div className={styles.success}>Profile updated successfully!</div>}
           </div>
 
           <div className={styles.footer}>
@@ -139,7 +193,7 @@ export default function EditProfileModal({
             <button
               type="submit"
               className={styles.saveButton}
-              disabled={loading || !displayName.trim()}
+              disabled={loading || fetchLoading || !firstName.trim()}
             >
               {loading ? 'Saving...' : 'Save Changes'}
             </button>

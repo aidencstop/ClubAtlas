@@ -16,9 +16,7 @@ export default function ClubLeadersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleSearch = () => {
-    console.log('Searching for:', searchQuery);
-  };
+  const handleSearch = () => {};
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -84,7 +82,7 @@ export default function ClubLeadersPage() {
                 </button>
               </div>
 
-              <LeadersTable key={refreshKey} />
+              <LeadersTable key={refreshKey} searchQuery={searchQuery} />
             </div>
           )}
 

@@ -813,16 +813,14 @@ class NotificationService(FirestoreService):
             'reference_id': reference_id,
             'link': link,
             'is_read': False,
-            'created_at': SERVER_TIMESTAMP
+            'created_at': firestore.SERVER_TIMESTAMP
         }
         
-        notification_id = await self.create_document(
+        return await self.create_document(
             self.COLLECTION,
             None,
             notification_data
         )
-        
-        return await self.get_document(self.COLLECTION, notification_id)
     
     async def get_user_notifications(
         self,

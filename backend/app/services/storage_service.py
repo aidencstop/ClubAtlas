@@ -13,12 +13,21 @@ class StorageService:
     
     def __init__(self):
         self.bucket_name = os.getenv('FIREBASE_STORAGE_BUCKET', 'clubatlas-ecaa4.appspot.com')
-        try:
-            self.bucket = storage.bucket(self.bucket_name)
-        except Exception as e:
-            print(f"Failed to initialize storage bucket: {e}")
-            self.bucket = None
-    
+        self._bucket = None
+
+    def _get_bucket(self):
+        """Storage 버킷 가져오기 (Lazy 로딩)"""
+        if self._bucket is None:
+            try:
+                self._bucket = storage.bucket(self.bucket_name)
+            except Exception as e:
+                print(f"Failed to initialize storage bucket: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Storage service not available"
+                )
+        return self._bucket
+
     async def upload_file(
         self,
         file: UploadFile,
@@ -38,12 +47,8 @@ class StorageService:
         Returns:
             업로드된 파일의 Public URL
         """
-        if not self.bucket:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Storage service not available"
-            )
-        
+        bucket = self._get_bucket()
+
         # 파일 타입 검증
         if allowed_types and file.content_type not in allowed_types:
             raise HTTPException(
@@ -73,7 +78,7 @@ class StorageService:
                 blob_path = f"{folder}/{unique_filename}"
             
             # Storage에 업로드
-            blob = self.bucket.blob(blob_path)
+            blob = bucket.blob(blob_path)
             blob.upload_from_string(
                 file_content,
                 content_type=file.content_type
@@ -101,9 +106,11 @@ class StorageService:
         Returns:
             삭제 성공 여부
         """
-        if not self.bucket:
+        try:
+            bucket = self._get_bucket()
+        except Exception:
             return False
-        
+
         try:
             # URL에서 blob 경로 추출
             # 예: https://storage.googleapis.com/bucket-name/path/to/file.jpg
@@ -111,7 +118,7 @@ class StorageService:
             blob_path = self._extract_blob_path(file_url)
             
             if blob_path:
-                blob = self.bucket.blob(blob_path)
+                blob = bucket.blob(blob_path)
                 blob.delete()
                 return True
             

@@ -19,6 +19,7 @@ class ClubLeader(BaseModel):
     name: str
     role: str = Field(..., description="President, Vice President, etc.")
     email: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 class ClubStats(BaseModel):
@@ -42,6 +43,8 @@ class Club(BaseModel):
     meeting_schedule: Optional[List[MeetingSchedule]] = Field(default_factory=list)
     leaders: List[ClubLeader] = Field(default_factory=list)
     contact_email: Optional[str] = None
+    website: Optional[str] = None
+    social_media: Optional[str] = None
     stats: ClubStats = Field(default_factory=ClubStats)
     logo_url: Optional[HttpUrl] = None
     banner_url: Optional[HttpUrl] = None
@@ -72,7 +75,10 @@ class ClubUpdate(BaseModel):
     tags: Optional[List[str]] = None
     activity_type: Optional[List[str]] = None
     meeting_schedule: Optional[List[MeetingSchedule]] = None
+    leaders: Optional[List[ClubLeader]] = None
     contact_email: Optional[str] = None
+    website: Optional[str] = None
+    social_media: Optional[str] = None
     logo_url: Optional[str] = None
     banner_url: Optional[str] = None
 

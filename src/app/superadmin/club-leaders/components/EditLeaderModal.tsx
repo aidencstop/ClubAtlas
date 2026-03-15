@@ -26,7 +26,6 @@ interface EditLeaderModalProps {
 }
 
 export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: EditLeaderModalProps) {
-  const [name, setName] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');
   const [clubs, setClubs] = useState<Club[]>([]);
   const [clubIdMap, setClubIdMap] = useState<{ [key: string]: string }>({});
@@ -41,8 +40,6 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
 
   useEffect(() => {
     if (leader && clubs.length > 0) {
-      setName(leader.name);
-      
       const foundClub = clubs.find(c => c.name === leader.club);
       if (foundClub) {
         setSelectedClubId(foundClub.id);
@@ -75,24 +72,14 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
     setError(null);
 
     try {
-      const updateData: { display_name?: string; club_id?: string } = {};
-      
-      if (name !== leader.name) {
-        updateData.display_name = name;
-      }
-      
       const originalClubId = clubIdMap[leader.club];
-      if (selectedClubId !== originalClubId) {
-        updateData.club_id = selectedClubId;
-      }
-
-      if (Object.keys(updateData).length === 0) {
+      if (selectedClubId === originalClubId) {
         alert('No changes detected');
         onClose();
         return;
       }
 
-      const response = await updateClubLeader(leader.id, updateData);
+      const response = await updateClubLeader(leader.id, { club_id: selectedClubId });
 
       if (response.error) {
         setError(response.error);
@@ -141,10 +128,9 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
               type="text"
               id="leaderName"
               className={styles.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              disabled={isLoading}
+              value={leader.name}
+              disabled
+              style={{ background: '#f3f4f6', cursor: 'not-allowed', height: '36px', padding: '6px 16px' }}
             />
           </div>
 
@@ -156,11 +142,8 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
               className={styles.input}
               value={leader.email}
               disabled
-              style={{ background: '#f3f4f6', cursor: 'not-allowed' }}
+              style={{ background: '#f3f4f6', cursor: 'not-allowed', height: '36px', padding: '6px 16px' }}
             />
-            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-              Email cannot be changed
-            </p>
           </div>
 
           <div className={styles.formGroup}>
@@ -188,8 +171,7 @@ export default function EditLeaderModal({ isOpen, onClose, leader, onSuccess }: 
               <p className={styles.infoTitle}>Important Notes:</p>
               <ul className={styles.infoList}>
                 <li>Changes will be applied immediately</li>
-                <li>Only name and club assignment can be edited</li>
-                <li>To change email, create a new leader account</li>
+                <li>Only club assignment can be edited here</li>
               </ul>
             </div>
           </div>

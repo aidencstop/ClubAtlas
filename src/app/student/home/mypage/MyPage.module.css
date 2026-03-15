@@ -1522,6 +1522,14 @@
   border-color: #155dfc;
 }
 
+.formInput:read-only {
+  cursor: default;
+}
+
+.formInput:read-only:focus {
+  border-color: #e5e7eb;
+}
+
 .formInputDisabled {
   background: #f9fafb;
   color: #6a7282;

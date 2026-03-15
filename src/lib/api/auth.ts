@@ -20,6 +20,7 @@ export interface SignupStudentResponse {
 }
 
 export interface LeaderAccessRequestData {
+  email?: string;
   requested_club_id?: string;
   requested_club_name?: string;
   requested_role: string;
@@ -66,13 +67,12 @@ export async function signupStudent(
  */
 export async function requestLeaderAccess(
   data: LeaderAccessRequestData,
-  token: string
+  token?: string
 ): Promise<ApiResponse<LeaderAccessRequestResponse>> {
-  return apiClient.post('/api/auth/leader-access/request', data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return apiClient.post('/api/auth/leader-access/request', data, token
+    ? { headers: { Authorization: `Bearer ${token}` } }
+    : undefined
+  );
 }
 
 /**

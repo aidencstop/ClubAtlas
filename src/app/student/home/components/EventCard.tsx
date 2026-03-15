@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import styles from './EventCard.module.css';
 
 interface EventCardProps {
   event: {
-    id: number;
+    id: string;
     day: string;
     date: string;
     dateColor: string;
@@ -13,9 +12,10 @@ interface EventCardProps {
     clubName: string;
     eventType: string;
   };
+  onDetailsClick: () => void;
 }
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, onDetailsClick }: EventCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.content}>
@@ -28,9 +28,9 @@ export default function EventCard({ event }: EventCardProps) {
           <h3 className={styles.clubName}>{event.clubName}</h3>
           <p className={styles.eventType}>{event.eventType}</p>
         </div>
-        <Link href={`/student/home/events/${event.id}`} className={styles.detailsButton}>
+        <button className={styles.detailsButton} onClick={onDetailsClick}>
           Details
-        </Link>
+        </button>
       </div>
     </div>
   );

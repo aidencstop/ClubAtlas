@@ -23,9 +23,11 @@ export default function StatCard({
         <img src={icon} alt={label} className={styles.icon} />
       </div>
       <div className={styles.value}>{value}</div>
-      <div className={styles.label}>{label}</div>
-      <div className={`${styles.change} ${changePositive ? styles.changePositive : ''}`}>
-        {change}
+      <div className={styles.textBlock}>
+        <div className={styles.label}>{label}</div>
+        <div className={`${styles.change} ${changePositive ? styles.changePositive : ''}`}>
+          {change}
+        </div>
       </div>
     </div>
   );

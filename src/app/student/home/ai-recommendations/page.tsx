@@ -5,15 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getAuth } from 'firebase/auth';
 import styles from './AIRecommendations.module.css';
+import { logout } from '@/lib/firebase/auth';
 import ClubRecommendationCard from './components/ClubRecommendationCard';
 import { createRecommendationPreferences } from '@/lib/api/users';
 import { getRecommendations } from '@/lib/api/recommendations';
 import { getClub, Club } from '@/lib/api/clubs';
 
-// 공용 헤더 아이콘 (Student Home과 동일)
 const logoIcon = "/images/icons/logo.svg";
 const bellIcon = "/images/icons/bell.svg";
 const userIcon = "/images/icons/profile.svg";
+const logoutIcon = "/images/icons/mypage/logout.svg";
 
 // AI Recommendations 페이지 전용 아이콘
 const aiStarIcon = "/images/icons/ai/star.svg";
@@ -70,6 +71,15 @@ interface ClubRecommendation {
 
 export default function AIRecommendationsPage() {
   const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/welcome');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>([]);
@@ -85,6 +95,10 @@ export default function AIRecommendationsPage() {
     } else {
       setList([...list, item]);
     }
+  };
+
+  const handleBack = () => {
+    setCurrentStep((currentStep - 1) as Step);
   };
 
   const handleNext = () => {
@@ -175,35 +189,6 @@ export default function AIRecommendationsPage() {
     }
   };
 
-  const getStepMessage = () => {
-    switch (currentStep) {
-      case 1:
-        return "Great! Let's start by understanding your interests. Which categories of clubs are you interested in? (Select all that apply)";
-      case 2:
-        return "Perfect! Now, what type of activities do you prefer?";
-      case 3:
-        return "Almost there! When are you available for club activities?";
-      case 4:
-        return "Excellent! I'm analyzing your preferences and finding the best club matches for you...";
-      default:
-        return "";
-    }
-  };
-
-  const getCurrentSelections = () => {
-    switch (currentStep) {
-      case 1:
-        return { items: CATEGORIES, selected: selectedCategories, setSelected: setSelectedCategories };
-      case 2:
-        return { items: ACTIVITY_TYPES, selected: selectedActivityTypes, setSelected: setSelectedActivityTypes };
-      case 3:
-        return { items: TIME_SLOTS, selected: selectedTimeSlots, setSelected: setSelectedTimeSlots };
-      default:
-        return { items: [], selected: [], setSelected: () => {} };
-    }
-  };
-
-  const { items, selected, setSelected } = getCurrentSelections();
 
   return (
     <div className={styles.pageWrapper}>
@@ -231,6 +216,9 @@ export default function AIRecommendationsPage() {
             </button>
             <button className={styles.userButton}>
               <img src={userIcon} alt="User" />
+            </button>
+            <button className={styles.iconButton} onClick={handleLogout}>
+              <img src={logoutIcon} alt="Logout" />
             </button>
           </div>
         </div>
@@ -291,134 +279,260 @@ export default function AIRecommendationsPage() {
             {/* Chat Header */}
             <div className={styles.chatHeader}>
               <div className={styles.chatHeaderContent}>
-                <div className={styles.assistantIcon}>
-                  <img src={assistantIcon} alt="Assistant" />
-                </div>
-                <div className={styles.assistantInfo}>
-                  <h3>ClubAtlas AI Assistant</h3>
-                  <div className={styles.statusIndicator}>
-                    <span className={styles.statusDot}></span>
-                    <span>Online • Ready to help</span>
+                <div className={styles.chatHeaderLeft}>
+                  <div className={styles.assistantIcon}>
+                    <img src={assistantIcon} alt="Assistant" />
+                  </div>
+                  <div className={styles.assistantInfo}>
+                    <h3>ClubAtlas AI Assistant</h3>
+                    <div className={styles.statusIndicator}>
+                      <span className={styles.statusDot}></span>
+                      <span>Online • Ready to help</span>
+                    </div>
                   </div>
                 </div>
+                {currentStep < 4 && (
+                  <div className={styles.headerProgress}>
+                    <p className={styles.headerProgressText}>Step {currentStep} of 3</p>
+                    <div className={styles.headerProgressBar}>
+                      <div
+                        className={styles.headerProgressFill}
+                        style={{ width: `${(currentStep / 3) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Chat Messages */}
             <div className={styles.chatMessages}>
+
               {/* Welcome Message */}
               <div className={styles.messageGroup}>
                 <div className={styles.aiAvatar}>
                   <img src={aiIcon} alt="AI" />
                 </div>
                 <div className={styles.aiMessage}>
-                  <p>Hi! I'm your AI club advisor. I'll help you discover clubs that perfectly match your interests, schedule, and goals.</p>
-                  <p>&nbsp;</p>
-                  <p>Let's get started! I'll ask you a few quick questions to understand your preferences.</p>
+                  <p>Hi! I&apos;m your AI club advisor. I&apos;ll help you discover clubs that perfectly match your interests, schedule, and goals.</p>
+                  <p>Let&apos;s get started! I&apos;ll ask you a few quick questions to understand your preferences.</p>
                 </div>
               </div>
 
-              {/* Step Progress Indicator */}
-              {currentStep < 4 && (
-                <div className={styles.progressIndicator}>
-                  <div className={styles.progressBar}>
-                    <div 
-                      className={styles.progressFill} 
-                      style={{ width: `${(currentStep / 3) * 100}%` }}
-                    />
-                  </div>
-                  <p className={styles.progressText}>Step {currentStep} of 3</p>
-                </div>
-              )}
-
-              {/* Current Step Message */}
+              {/* Step 1: Categories */}
               <div className={styles.messageGroup}>
                 <div className={styles.aiAvatar}>
                   <img src={aiIcon} alt="AI" />
                 </div>
-                <div className={styles.aiMessageLarge}>
-                  <p>{getStepMessage()}</p>
-                  
-                  {/* Selection Buttons Grid */}
-                  {currentStep < 4 && (
-                    <div className={styles.selectionGrid}>
-                      {items.map((item) => (
-                        <button
-                          key={item}
-                          onClick={() => toggleSelection(item, selected, setSelected)}
-                          className={`${styles.selectionButton} ${
-                            selected.includes(item) ? styles.selectionButtonActive : ''
-                          }`}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Selected Items Display */}
-                  {currentStep < 4 && selected.length > 0 && (
-                    <div className={styles.selectedItemsDisplay}>
-                      <p className={styles.selectedLabel}>Selected ({selected.length}):</p>
-                      <div className={styles.selectedTags}>
-                        {selected.map((item) => (
-                          <span key={item} className={styles.selectedTag}>
+                <div className={currentStep === 1 ? styles.aiMessageLarge : styles.aiMessage}>
+                  <p>Great! Let&apos;s start by understanding your interests. Which categories of clubs are you interested in? (Select all that apply)</p>
+                  {currentStep === 1 && (
+                    <>
+                      <div className={styles.selectionGrid}>
+                        {CATEGORIES.map((item) => (
+                          <button
+                            key={item}
+                            onClick={() => toggleSelection(item, selectedCategories, setSelectedCategories)}
+                            className={`${styles.selectionButton} ${selectedCategories.includes(item) ? styles.selectionButtonActive : ''}`}
+                          >
                             {item}
-                          </span>
+                          </button>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Next/Submit Button */}
-                  {currentStep < 4 && (
-                    <button
-                      onClick={handleNext}
-                      disabled={isLoading}
-                      className={styles.nextButton}
-                    >
-                      {isLoading ? 'Processing...' : (currentStep === 3 ? 'Get Recommendations' : 'Next')}
-                    </button>
-                  )}
-
-                  {/* Recommendations Results (Step 4) */}
-                  {currentStep === 4 && !error && recommendations.length > 0 && (
-                    <div className={styles.resultsContainer}>
-                      <div className={styles.resultsHeader}>
-                        <div className={styles.checkmark}>✓</div>
-                        <h3>Found {recommendations.length} Perfect Matches for You!</h3>
-                        <p>Based on your interests, activity preferences, and schedule</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Error Message */}
-                  {currentStep === 4 && error && (
-                    <div className={styles.errorMessage}>
-                      <p>{error}</p>
-                      <button 
-                        onClick={() => setCurrentStep(1)}
-                        className={styles.retryButton}
-                      >
-                        Try Again
+                      {selectedCategories.length > 0 && (
+                        <div className={styles.selectedItemsDisplay}>
+                          <p className={styles.selectedLabel}>Selected ({selectedCategories.length}):</p>
+                          <div className={styles.selectedTags}>
+                            {selectedCategories.map((item) => (
+                              <span key={item} className={styles.selectedTag}>{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <button onClick={handleNext} disabled={isLoading} className={styles.nextButton}>
+                        Next
                       </button>
-                    </div>
-                  )}
-
-                  {/* No Results Message */}
-                  {currentStep === 4 && !error && recommendations.length === 0 && !isLoading && (
-                    <div className={styles.noResultsMessage}>
-                      <p>No recommendations found. Try adjusting your preferences.</p>
-                      <button 
-                        onClick={() => setCurrentStep(1)}
-                        className={styles.retryButton}
-                      >
-                        Start Over
-                      </button>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
+
+              {/* Step 1 User Answer */}
+              {currentStep > 1 && (
+                <div className={styles.messageGroupRight}>
+                  <div className={styles.userAnswerBubble}>
+                    <div className={styles.userAnswerTags}>
+                      {selectedCategories.map((item) => (
+                        <span key={item} className={styles.userAnswerTag}>{item}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.userAvatar}><span>U</span></div>
+                </div>
+              )}
+
+              {/* Step 2: Activity Types */}
+              {currentStep >= 2 && (
+                <>
+                  <div className={styles.messageGroup}>
+                    <div className={styles.aiAvatar}>
+                      <img src={aiIcon} alt="AI" />
+                    </div>
+                    <div className={currentStep === 2 ? styles.aiMessageLarge : styles.aiMessage}>
+                      <p>Perfect! Now, what type of activities do you prefer?</p>
+                      {currentStep === 2 && (
+                        <>
+                          <div className={styles.selectionGrid}>
+                            {ACTIVITY_TYPES.map((item) => (
+                              <button
+                                key={item}
+                                onClick={() => toggleSelection(item, selectedActivityTypes, setSelectedActivityTypes)}
+                                className={`${styles.selectionButton} ${selectedActivityTypes.includes(item) ? styles.selectionButtonActive : ''}`}
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                          {selectedActivityTypes.length > 0 && (
+                            <div className={styles.selectedItemsDisplay}>
+                              <p className={styles.selectedLabel}>Selected ({selectedActivityTypes.length}):</p>
+                              <div className={styles.selectedTags}>
+                                {selectedActivityTypes.map((item) => (
+                                  <span key={item} className={styles.selectedTag}>{item}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div className={styles.buttonRow}>
+                            <button onClick={handleBack} className={styles.backButton}>
+                              Back
+                            </button>
+                            <button onClick={handleNext} disabled={isLoading} className={styles.nextButton}>
+                              Next
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step 2 User Answer */}
+                  {currentStep > 2 && (
+                    <div className={styles.messageGroupRight}>
+                      <div className={styles.userAnswerBubble}>
+                        <div className={styles.userAnswerTags}>
+                          {selectedActivityTypes.map((item) => (
+                            <span key={item} className={styles.userAnswerTag}>{item}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className={styles.userAvatar}><span>U</span></div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Step 3: Time Slots */}
+              {currentStep >= 3 && (
+                <>
+                  <div className={styles.messageGroup}>
+                    <div className={styles.aiAvatar}>
+                      <img src={aiIcon} alt="AI" />
+                    </div>
+                    <div className={currentStep === 3 ? styles.aiMessageLarge : styles.aiMessage}>
+                      <p>Almost there! When are you available for club activities?</p>
+                      {currentStep === 3 && (
+                        <>
+                          <div className={styles.selectionGrid}>
+                            {TIME_SLOTS.map((item) => (
+                              <button
+                                key={item}
+                                onClick={() => toggleSelection(item, selectedTimeSlots, setSelectedTimeSlots)}
+                                className={`${styles.selectionButton} ${selectedTimeSlots.includes(item) ? styles.selectionButtonActive : ''}`}
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                          {selectedTimeSlots.length > 0 && (
+                            <div className={styles.selectedItemsDisplay}>
+                              <p className={styles.selectedLabel}>Selected ({selectedTimeSlots.length}):</p>
+                              <div className={styles.selectedTags}>
+                                {selectedTimeSlots.map((item) => (
+                                  <span key={item} className={styles.selectedTag}>{item}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div className={styles.buttonRow}>
+                            <button onClick={handleBack} disabled={isLoading} className={styles.backButton}>
+                              Back
+                            </button>
+                            <button onClick={handleNext} disabled={isLoading} className={styles.nextButton}>
+                              {isLoading ? 'Processing...' : 'Get Recommendations'}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step 3 User Answer */}
+                  {currentStep > 3 && (
+                    <div className={styles.messageGroupRight}>
+                      <div className={styles.userAnswerBubble}>
+                        <div className={styles.userAnswerTags}>
+                          {selectedTimeSlots.map((item) => (
+                            <span key={item} className={styles.userAnswerTag}>{item}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className={styles.userAvatar}><span>U</span></div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Step 4: Results */}
+              {currentStep === 4 && (
+                <div className={styles.messageGroup}>
+                  <div className={styles.aiAvatar}>
+                    <img src={aiIcon} alt="AI" />
+                  </div>
+                  <div className={styles.aiMessageLarge}>
+                    <p>Excellent! I&apos;m analyzing your preferences and finding the best club matches for you...</p>
+
+                    {!error && recommendations.length > 0 && (
+                      <div className={styles.resultsContainer}>
+                        <div className={styles.resultsHeader}>
+                          <div className={styles.checkmark}>✓</div>
+                          <h3>Found {recommendations.length} Perfect Matches for You!</h3>
+                          <p>Based on your interests, activity preferences, and schedule</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className={styles.errorMessage}>
+                        <p>{error}</p>
+                        <button onClick={() => setCurrentStep(1)} className={styles.retryButton}>
+                          Try Again
+                        </button>
+                      </div>
+                    )}
+
+                    {!error && recommendations.length === 0 && !isLoading && (
+                      <div className={styles.noResultsMessage}>
+                        <p>No recommendations found. Try adjusting your preferences.</p>
+                        <button onClick={() => setCurrentStep(1)} className={styles.retryButton}>
+                          Start Over
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 

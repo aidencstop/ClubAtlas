@@ -44,6 +44,19 @@ export async function uploadClubMedia(
   });
 }
 
+export async function uploadLeaderAvatar(
+  clubId: string,
+  file: File
+): Promise<ApiResponse<UploadResponse>> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return apiRequest<UploadResponse>(`/api/upload/leader-avatar?club_id=${clubId}`, {
+    method: 'POST',
+    body: formData,
+  });
+}
+
 export async function deleteClubMedia(
   clubId: string,
   fileUrl: string

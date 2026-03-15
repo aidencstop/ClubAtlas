@@ -30,6 +30,11 @@
   stroke-linejoin: round;
 }
 
+.subscribersBar {
+  fill: #3b82f6;
+  opacity: 0.8;
+}
+
 .saveArea {
   fill: rgba(147, 51, 234, 0.15);
 }

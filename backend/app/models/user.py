@@ -39,6 +39,14 @@ class UserProfileUpdate(BaseModel):
     interests: Optional[List[str]] = None
 
 
+class ProfileEditRequest(BaseModel):
+    """Edit Profile 모달에서 수정 가능한 필드"""
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    student_id: Optional[str] = None
+
+
 class RecommendationPreferencesUpdate(BaseModel):
     """추천 선호도 업데이트 요청"""
     preferred_categories: List[str] = Field(..., description="선호하는 카테고리 (복수 선택)")

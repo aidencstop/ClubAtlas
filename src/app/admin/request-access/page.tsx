@@ -1,20 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import styles from './RequestAccess.module.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { requestLeaderAccess, getMyLeaderRequest } from '@/lib/api/auth';
 import { getIdToken } from '@/lib/firebase/auth';
+import { getClubs, Club } from '@/lib/api/clubs';
+import { checkEmailExists } from '@/lib/api/users';
+
+type EmailStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
 export default function RequestAccessPage() {
-  const router = useRouter();
   const { user, userProfile, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
+    requestedClubId: '',
     requestedClubName: '',
     requestedRole: 'President',
     reason: '',
+    email: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -22,15 +26,46 @@ export default function RequestAccessPage() {
   const [existingRequest, setExistingRequest] = useState<any>(null);
   const [checkingRequest, setCheckingRequest] = useState(true);
 
-  // 기존 요청 확인
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [clubsLoading, setClubsLoading] = useState(true);
+  const [clubsError, setClubsError] = useState('');
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
+    const loadClubs = async () => {
+      setClubsLoading(true);
+      setClubsError('');
+      try {
+        const response = await getClubs({ page_size: 100 });
+        if (response.data) {
+          setClubs(response.data.clubs);
+        } else {
+          setClubsError(typeof response.error === 'string' ? response.error : 'Failed to load clubs');
+        }
+      } catch (err) {
+        setClubsError('Failed to load clubs');
+        console.error('Failed to load clubs:', err);
+      } finally {
+        setClubsLoading(false);
+      }
+    };
+    loadClubs();
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) return;
     const checkExistingRequest = async () => {
-      if (!user || !userProfile) return;
-      
+      if (!user || !userProfile) {
+        setCheckingRequest(false);
+        return;
+      }
       try {
         const token = await getIdToken();
-        if (!token) return;
-        
+        if (!token) {
+          setCheckingRequest(false);
+          return;
+        }
         const response = await getMyLeaderRequest(token);
         if (response.data) {
           setExistingRequest(response.data);
@@ -41,71 +76,105 @@ export default function RequestAccessPage() {
         setCheckingRequest(false);
       }
     };
-    
-    if (!authLoading) {
-      checkExistingRequest();
-    }
+    checkExistingRequest();
   }, [user, userProfile, authLoading]);
 
-  // 권한 확인
-  useEffect(() => {
-    if (authLoading || checkingRequest) return;
-    
-    if (!user) {
-      router.push('/student/login');
-      return;
-    }
-    
-    if (userProfile?.role !== 'student') {
-      router.push('/admin/dashboard');
-      return;
-    }
-  }, [user, userProfile, authLoading, checkingRequest, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleClubChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedClub = clubs.find(c => c.id === e.target.value);
     setFormData(prev => ({
       ...prev,
-      [name]: value,
+      requestedClubId: e.target.value,
+      requestedClubName: selectedClub?.name || '',
     }));
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    setFormData(prev => ({ ...prev, email }));
+
+    if (emailCheckTimer.current) {
+      clearTimeout(emailCheckTimer.current);
+    }
+
+    if (!email.trim()) {
+      setEmailStatus('idle');
+      return;
+    }
+
+    setEmailStatus('checking');
+    emailCheckTimer.current = setTimeout(async () => {
+      try {
+        const response = await checkEmailExists(email.trim());
+        if (response.data?.exists) {
+          setEmailStatus('valid');
+        } else {
+          setEmailStatus('invalid');
+        }
+      } catch {
+        setEmailStatus('idle');
+      }
+    }, 600);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (formData.reason.length < 10) {
-      setError('요청 사유는 최소 10자 이상 입력해주세요.');
+
+    if (!formData.requestedClubId) {
+      setError('Please select a club.');
       return;
     }
-    
+    if (!formData.email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (emailStatus === 'invalid') {
+      setError('The entered email is not registered in the system.');
+      return;
+    }
+    if (emailStatus === 'checking') {
+      setError('Please wait for email verification to complete.');
+      return;
+    }
+    if (emailStatus !== 'valid') {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (formData.reason.length < 10) {
+      setError('Reason must be at least 10 characters.');
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
       const token = await getIdToken();
-      if (!token) {
-        setError('로그인이 필요합니다.');
-        setLoading(false);
-        return;
-      }
-      
+
       const response = await requestLeaderAccess({
+        email: formData.email,
+        requested_club_id: formData.requestedClubId,
         requested_club_name: formData.requestedClubName,
         requested_role: formData.requestedRole,
         reason: formData.reason,
-      }, token);
-      
+      }, token ?? undefined);
+
       if (response.error) {
         setError(response.error);
         setLoading(false);
         return;
       }
-      
+
       setSuccess(true);
       setExistingRequest(response.data);
     } catch (err: any) {
       console.error('Request error:', err);
-      setError('요청에 실패했습니다. 다시 시도해주세요.');
+      setError('Request failed. Please try again.');
       setLoading(false);
     }
   };
@@ -118,7 +187,6 @@ export default function RequestAccessPage() {
     );
   }
 
-  // 이미 요청이 있는 경우
   if (existingRequest && existingRequest.status === 'pending') {
     return (
       <div className={styles.container}>
@@ -162,7 +230,6 @@ export default function RequestAccessPage() {
     );
   }
 
-  // 승인된 경우
   if (existingRequest && existingRequest.status === 'approved') {
     return (
       <div className={styles.container}>
@@ -185,7 +252,6 @@ export default function RequestAccessPage() {
     );
   }
 
-  // 요청 성공
   if (success) {
     return (
       <div className={styles.container}>
@@ -208,7 +274,6 @@ export default function RequestAccessPage() {
     );
   }
 
-  // 요청 폼
   return (
     <div className={styles.container}>
       <div className={styles.panel}>
@@ -225,23 +290,55 @@ export default function RequestAccessPage() {
           )}
 
           <div className={styles.fieldGroup}>
-            <label htmlFor="requestedClubName" className={styles.label}>
-              Club Name
+            <label htmlFor="email" className={styles.label}>
+              Email Address
             </label>
             <input
-              id="requestedClubName"
-              name="requestedClubName"
-              type="text"
+              id="email"
+              name="email"
+              type="email"
               className={styles.input}
-              placeholder="Enter the club name you want to lead"
-              value={formData.requestedClubName}
-              onChange={handleChange}
+              placeholder="Enter your registered email"
+              value={formData.email}
+              onChange={handleEmailChange}
               required
               disabled={loading}
             />
-            <p className={styles.hint}>
-              Enter the name of an existing club or a new club you want to create
-            </p>
+            {emailStatus === 'checking' && (
+              <p className={styles.emailChecking}>Verifying email...</p>
+            )}
+            {emailStatus === 'valid' && (
+              <p className={styles.emailSuccess}>✓ Registered account found</p>
+            )}
+            {emailStatus === 'invalid' && (
+              <p className={styles.emailWarning}>✗ No registered account found with this email</p>
+            )}
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="requestedClubId" className={styles.label}>
+              Club
+            </label>
+            <select
+              id="requestedClubId"
+              className={styles.select}
+              value={formData.requestedClubId}
+              onChange={handleClubChange}
+              required
+              disabled={loading || clubsLoading}
+            >
+              <option value="">
+                {clubsLoading ? 'Loading clubs...' : clubsError ? 'Failed to load clubs' : 'Select a club'}
+              </option>
+              {clubs.map(club => (
+                <option key={club.id} value={club.id}>
+                  {club.name}
+                </option>
+              ))}
+            </select>
+            {clubsError && (
+              <p className={styles.emailWarning}>{clubsError}</p>
+            )}
           </div>
 
           <div className={styles.fieldGroup}>
@@ -251,7 +348,7 @@ export default function RequestAccessPage() {
             <select
               id="requestedRole"
               name="requestedRole"
-              className={styles.input}
+              className={styles.select}
               value={formData.requestedRole}
               onChange={handleChange}
               required
@@ -285,7 +382,11 @@ export default function RequestAccessPage() {
             </p>
           </div>
 
-          <button type="submit" className={styles.submitButton} disabled={loading}>
+          <button
+            type="submit"
+            className={styles.submitButton}
+            disabled={loading || emailStatus === 'invalid' || emailStatus === 'checking'}
+          >
             {loading ? 'Submitting...' : 'Submit Request'}
           </button>
         </form>
@@ -299,5 +400,3 @@ export default function RequestAccessPage() {
     </div>
   );
 }
-
-

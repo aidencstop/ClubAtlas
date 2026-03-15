@@ -16,7 +16,7 @@ from app.services.auth_service import (
     verify_id_token
 )
 from app.services.firestore_service import user_service, FirestoreService
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_user, get_current_user_optional
 import uuid
 from datetime import datetime
 
@@ -91,38 +91,61 @@ async def signup_student(signup_data: SignupStudentRequest):
 @router.post("/leader-access/request", response_model=LeaderAccessRequestResponse, status_code=status.HTTP_201_CREATED)
 async def request_leader_access(
     request_data: LeaderAccessRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
     동아리 리더 권한 요청
     
-    - 학생만 요청 가능
+    - 로그인 상태: 토큰에서 사용자 정보 추출
+    - 비로그인 상태: 요청 본문의 email로 사용자 조회
     - SuperAdmin 승인 대기 상태로 생성
     """
-    uid = current_user['uid']
-    
-    # 사용자 프로필 조회
-    user_profile = await user_service.get_user_profile(uid)
-    
+    # 사용자 프로필 조회 (로그인 여부에 따라 분기)
+    if current_user:
+        uid = current_user['uid']
+        user_profile = await user_service.get_user_profile(uid)
+    else:
+        if not request_data.email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email is required when not logged in"
+            )
+        users = await user_service.query_documents(
+            user_service.COLLECTION,
+            filters=[('email', '==', request_data.email)],
+            limit=1
+        )
+        if not users:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No user found with this email"
+            )
+        user_profile = users[0]
+        uid = user_profile['id']
+
     if not user_profile:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User profile not found"
         )
     
-    # Student 역할 확인
-    user_role = user_profile.get('role', '')
-    if user_role not in ['student']:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only students can request leader access. You already have elevated permissions."
-        )
-    
-    # 기존 pending 요청 확인
+    # 해당 클럽의 기존 리더 여부 확인
+    if request_data.requested_club_id:
+        club = await firestore_service.get_document('clubs', request_data.requested_club_id)
+        if club:
+            existing_leaders = club.get('leaders', [])
+            if any(leader.get('uid') == uid for leader in existing_leaders):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="You are already a leader of this club"
+                )
+
+    # 기존 pending 요청 확인 (동일 클럽)
     existing_requests = await firestore_service.query_documents(
         'leader_access_requests',
         filters=[
             ('user_id', '==', uid),
+            ('requested_club_id', '==', request_data.requested_club_id),
             ('status', '==', 'pending')
         ]
     )
@@ -130,7 +153,7 @@ async def request_leader_access(
     if existing_requests:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You already have a pending leader access request"
+            detail="You already have a pending leader access request for this club"
         )
     
     # 요청 생성

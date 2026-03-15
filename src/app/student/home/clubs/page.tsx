@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './BrowseClubs.module.css';
 import { getClubs, Club, MeetingSchedule } from '@/lib/api/clubs';
 import { subscribeToClub, unsubscribeFromClub, getMySubscriptions } from '@/lib/api/subscriptions';
+import { logout } from '@/lib/firebase/auth';
 
 const searchIcon = "/images/icons/clubs/search.svg";
 const filterIcon = "/images/icons/clubs/filter.svg";
@@ -16,8 +18,20 @@ const usersIcon2 = "/images/icons/clubs/users.svg";
 const logoIcon = "/images/icons/logo.svg";
 const headerSearchIcon = "/images/icons/search.svg";
 const profileIcon = "/images/icons/profile.svg";
+const logoutIcon = "/images/icons/mypage/logout.svg";
 
 export default function BrowseClubsPage() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/welcome');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedActivityType, setSelectedActivityType] = useState('All');
@@ -252,6 +266,9 @@ export default function BrowseClubsPage() {
             </button>
             <button className={styles.profileButton}>
               <img src={profileIcon} alt="Profile" width="20" height="20" />
+            </button>
+            <button className={styles.notificationButton} onClick={handleLogout}>
+              <img src={logoutIcon} alt="Logout" width="20" height="20" />
             </button>
           </div>
         </div>

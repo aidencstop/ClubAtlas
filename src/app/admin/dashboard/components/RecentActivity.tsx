@@ -62,8 +62,8 @@ export default function RecentActivity({ subscribers, events, announcements }: R
   // 시간순 정렬 (최신순)
   activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-  // 최대 5개만 표시
-  const displayActivities = activities.slice(0, 5);
+  // 최대 3개만 표시
+  const displayActivities = activities.slice(0, 3);
 
   return (
     <div className={styles.card}>

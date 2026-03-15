@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './Calendar.module.css';
 import CreateEventModal from './components/CreateEventModal';
@@ -9,6 +10,7 @@ import WeekView from './components/WeekView';
 import { useAuth } from '@/contexts/AuthContext';
 import { getMyCalendarEvents, Event as ApiEvent } from '@/lib/api';
 import { getClub } from '@/lib/api/clubs';
+import { logout } from '@/lib/firebase/auth';
 
 // 로컬 아이콘 경로
 const viewModeIcon = "/images/icons/calendar/view-mode.svg";
@@ -18,9 +20,10 @@ const createIcon = "/images/icons/calendar/create.svg";
 const prevArrowIcon = "/images/icons/calendar/arrow-left.svg";
 const nextArrowIcon = "/images/icons/calendar/arrow-right.svg";
 const upcomingIcon = "/images/icons/calendar/upcoming.svg";
-const logoIcon = "/images/icons/logo.svg"; // 공용 로고
-const searchIcon = "/images/icons/search.svg"; // 공용 검색
-const profileIcon = "/images/icons/profile.svg"; // 공용 프로필
+const logoIcon = "/images/icons/logo.svg";
+const searchIcon = "/images/icons/search.svg";
+const profileIcon = "/images/icons/profile.svg";
+const logoutIcon = "/images/icons/mypage/logout.svg";
 
 interface CalendarEvent {
   id: string;
@@ -33,6 +36,7 @@ interface CalendarEvent {
   description: string;
   location: string;
   start_datetime: Date;
+  attendees?: string[];
 }
 
 interface UpcomingEvent {
@@ -58,10 +62,35 @@ const categoryColors: { [key: string]: string } = {
 const eventColors = ['#615fff', '#00c950', '#2b7fff', '#ad46ff', '#f59e0b', '#ef4444'];
 
 export default function CalendarPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, userProfile } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/welcome');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   const isClubLeader = userProfile?.role === 'club-leader' || userProfile?.role === 'admin';
+
+  const pendingEventIdRef = useRef<string | null>(null);
+
+  const getInitialDate = () => {
+    const yearParam = searchParams.get('year');
+    const monthParam = searchParams.get('month');
+    if (yearParam && monthParam) {
+      const y = parseInt(yearParam, 10);
+      const m = parseInt(monthParam, 10) - 1; // 1-indexed → 0-indexed
+      if (!isNaN(y) && !isNaN(m)) return new Date(y, m, 1);
+    }
+    return new Date();
+  };
+
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(getInitialDate);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEventDetailModalOpen, setIsEventDetailModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -69,6 +98,11 @@ export default function CalendarPage() {
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const eventId = searchParams.get('eventId');
+    if (eventId) pendingEventIdRef.current = eventId;
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -116,12 +150,22 @@ export default function CalendarPage() {
               club_name: clubName,
               description: apiEvent.description,
               location: apiEvent.location,
-              start_datetime: startDate
+              start_datetime: startDate,
+              attendees: apiEvent.attendees || []
             };
           })
         );
 
         setEvents(calendarEvents);
+
+        if (pendingEventIdRef.current) {
+          const target = calendarEvents.find(e => e.id === pendingEventIdRef.current);
+          if (target) {
+            pendingEventIdRef.current = null;
+            setSelectedEvent(target);
+            setIsEventDetailModalOpen(true);
+          }
+        }
 
         const now = new Date();
         const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -216,6 +260,9 @@ export default function CalendarPage() {
             </button>
             <button className={styles.profileButton}>
               <img src={profileIcon} alt="Profile" width="20" height="20" />
+            </button>
+            <button className={styles.notificationButton} onClick={handleLogout}>
+              <img src={logoutIcon} alt="Logout" width="20" height="20" />
             </button>
           </div>
         </div>

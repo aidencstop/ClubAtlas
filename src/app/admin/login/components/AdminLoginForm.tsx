@@ -173,7 +173,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
 
         <button type="submit" className={styles.submitButton} disabled={loading}>
           <img 
-            src="/images/icons/admin-login/sign-in-arrow.svg"
+            src="/images/icons/student-login/arrow.svg"
             alt="arrow"
             className={styles.arrowIcon}
           />
@@ -188,12 +188,14 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
 
       <div className={styles.divider}></div>
 
-      <div className={styles.footer}>
-        <p className={styles.footerText}>Not a club leader yet?</p>
-        <Link href="/admin/request-access" className={styles.requestLink}>
-          {isSuperAdmin ? 'Request Leader Access →' : 'Create a New Club →'}
-        </Link>
-      </div>
+      {!isSuperAdmin && (
+        <div className={styles.footer}>
+          <p className={styles.footerText}>Not a club leader yet?</p>
+          <Link href="/admin/request-access" className={styles.requestLink}>
+            Request Leader Access →
+          </Link>
+        </div>
+      )}
 
       <Link href="/welcome" className={styles.backLink}>
         ← Back to Home
