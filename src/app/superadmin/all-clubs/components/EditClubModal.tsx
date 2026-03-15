@@ -16,6 +16,7 @@ interface EditClubModalProps {
     description?: string;
     categories: string[];
     activity_type: string[];
+    status: string;
   } | null;
   onSuccess: () => void;
 }
@@ -48,7 +49,7 @@ export default function EditClubModal({
         name: club.name,
         category: club.categories[0] || '',
         description: club.description || '',
-        is_active: true,
+        is_active: club.status === 'active',
       });
     }
   }, [club]);

@@ -4,7 +4,7 @@ SuperAdmin API 엔드포인트
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from pydantic import BaseModel, EmailStr
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.api.dependencies import get_current_user, require_super_admin
 from app.services.firestore_service import (
@@ -513,7 +513,7 @@ async def get_platform_statistics(
         )
         
         # 이번 주 신규 학생 (7일 이내)
-        week_ago = datetime.now() - timedelta(days=7)
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         new_students_this_week = sum(
             1 for s in all_students 
             if s.get('created_at') and s.get('created_at') > week_ago
@@ -526,7 +526,7 @@ async def get_platform_statistics(
         )
         
         # 예정된 이벤트 (미래 이벤트)
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         upcoming_events = sum(
             1 for e in all_events 
             if e.get('start_datetime') and e.get('start_datetime') > now and e.get('status') == 'active'
@@ -628,8 +628,9 @@ async def get_recent_activities(
     """
     try:
         activities = []
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         one_hour_ago = now - timedelta(hours=1)
+        min_dt = datetime.min.replace(tzinfo=timezone.utc)
         
         # 최근 생성된 클럽
         recent_clubs = await club_service.query_documents(
@@ -640,7 +641,7 @@ async def get_recent_activities(
         # created_at으로 정렬 (최신순)
         recent_clubs_sorted = sorted(
             [c for c in recent_clubs if c.get('created_at')],
-            key=lambda x: x.get('created_at', datetime.min),
+            key=lambda x: x.get('created_at', min_dt),
             reverse=True
         )[:5]
         
@@ -666,7 +667,7 @@ async def get_recent_activities(
         
         recent_events_sorted = sorted(
             [e for e in recent_events if e.get('created_at')],
-            key=lambda x: x.get('created_at', datetime.min),
+            key=lambda x: x.get('created_at', min_dt),
             reverse=True
         )[:5]
         
@@ -804,7 +805,19 @@ async def get_all_clubs(
         # 페이징
         offset = (page - 1) * page_size
         paginated_clubs = filtered_clubs[offset:offset + page_size]
-        
+
+        # 실제 구독자 수 집계 (subscriptions 컬렉션 기준)
+        all_active_subscriptions = await subscription_service.query_documents(
+            subscription_service.COLLECTION,
+            filters=[('is_active', '==', True)],
+            limit=100000
+        )
+        subscriber_counts: dict = {}
+        for sub in all_active_subscriptions:
+            cid = sub.get('club_id')
+            if cid:
+                subscriber_counts[cid] = subscriber_counts.get(cid, 0) + 1
+
         # 상세 정보 구성
         detailed_clubs = []
         for club_data in paginated_clubs:
@@ -819,7 +832,7 @@ async def get_all_clubs(
             
             # 통계 정보
             stats = club_data.get('stats', {})
-            total_subscribers = stats.get('total_subscribers', 0)
+            total_subscribers = subscriber_counts.get(club_data['id'], 0)
             total_events = stats.get('total_events', 0)
             
             # 상태 결정
@@ -1030,16 +1043,18 @@ async def get_club_statistics(
         )
         
         active_clubs = sum(1 for c in all_clubs if c.get('is_active', True))
-        
-        # 총 구독자 수
-        total_subscribers = sum(
-            c.get('stats', {}).get('total_subscribers', 0)
-            for c in all_clubs
+
+        # 총 구독자 수 (subscriptions 컬렉션 기준 실집계)
+        all_active_subscriptions = await subscription_service.query_documents(
+            subscription_service.COLLECTION,
+            filters=[('is_active', '==', True)],
+            limit=100000
         )
-        
+        total_subscribers = len(all_active_subscriptions)
+
         return ClubStatistics(
             active_clubs=active_clubs,
-            pending_approval=0,  # 현재 승인 시스템 미구현
+            pending_approval=0,
             total_subscribers=total_subscribers
         )
     
@@ -1074,14 +1089,14 @@ async def get_student_statistics(
         total_users = len(all_students)
         
         # 이번 주 신규 사용자
-        week_ago = datetime.now() - timedelta(days=7)
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         new_this_week = sum(
             1 for s in all_students 
             if s.get('created_at') and s.get('created_at') > week_ago
         )
         
         # 이번 달 활성 사용자 (구독이 있는 사용자)
-        month_ago = datetime.now() - timedelta(days=30)
+        month_ago = datetime.now(timezone.utc) - timedelta(days=30)
         
         # 모든 활성 구독 조회
         active_subscriptions = await subscription_service.query_documents(

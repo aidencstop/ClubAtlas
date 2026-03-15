@@ -47,19 +47,72 @@ export default function SuperAdminDashboard() {
       const token = await getIdToken();
       if (!token) return;
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/statistics`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
-      );
+      const base = process.env.NEXT_PUBLIC_API_URL;
+      const headers = { 'Authorization': `Bearer ${token}` };
 
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
+      const [allClubsRes, activeClubsRes, allLeadersRes, eventsRes, approvalsRes] = await Promise.all([
+        fetch(`${base}/api/superadmin/clubs?page_size=1`, { headers }),
+        fetch(`${base}/api/superadmin/clubs?page_size=1&status=active`, { headers }),
+        fetch(`${base}/api/superadmin/club-leaders`, { headers }),
+        fetch(`${base}/api/events?limit=1`, { headers }),
+        fetch(`${base}/api/superadmin/pending-approvals?limit=1`, { headers }),
+      ]);
+
+      let total_clubs = 0;
+      if (allClubsRes.ok) {
+        const data = await allClubsRes.json();
+        total_clubs = data.total ?? 0;
       }
+
+      let active_clubs = 0;
+      if (activeClubsRes.ok) {
+        const data = await activeClubsRes.json();
+        active_clubs = data.total ?? 0;
+      }
+
+      let active_leaders = 0;
+      let total_leaders = 0;
+      if (allLeadersRes.ok) {
+        const data = await allLeadersRes.json();
+        const leaders: { status: string }[] = data.leaders ?? [];
+        total_leaders = data.total ?? leaders.length;
+        active_leaders = leaders.filter(l => l.status === 'active').length;
+      }
+
+      let total_events = 0;
+      if (eventsRes.ok) {
+        const data = await eventsRes.json();
+        total_events = data.total ?? (data.events?.length ?? 0);
+      }
+
+      let pending_leader_requests = 0;
+      if (approvalsRes.ok) {
+        const data = await approvalsRes.json();
+        pending_leader_requests = data.total ?? (data.approvals?.length ?? 0);
+      }
+
+      const studentsRes = await fetch(`${base}/api/superadmin/students/statistics`, { headers });
+      let total_students = total_leaders;
+      let new_students_this_week = 0;
+      if (studentsRes.ok) {
+        const data = await studentsRes.json();
+        total_students = (data.total_users ?? 0) + total_leaders;
+        new_students_this_week = data.new_this_week ?? 0;
+      }
+
+      setStats({
+        total_clubs,
+        active_clubs,
+        inactive_clubs: total_clubs - active_clubs,
+        total_leaders,
+        active_leaders,
+        pending_leader_requests,
+        total_students,
+        new_students_this_week,
+        total_events,
+        upcoming_events: 0,
+        total_subscriptions: 0,
+      });
     } catch (error) {
       console.error('Failed to load statistics:', error);
     } finally {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getIdToken } from '@/lib/firebase/auth';
 import styles from './AllClubsTable.module.css';
@@ -8,7 +9,6 @@ import EditClubModal from './EditClubModal';
 
 const searchIcon = "/images/icons/superadmin/all-clubs/search.svg";
 const editIcon = "/images/icons/superadmin/all-clubs/edit.svg";
-const deleteIcon = "/images/icons/superadmin/all-clubs/delete.svg";
 
 const CATEGORIES = [
   'Student Leadership and Media',
@@ -111,35 +111,6 @@ export default function AllClubsTable() {
     loadClubs();
   };
 
-  const handleDelete = async (clubId: string) => {
-    if (!confirm('Are you sure you want to deactivate this club?')) return;
-
-    try {
-      const token = await getIdToken();
-      if (!token) return;
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/clubs/${clubId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        alert('Club deactivated successfully');
-        loadClubs();
-      } else {
-        alert('Failed to deactivate club');
-      }
-    } catch (error) {
-      console.error('Failed to delete club:', error);
-      alert('Failed to deactivate club');
-    }
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.searchSection}>
@@ -197,11 +168,13 @@ export default function AllClubsTable() {
             clubs.map((club, index) => (
               <div key={club.id} className={`${styles.tableRow} ${index === 0 ? styles.tableRowFirst : ''}`}>
                 <div className={styles.columnClubName}>
-                  <a href={`/club/${club.id}`} className={styles.clubNameLink}>{club.name}</a>
+                  <Link href={`/student/home/clubs/${club.id}`} className={styles.clubNameLink}>
+                    {club.name.length > 20 ? club.name.slice(0, 20) + '...' : club.name}
+                  </Link>
                 </div>
                 <div className={styles.columnCategory}>
                   <span className={styles.categoryBadge}>
-                    {club.categories[0] || 'N/A'}
+                    {(() => { const c = club.categories[0] || 'N/A'; return c.length > 20 ? c.slice(0, 20) + '...' : c; })()}
                   </span>
                 </div>
                 <div className={styles.columnLeader}>
@@ -225,12 +198,6 @@ export default function AllClubsTable() {
                     onClick={() => handleEdit(club)}
                   >
                     <img src={editIcon} alt="Edit" />
-                  </button>
-                  <button 
-                    className={styles.actionButton}
-                    onClick={() => handleDelete(club.id)}
-                  >
-                    <img src={deleteIcon} alt="Delete" />
                   </button>
                 </div>
               </div>
