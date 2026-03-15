@@ -40,7 +40,7 @@ export default function AdminCTA() {
               : "If you're an admin, please use this button to log in."}
           </p>
           <Link href={isClubLeader ? "/admin/dashboard" : "/admin/login"} className={styles.button}>
-            {isClubLeader ? "Admin Home" : "Admin Log In"}
+            {isClubLeader ? "Club Leader Dashboard" : "Admin Log In"}
           </Link>
         </div>
       </div>

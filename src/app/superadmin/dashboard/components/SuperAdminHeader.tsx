@@ -41,7 +41,7 @@ export default function SuperAdminHeader() {
         <button className={styles.iconButton} onClick={() => setShowEditModal(true)} title="Settings">
           <img src={settingsIcon} alt="Settings" className={styles.icon} />
         </button>
-        <a href="/welcome" className={styles.textButton}>
+        <a href="/student/home" className={styles.textButton}>
           View Public Site
         </a>
         <div className={styles.userProfile}>

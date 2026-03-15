@@ -39,7 +39,6 @@ export default function ClubRecommendationCard({ recommendation, clubData }: Pro
   // clubData가 없으면 기본 정보만 표시
   const displayName = clubData?.name || `Club ${recommendation.club_id}`;
   const displayDescription = clubData?.description || 'Loading club information...';
-  const displayTagline = clubData?.tagline;
   const displayCategories = clubData?.categories || [];
   const displayActivityType = clubData?.activity_type;
 
@@ -126,9 +125,6 @@ export default function ClubRecommendationCard({ recommendation, clubData }: Pro
 
       <div className={styles.cardContent}>
         <h3 className={styles.clubName}>{displayName}</h3>
-        {displayTagline && (
-          <p className={styles.clubTagline}>{displayTagline}</p>
-        )}
         <p className={styles.clubDescription}>{displayDescription}</p>
 
         {displayCategories.length > 0 && (

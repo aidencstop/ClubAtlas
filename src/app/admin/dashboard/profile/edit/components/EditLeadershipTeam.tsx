@@ -91,9 +91,9 @@ function LeaderCard({ leader, isEditing, onEdit, onDelete, onSave, onCancel, onA
           />
           <input
             className={styles.fieldInput}
-            placeholder="Role (e.g. President)"
-            value={draft.role}
-            onChange={(e) => setDraft({ ...draft, role: e.target.value })}
+            value="Cohead"
+            readOnly
+            disabled
           />
           <input
             className={styles.fieldInput}
@@ -132,7 +132,7 @@ export default function EditLeadershipTeam({ leaders, setLeaders, onAvatarUpload
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
 
   const handleAddLeader = () => {
-    const newLeader: ClubLeader = { uid: `new-${Date.now()}`, name: '', role: '', email: '' };
+    const newLeader: ClubLeader = { uid: `new-${Date.now()}`, name: '', role: 'Cohead', email: '' };
     const newLeaders = [...leaders, newLeader];
     setLeaders(newLeaders);
     setEditingIdx(newLeaders.length - 1);

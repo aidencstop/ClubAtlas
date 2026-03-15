@@ -16,7 +16,7 @@ interface AssignLeaderModalProps {
 export default function AssignLeaderModal({ isOpen, onClose, onSuccess }: AssignLeaderModalProps) {
   const [email, setEmail] = useState('');
   const [clubId, setClubId] = useState('');
-  const [roleTitle, setRoleTitle] = useState('President');
+  const [roleTitle] = useState('Cohead');
   const [clubs, setClubs] = useState<Club[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,8 +62,8 @@ export default function AssignLeaderModal({ isOpen, onClose, onSuccess }: Assign
       // Reset form
       setEmail('');
       setClubId('');
-      setRoleTitle('President');
       
+
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -141,11 +141,9 @@ export default function AssignLeaderModal({ isOpen, onClose, onSuccess }: Assign
               type="text"
               id="role"
               className={styles.input}
-              placeholder="President"
-              value={roleTitle}
-              onChange={(e) => setRoleTitle(e.target.value)}
-              required
-              disabled={isLoading}
+              value="Cohead"
+              readOnly
+              disabled
             />
           </div>
 

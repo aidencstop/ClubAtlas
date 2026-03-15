@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './ClubProfileSection.module.css';
-import { getMyManagedClub, Club, ClubLeader } from '@/lib/api/clubs';
+import { getClub, Club, ClubLeader } from '@/lib/api/clubs';
 import { getEvents, Event as ApiEvent } from '@/lib/api/events';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 
 const imgIconEdit = "/images/icons/dashboard/edit-pencil.svg";
 const imgIconLogoPlaceholder = "/images/icons/dashboard/logo-placeholder.svg";
@@ -19,21 +20,30 @@ function getInitials(name: string): string {
 }
 
 export default function ClubProfileSection() {
+  const { selectedClubId } = useSelectedClub();
   const [club, setClub] = useState<Club | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<ApiEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (selectedClubId) {
+      loadData();
+    }
+  }, [selectedClubId]);
 
   const loadData = async () => {
+    if (!selectedClubId) {
+      setClub(null);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await getMyManagedClub();
+      const response = await getClub(selectedClubId);
 
       if (response.data) {
         setClub(response.data);

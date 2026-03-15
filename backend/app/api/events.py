@@ -290,7 +290,28 @@ async def delete_event(
         )
     
     try:
+        club = await club_service.get_club(existing_event['club_id'])
+        club_name = club['name'] if club else 'Club'
+
+        subscribers = await subscription_service.get_club_subscribers(existing_event['club_id'], active_only=True)
+        subscriber_ids = {sub['user_id'] for sub in subscribers}
+        attendee_ids = set(existing_event.get('attendees', []))
+        recipient_ids = list(subscriber_ids | attendee_ids)
+
         await event_service.delete_event(event_id)
+
+        if recipient_ids:
+            await notification_service.create_bulk_notifications(
+                user_ids=recipient_ids,
+                type='event_cancelled',
+                title=f"Event Cancelled: {existing_event['title']}",
+                content=f'"{existing_event["title"]}" hosted by {club_name} has been cancelled.',
+                club_id=existing_event['club_id'],
+                club_name=club_name,
+                reference_id=event_id,
+                link=f"/student/home/calendar"
+            )
+
         return None
     except Exception as e:
         print(f"Delete event error: {e}")

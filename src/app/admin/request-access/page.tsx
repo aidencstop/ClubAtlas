@@ -16,7 +16,7 @@ export default function RequestAccessPage() {
   const [formData, setFormData] = useState({
     requestedClubId: '',
     requestedClubName: '',
-    requestedRole: 'President',
+    requestedRole: 'Cohead',
     reason: '',
     email: '',
   });
@@ -345,21 +345,14 @@ export default function RequestAccessPage() {
             <label htmlFor="requestedRole" className={styles.label}>
               Requested Role
             </label>
-            <select
+            <input
               id="requestedRole"
               name="requestedRole"
               className={styles.select}
-              value={formData.requestedRole}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            >
-              <option value="President">President</option>
-              <option value="Vice President">Vice President</option>
-              <option value="Secretary">Secretary</option>
-              <option value="Treasurer">Treasurer</option>
-              <option value="Other">Other</option>
-            </select>
+              value="Cohead"
+              readOnly
+              disabled
+            />
           </div>
 
           <div className={styles.fieldGroup}>

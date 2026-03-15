@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './SignupForm.module.css';
-import { signIn } from '@/lib/firebase/auth';
+import { signIn, sendVerificationEmail, logout } from '@/lib/firebase/auth';
 import { signupStudent } from '@/lib/api/auth';
 
 const userPlusIcon = "/images/icons/signup/user-plus.svg";
@@ -23,6 +23,7 @@ export default function SignupForm() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -51,54 +52,97 @@ export default function SignupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // 유효성 검사
+
+    if (!formData.email.toLowerCase().endsWith('@concordacademy.com')) {
+      setError('Only @concordacademy.com email addresses are allowed.');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
-    
+
     const passwordError = validatePassword(formData.password);
     if (passwordError) {
       setError(passwordError);
       return;
     }
-    
+
     if (!formData.agreeToTerms) {
       setError('약관에 동의해주세요.');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      // 백엔드 API로 회원가입 (Firebase 계정 생성 + Firestore 프로필 생성)
       const displayName = `${formData.firstName} ${formData.lastName}`.trim();
-      
+
       const response = await signupStudent({
         email: formData.email,
         password: formData.password,
         display_name: displayName,
         student_id: formData.studentId || undefined,
       });
-      
+
       if (response.error) {
         setError(response.error);
         setLoading(false);
         return;
       }
-      
-      // 회원가입 성공 - Firebase 로그인
-      await signIn(formData.email, formData.password);
-      
-      // 학생 홈으로 리다이렉트
-      router.push('/student/home');
+
+      // Firebase 로그인 후 인증 메일 발송
+      const userCredential = await signIn(formData.email, formData.password);
+      await sendVerificationEmail(userCredential.user);
+
+      // 인증 전까지 로그아웃 상태 유지
+      await logout();
+
+      setVerificationSent(true);
     } catch (err: any) {
       console.error('Signup error:', err);
       setError('회원가입에 실패했습니다. 다시 시도해주세요.');
       setLoading(false);
     }
   };
+
+  if (verificationSent) {
+    return (
+      <div className={styles.panel}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Check Your Email</h2>
+          <p className={styles.subtitle}>A verification link has been sent to your inbox</p>
+        </div>
+        <div style={{
+          padding: '24px',
+          backgroundColor: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          borderRadius: '12px',
+          marginBottom: '24px',
+          textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '15px', color: '#166534', marginBottom: '8px', fontWeight: 500 }}>
+            📧 Verification email sent to:
+          </p>
+          <p style={{ fontSize: '14px', color: '#15803d', marginBottom: '16px' }}>
+            {formData.email}
+          </p>
+          <p style={{ fontSize: '13px', color: '#166534' }}>
+            Please click the link in the email within <strong>1 hour</strong> to activate your account.
+            After verifying, you can sign in.
+          </p>
+        </div>
+        <Link href="/student/login" className={styles.submitButton} style={{ textAlign: 'center', display: 'block', textDecoration: 'none' }}>
+          Go to Sign In
+        </Link>
+        <Link href="/welcome" className={styles.backLink} style={{ marginTop: '16px', display: 'block' }}>
+          <img src={arrowLeftIcon} alt="" className={styles.backIcon} />
+          <span>Back to Home</span>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.panel}>
@@ -166,12 +210,12 @@ export default function SignupForm() {
             name="email"
             type="email"
             className={styles.input}
-            placeholder="student@email.edu"
+            placeholder="student@concordacademy.com"
             value={formData.email}
             onChange={handleChange}
             required
           />
-          <p className={styles.hint}>Use your .edu email address</p>
+          <p className={styles.hint}>Only @concordacademy.com email addresses are accepted</p>
         </div>
 
         {/* Student ID */}

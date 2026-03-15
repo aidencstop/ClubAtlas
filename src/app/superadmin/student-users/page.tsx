@@ -20,10 +20,51 @@ export default function StudentUsersPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<StudentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     loadStatistics();
   }, []);
+
+  const handleVerifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !verifyEmail.trim()) return;
+
+    setVerifyLoading(true);
+    setVerifyResult(null);
+
+    try {
+      const token = await getIdToken();
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/students/verify-email-by-email`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: verifyEmail.trim() }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setVerifyResult({ success: true, message: `✅ ${data.email} — email verified successfully.` });
+        setVerifyEmail('');
+      } else {
+        const err = await response.json();
+        setVerifyResult({ success: false, message: `❌ ${err.detail || 'Failed to verify email.'}` });
+      }
+    } catch {
+      setVerifyResult({ success: false, message: '❌ Request failed. Please try again.' });
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
 
   const loadStatistics = async () => {
     if (!user) return;
@@ -90,6 +131,70 @@ export default function StudentUsersPage() {
           </div>
 
           <ActivityChart />
+
+          {/* Force Email Verification */}
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.1)',
+            padding: '24px',
+            marginTop: '24px',
+          }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 500, color: '#0a0a0a', marginBottom: '8px' }}>
+              Force Email Verification
+            </h2>
+            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+              Manually mark a user&apos;s email as verified. Use this for accounts that cannot receive verification emails.
+            </p>
+            <form onSubmit={handleVerifyEmail} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <input
+                type="email"
+                placeholder="student@concordacademy.com"
+                value={verifyEmail}
+                onChange={(e) => setVerifyEmail(e.target.value)}
+                required
+                disabled={verifyLoading}
+                style={{
+                  flex: '1',
+                  minWidth: '260px',
+                  height: '44px',
+                  padding: '0 16px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={verifyLoading}
+                style={{
+                  height: '44px',
+                  padding: '0 24px',
+                  background: '#103b2a',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: verifyLoading ? 'not-allowed' : 'pointer',
+                  opacity: verifyLoading ? 0.7 : 1,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {verifyLoading ? 'Processing...' : 'Verify Email'}
+              </button>
+            </form>
+            {verifyResult && (
+              <p style={{
+                marginTop: '12px',
+                fontSize: '14px',
+                color: verifyResult.success ? '#166534' : '#991b1b',
+              }}>
+                {verifyResult.message}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -99,6 +99,37 @@ async def set_user_role(uid: str, role: str) -> bool:
         return False
 
 
+async def get_user_by_email(email: str) -> Optional[dict]:
+    """
+    이메일로 Firebase 사용자 조회
+    """
+    try:
+        auth_client = get_auth()
+        user = auth_client.get_user_by_email(email)
+        return {
+            "uid": user.uid,
+            "email": user.email,
+            "email_verified": user.email_verified,
+            "display_name": user.display_name,
+            "disabled": user.disabled,
+        }
+    except Exception:
+        return None
+
+
+async def set_email_verified(uid: str, verified: bool = True) -> bool:
+    """
+    사용자 이메일 인증 상태 강제 설정 (SuperAdmin 전용)
+    """
+    try:
+        auth_client = get_auth()
+        auth_client.update_user(uid, email_verified=verified)
+        return True
+    except Exception as e:
+        print(f"Error setting email_verified: {e}")
+        return False
+
+
 async def create_firebase_user(email: str, password: str, display_name: str) -> Optional[dict]:
     """
     Firebase Authentication에 사용자 생성

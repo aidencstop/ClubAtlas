@@ -24,10 +24,11 @@ interface Event {
 interface EventCardProps {
   event: Event;
   onEdit: (event: Event) => void;
+  onDelete: (event: Event) => void;
   onViewDetails: (event: Event) => void;
 }
 
-export default function EventCard({ event, onEdit, onViewDetails }: EventCardProps) {
+export default function EventCard({ event, onEdit, onDelete, onViewDetails }: EventCardProps) {
   const [reminderSending, setReminderSending] = useState(false);
   const [reminderSent, setReminderSent] = useState(false);
 
@@ -58,7 +59,7 @@ export default function EventCard({ event, onEdit, onViewDetails }: EventCardPro
   };
 
   const handleDelete = () => {
-    console.log('Delete event:', event.id);
+    onDelete(event);
   };
 
   const getStatusClassName = () => {

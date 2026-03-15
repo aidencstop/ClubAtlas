@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './LoginForm.module.css';
 import ForgotPasswordModal from './ForgotPasswordModal';
-import { signIn } from '@/lib/firebase/auth';
+import { signIn, logout } from '@/lib/firebase/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
 const arrowIcon = "/images/icons/student-login/arrow.svg";
@@ -34,16 +34,21 @@ export default function LoginForm() {
       // ID 토큰 가져오기
       const token = await userCredential.user.getIdTokenResult();
       const role = token.claims.role as string | undefined;
-      
-      // 역할에 따라 리다이렉트 (모든 역할 허용)
+
+      // student 롤이고 이메일 미인증 시 로그인 차단
+      if (role === 'student' && !userCredential.user.emailVerified) {
+        await logout();
+        setError('이메일 인증이 필요합니다. 가입 시 받은 인증 메일을 확인해주세요. (유효시간: 1시간)');
+        setLoading(false);
+        return;
+      }
+
+      // 역할에 따라 리다이렉트
       if (role === 'super-admin') {
-        // SuperAdmin은 전용 대시보드로
         router.push('/superadmin/dashboard');
       } else if (role === 'club-leader' || role === 'admin') {
-        // 리더는 student 페이지 접근 가능 (기본 페이지는 student home)
         router.push('/student/home');
       } else {
-        // 일반 학생
         router.push('/student/home');
       }
     } catch (err: any) {

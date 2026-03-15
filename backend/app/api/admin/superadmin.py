@@ -14,7 +14,7 @@ from app.services.firestore_service import (
     subscription_service,
     firestore_service
 )
-from app.services.auth_service import set_user_role
+from app.services.auth_service import set_user_role, set_email_verified, get_user_by_uid, get_user_by_email
 from app.models.superadmin import (
     PlatformStatistics,
     PendingApprovalsResponse,
@@ -66,7 +66,7 @@ class AssignLeaderRequest(BaseModel):
     """Club Leader 할당 요청"""
     email: EmailStr
     club_id: str
-    role_title: str = "President"
+    role_title: str = "Cohead"
 
 
 class UpdateLeaderRequest(BaseModel):
@@ -895,7 +895,7 @@ async def create_club_by_superadmin(
                 leader_info = [{
                     'uid': leader.get('id'),
                     'name': leader.get('display_name', leader.get('email')),
-                    'role': 'President',
+                    'role': 'Cohead',
                     'email': leader.get('email')
                 }]
                 
@@ -1133,6 +1133,56 @@ async def get_student_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch student statistics: {str(e)}"
         )
+
+
+@router.post("/students/{uid}/verify-email")
+async def force_verify_email(
+    uid: str,
+    current_user: dict = Depends(require_super_admin)
+):
+    """
+    특정 유저의 이메일 인증 상태를 강제로 true로 설정 (SuperAdmin 전용, UID 기반)
+    """
+    user = await get_user_by_uid(uid)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    success = await set_email_verified(uid, verified=True)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update email verification status"
+        )
+
+    return {"uid": uid, "email": user["email"], "email_verified": True}
+
+
+@router.post("/students/verify-email-by-email")
+async def force_verify_email_by_email(
+    email: str = Body(..., embed=True),
+    current_user: dict = Depends(require_super_admin)
+):
+    """
+    이메일로 유저를 찾아 이메일 인증 상태를 강제로 true로 설정 (SuperAdmin 전용)
+    """
+    user = await get_user_by_email(email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No user found with email: {email}"
+        )
+
+    success = await set_email_verified(user["uid"], verified=True)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update email verification status"
+        )
+
+    return {"uid": user["uid"], "email": user["email"], "email_verified": True}
 
 
 @router.get("/students/activity-chart", response_model=ActivityChartData)

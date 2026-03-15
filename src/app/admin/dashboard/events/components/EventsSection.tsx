@@ -8,7 +8,7 @@ import EditEventModal from './EditEventModal';
 import EventDetailsModal from './EventDetailsModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSelectedClub } from '@/contexts/SelectedClubContext';
-import { getEvents, createEvent, updateEvent, Event as ApiEvent } from '@/lib/api';
+import { getEvents, createEvent, updateEvent, deleteEvent, Event as ApiEvent } from '@/lib/api';
 
 const imgIconAdd = "/images/icons/dashboard/icon-plus.svg";
 const imgIconSearch = "/images/icons/dashboard/icon-search.svg";
@@ -182,6 +182,22 @@ export default function EventsSection() {
     setViewingEvent(null);
   };
 
+  const handleDeleteEvent = async (event: Event) => {
+    if (!confirm(`"${event.title}" 이벤트를 삭제하시겠습니까?`)) return;
+
+    try {
+      const response = await deleteEvent(event.id);
+      if (response.error) {
+        alert(response.error);
+      } else {
+        await loadEvents();
+      }
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+      alert('Failed to delete event');
+    }
+  };
+
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event);
     setIsEditModalOpen(true);
@@ -284,7 +300,7 @@ export default function EventsSection() {
         ) : (
           <div className={styles.eventsGrid}>
             {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} onEdit={handleEditEvent} onViewDetails={handleViewDetails} />
+              <EventCard key={event.id} event={event} onEdit={handleEditEvent} onDelete={handleDeleteEvent} onViewDetails={handleViewDetails} />
             ))}
           </div>
         )}

@@ -26,6 +26,7 @@ interface ClubFormData {
   category: string;
   description: string;
   is_active: boolean;
+  activity_type: string[];
 }
 
 export default function EditClubModal({
@@ -40,6 +41,7 @@ export default function EditClubModal({
     category: '',
     description: '',
     is_active: true,
+    activity_type: [],
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,6 +52,7 @@ export default function EditClubModal({
         category: club.categories[0] || '',
         description: club.description || '',
         is_active: club.status === 'active',
+        activity_type: club.activity_type || [],
       });
     }
   }, [club]);
@@ -77,7 +80,7 @@ export default function EditClubModal({
             name: formData.name,
             description: formData.description,
             categories: [formData.category],
-            activity_type: [formData.category],
+            activity_type: formData.activity_type,
             is_active: formData.is_active,
           }),
         }

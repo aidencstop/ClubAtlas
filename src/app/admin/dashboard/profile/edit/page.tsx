@@ -15,11 +15,13 @@ import EditLeadershipTeam from './components/EditLeadershipTeam';
 import EditPhotoGallery from './components/EditPhotoGallery';
 import EditUpcomingEvents from './components/EditUpcomingEvents';
 import EditSaveFooter from './components/EditSaveFooter';
-import { getMyManagedClub, updateClub, Club, MeetingSchedule, ClubLeader } from '@/lib/api/clubs';
+import { getClub, updateClub, Club, MeetingSchedule, ClubLeader } from '@/lib/api/clubs';
+import { useSelectedClub } from '@/contexts/SelectedClubContext';
 import { uploadClubLogo, uploadClubBanner, uploadClubMedia, deleteClubMedia, uploadLeaderAvatar } from '@/lib/api';
 
 export default function EditClubProfilePage() {
   const router = useRouter();
+  const { selectedClubId } = useSelectedClub();
   const [club, setClub] = useState<Club | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -42,27 +44,35 @@ export default function EditClubProfilePage() {
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    loadClub();
-  }, []);
+    if (selectedClubId) {
+      loadClub();
+    }
+  }, [selectedClubId]);
 
   const loadClub = async () => {
+    if (!selectedClubId) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await getMyManagedClub();
+      const response = await getClub(selectedClubId);
 
       if (response.data) {
         const clubData = response.data;
         setClub(clubData);
         setClubName(clubData.name);
         setTagline(clubData.tagline || '');
-        const activityTypeArray = Array.isArray(clubData.activity_type)
+        const VALID_ACTIVITY_TYPES = ['Online', 'On-Campus', 'Off-Campus', 'Hybrid'];
+        const rawActivityTypes = Array.isArray(clubData.activity_type)
           ? clubData.activity_type
           : typeof clubData.activity_type === 'string' && clubData.activity_type
             ? [clubData.activity_type]
             : [];
-        setActivityTypes(activityTypeArray);
+        setActivityTypes(rawActivityTypes.filter(t => VALID_ACTIVITY_TYPES.includes(t)));
         setMissionStatement(clubData.description);
         setCategories(clubData.categories);
         setTags(clubData.tags || []);

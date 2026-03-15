@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  sendEmailVerification,
   onAuthStateChanged,
   User,
   UserCredential,
@@ -47,6 +48,13 @@ export async function getIdToken(forceRefresh = false): Promise<string | null> {
   const user = auth.currentUser;
   if (!user) return null;
   return user.getIdToken(forceRefresh);
+}
+
+/**
+ * 이메일 인증 메일 발송
+ */
+export async function sendVerificationEmail(user: User): Promise<void> {
+  return sendEmailVerification(user);
 }
 
 /**
