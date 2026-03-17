@@ -35,16 +35,16 @@ export default function SignupForm() {
 
   const validatePassword = (password: string): string | null => {
     if (password.length < 8) {
-      return '비밀번호는 최소 8자 이상이어야 합니다.';
+      return 'Password must be at least 8 characters.';
     }
     if (!/[a-z]/.test(password)) {
-      return '비밀번호에 소문자가 최소 1개 포함되어야 합니다.';
+      return 'Password must contain at least one lowercase letter.';
     }
     if (!/[A-Z]/.test(password)) {
-      return '비밀번호에 대문자가 최소 1개 포함되어야 합니다.';
+      return 'Password must contain at least one uppercase letter.';
     }
     if (!/\d/.test(password)) {
-      return '비밀번호에 숫자가 최소 1개 포함되어야 합니다.';
+      return 'Password must contain at least one number.';
     }
     return null;
   };
@@ -53,13 +53,13 @@ export default function SignupForm() {
     e.preventDefault();
     setError('');
 
-    if (!formData.email.toLowerCase().endsWith('@concordacademy.com')) {
-      setError('Only @concordacademy.com email addresses are allowed.');
+    if (!formData.email.toLowerCase().endsWith('@concordacademy.org')) {
+      setError('Only @concordacademy.org email addresses are allowed.');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+      setError('Passwords do not match.');
       return;
     }
 
@@ -70,7 +70,7 @@ export default function SignupForm() {
     }
 
     if (!formData.agreeToTerms) {
-      setError('약관에 동의해주세요.');
+      setError('Please agree to the terms and conditions.');
       return;
     }
 
@@ -102,7 +102,7 @@ export default function SignupForm() {
       setVerificationSent(true);
     } catch (err: any) {
       console.error('Signup error:', err);
-      setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      setError('Sign up failed. Please try again.');
       setLoading(false);
     }
   };
@@ -210,12 +210,12 @@ export default function SignupForm() {
             name="email"
             type="email"
             className={styles.input}
-            placeholder="student@concordacademy.com"
+            placeholder="student@concordacademy.org"
             value={formData.email}
             onChange={handleChange}
             required
           />
-          <p className={styles.hint}>Only @concordacademy.com email addresses are accepted</p>
+          <p className={styles.hint}>Only @concordacademy.org email addresses are accepted</p>
         </div>
 
         {/* Student ID */}

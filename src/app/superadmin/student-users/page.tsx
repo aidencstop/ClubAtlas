@@ -149,7 +149,7 @@ export default function StudentUsersPage() {
             <form onSubmit={handleVerifyEmail} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <input
                 type="email"
-                placeholder="student@concordacademy.com"
+                placeholder="student@concordacademy.org"
                 value={verifyEmail}
                 onChange={(e) => setVerifyEmail(e.target.value)}
                 required

@@ -35,10 +35,10 @@ async def signup_student(signup_data: SignupStudentRequest):
     """
     try:
         # 도메인 검증
-        if not signup_data.email.lower().endswith('@concordacademy.com'):
+        if not signup_data.email.lower().endswith('@concordacademy.org'):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Only @concordacademy.com email addresses are allowed."
+                detail="Only @concordacademy.org email addresses are allowed."
             )
 
         # 1. Firebase Authentication에 사용자 생성

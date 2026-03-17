@@ -183,7 +183,7 @@ export default function EventsSection() {
   };
 
   const handleDeleteEvent = async (event: Event) => {
-    if (!confirm(`"${event.title}" 이벤트를 삭제하시겠습니까?`)) return;
+    if (!confirm(`Delete event "${event.title}"?`)) return;
 
     try {
       const response = await deleteEvent(event.id);

@@ -43,7 +43,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
       // 역할 확인
       if (role === 'super-admin') {
         if (userRole !== 'super-admin') {
-          setError('Super Admin 권한이 없습니다. 역할을 확인해주세요.');
+          setError('You do not have Super Admin privileges. Please check your role.');
           setLoading(false);
           return;
         }
@@ -51,7 +51,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
       } else {
         // club-leader 또는 admin
         if (userRole !== 'club-leader' && userRole !== 'admin' && userRole !== 'super-admin') {
-          setError('Club Leader 권한이 없습니다. 권한 요청이 필요합니다.');
+          setError('You do not have Club Leader privileges. Please request access.');
           setLoading(false);
           return;
         }
@@ -68,15 +68,15 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
       
       // Firebase 에러 메시지 처리
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-        setError('이메일 또는 비밀번호가 잘못되었습니다.');
+        setError('Invalid email or password.');
       } else if (err.code === 'auth/user-not-found') {
-        setError('존재하지 않는 계정입니다.');
+        setError('No account found with this email.');
       } else if (err.code === 'auth/user-disabled') {
-        setError('비활성화된 계정입니다. 관리자에게 문의하세요.');
+        setError('This account has been disabled. Please contact an administrator.');
       } else if (err.code === 'auth/too-many-requests') {
-        setError('로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.');
+        setError('Too many login attempts. Please try again later.');
       } else {
-        setError('로그인에 실패했습니다. 다시 시도해주세요.');
+        setError('Login failed. Please try again.');
       }
       setLoading(false);
     }
