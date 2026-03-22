@@ -9,6 +9,9 @@ import EditClubModal from './EditClubModal';
 
 const searchIcon = "/images/icons/superadmin/all-clubs/search.svg";
 const editIcon = "/images/icons/superadmin/all-clubs/edit.svg";
+const deleteIcon = "/images/icons/superadmin/all-clubs/delete.svg";
+
+const PAGE_SIZE = 5;
 
 const CATEGORIES = [
   'Student Leadership and Media',
@@ -58,8 +61,13 @@ export default function AllClubsTable() {
   const [statusFilter, setStatusFilter] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingClub, setDeletingClub] = useState<Club | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
+    setCurrentPage(1);
     loadClubs();
   }, [searchQuery, categoryFilter, statusFilter]);
 
@@ -110,6 +118,44 @@ export default function AllClubsTable() {
   const handleEditSuccess = () => {
     loadClubs();
   };
+
+  const handleDeleteClick = (club: Club) => {
+    setDeletingClub(club);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingClub(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingClub || !user) return;
+    try {
+      setDeleteLoading(true);
+      const token = await getIdToken();
+      if (!token) return;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/clubs/${deletingClub.id}?hard_delete=true`,
+        {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` },
+        }
+      );
+      if (response.ok) {
+        setIsDeleteModalOpen(false);
+        setDeletingClub(null);
+        loadClubs();
+      }
+    } catch (error) {
+      console.error('Failed to delete club:', error);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(clubs.length / PAGE_SIZE);
+  const paginatedClubs = clubs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className={styles.container}>
@@ -165,7 +211,7 @@ export default function AllClubsTable() {
               No clubs found
             </div>
           ) : (
-            clubs.map((club, index) => (
+            paginatedClubs.map((club, index) => (
               <div key={club.id} className={`${styles.tableRow} ${index === 0 ? styles.tableRowFirst : ''}`}>
                 <div className={styles.columnClubName}>
                   <Link href={`/student/home/clubs/${club.id}`} className={styles.clubNameLink}>
@@ -193,11 +239,17 @@ export default function AllClubsTable() {
                   </span>
                 </div>
                 <div className={styles.columnActions}>
-                  <button 
+                  <button
                     className={styles.actionButton}
                     onClick={() => handleEdit(club)}
                   >
                     <img src={editIcon} alt="Edit" />
+                  </button>
+                  <button
+                    className={`${styles.actionButton} ${styles.deleteButton}`}
+                    onClick={() => handleDeleteClick(club)}
+                  >
+                    <img src={deleteIcon} alt="Delete" />
                   </button>
                 </div>
               </div>
@@ -206,6 +258,34 @@ export default function AllClubsTable() {
         </div>
       </div>
 
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.pageButton}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            ‹
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              className={`${styles.pageButton} ${currentPage === page ? styles.pageButtonActive : ''}`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            className={styles.pageButton}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            ›
+          </button>
+        </div>
+      )}
+
       {selectedClub && (
         <EditClubModal
           isOpen={isEditModalOpen}
@@ -213,6 +293,33 @@ export default function AllClubsTable() {
           club={selectedClub}
           onSuccess={handleEditSuccess}
         />
+      )}
+
+      {isDeleteModalOpen && deletingClub && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.deleteModal}>
+            <h3 className={styles.deleteModalTitle}>Delete Club</h3>
+            <p className={styles.deleteModalMessage}>
+              Are you sure you want to permanently delete <strong>{deletingClub.name}</strong>? This action cannot be undone.
+            </p>
+            <div className={styles.deleteModalActions}>
+              <button
+                className={styles.cancelButton}
+                onClick={handleDeleteCancel}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmDeleteButton}
+                onClick={handleDeleteConfirm}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

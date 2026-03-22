@@ -86,7 +86,7 @@
   margin: 0;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .aboutSection {
     grid-template-columns: 1fr;
   }

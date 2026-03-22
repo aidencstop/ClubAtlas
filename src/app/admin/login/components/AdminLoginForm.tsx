@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './AdminLoginForm.module.css';
 import ForgotPasswordModal from '../../../student/login/components/ForgotPasswordModal';
+import CreateClubModal from './CreateClubModal';
 import { signIn } from '@/lib/firebase/auth';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -23,6 +24,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +138,7 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
             id="email"
             type="email"
             className={styles.input}
-            placeholder={isSuperAdmin ? 'admin@clubatlas.edu' : 'leader@email.edu'}
+            placeholder="leader@concordacademy.org"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -190,7 +192,13 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
 
       {!isSuperAdmin && (
         <div className={styles.footer}>
-          <p className={styles.footerText}>Not a club leader yet?</p>
+          <button
+            type="button"
+            className={styles.requestLink}
+            onClick={() => setIsCreateClubModalOpen(true)}
+          >
+            Create a New Club →
+          </button>
           <Link href="/admin/request-access" className={styles.requestLink}>
             Request Leader Access →
           </Link>
@@ -205,6 +213,10 @@ export default function AdminLoginForm({ role, onRoleChange }: AdminLoginFormPro
         isOpen={isForgotPasswordOpen}
         onClose={() => setIsForgotPasswordOpen(false)}
       />
+
+      {isCreateClubModalOpen && (
+        <CreateClubModal onClose={() => setIsCreateClubModalOpen(false)} />
+      )}
     </div>
   );
 }

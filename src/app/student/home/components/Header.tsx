@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { logout } from '@/lib/firebase/auth';
@@ -18,6 +18,7 @@ const logoutIcon = "/images/icons/mypage/logout.svg";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { userProfile, isAuthenticated, isClubLeader } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -185,16 +186,16 @@ export default function Header() {
         </Link>
 
         <nav className={styles.navigation}>
-          <Link href="/student/home/clubs" className={styles.navLink}>
+          <Link href="/student/home/clubs" className={`${styles.navLink} ${pathname.startsWith('/student/home/clubs') ? styles.navLinkActive : ''}`}>
             Browse Clubs
           </Link>
-          <Link href="/student/home/calendar" className={styles.navLink}>
+          <Link href="/student/home/calendar" className={`${styles.navLink} ${pathname.startsWith('/student/home/calendar') ? styles.navLinkActive : ''}`}>
             Calendar
           </Link>
-          <Link href="/student/home/ai-recommendations" className={styles.navLink}>
+          <Link href="/student/home/ai-recommendations" className={`${styles.navLink} ${pathname.startsWith('/student/home/ai-recommendations') ? styles.navLinkActive : ''}`}>
             AI Recommendations
           </Link>
-          <Link href="/student/home/mypage" className={styles.navLink}>
+          <Link href="/student/home/mypage" className={`${styles.navLink} ${pathname.startsWith('/student/home/mypage') ? styles.navLinkActive : ''}`}>
             My Page
           </Link>
         </nav>

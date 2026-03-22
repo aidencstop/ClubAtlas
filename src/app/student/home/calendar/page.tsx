@@ -29,6 +29,8 @@ interface CalendarEvent {
   color: string;
   club_id: string;
   club_name?: string;
+  banner_url?: string;
+  logo_url?: string;
   description: string;
   location: string;
   start_datetime: Date;
@@ -118,10 +120,14 @@ export default function CalendarPage() {
             const startDate = new Date(apiEvent.start_datetime);
             
             let clubName = 'Club';
+            let bannerUrl: string | undefined;
+            let logoUrl: string | undefined;
             try {
               const clubResponse = await getClub(apiEvent.club_id);
               if (clubResponse.data) {
                 clubName = clubResponse.data.name;
+                bannerUrl = clubResponse.data.banner_url;
+                logoUrl = clubResponse.data.logo_url;
               }
             } catch (err) {
               console.error(`Failed to fetch club ${apiEvent.club_id}:`, err);
@@ -135,6 +141,8 @@ export default function CalendarPage() {
               color: eventColors[idx % eventColors.length],
               club_id: apiEvent.club_id,
               club_name: clubName,
+              banner_url: bannerUrl,
+              logo_url: logoUrl,
               description: apiEvent.description,
               location: apiEvent.location,
               start_datetime: startDate,
@@ -255,7 +263,7 @@ export default function CalendarPage() {
                   </button>
                   <button 
                     className={`${styles.viewModeButton} ${viewMode === 'week' ? styles.viewModeButtonActive : ''}`}
-                    onClick={() => setViewMode('week')}
+                    onClick={() => { setViewMode('week'); setCurrentDate(new Date()); }}
                   >
                     <img src={weekViewIcon} alt="" width="16" height="16" />
                     Week View
@@ -327,7 +335,7 @@ export default function CalendarPage() {
                                     style={{ backgroundColor: event.color }}
                                     onClick={() => handleEventClick(event)}
                                   >
-                                    {event.time} {event.title}
+                                    {event.club_name ? `${event.club_name} - ${event.title}` : event.title}
                                   </div>
                                 ))}
                                 {dayEvents.length > 3 && (
@@ -374,16 +382,16 @@ export default function CalendarPage() {
                             <div className={styles.eventDateTime}>
                               <span className={styles.eventDate}>{event.date}</span>
                               <span className={styles.eventTime}>{event.time}</span>
+                              <div
+                                className={styles.categoryBadge}
+                                style={{ background: event.categoryColor }}
+                              >
+                                {event.category}
+                              </div>
                             </div>
                             <h4 className={styles.eventClub}>{event.club}</h4>
                             <p className={styles.eventName}>{event.event}</p>
                             <p className={styles.eventLocation}>📍 {event.location}</p>
-                          </div>
-                          <div 
-                            className={styles.categoryBadge}
-                            style={{ background: event.categoryColor }}
-                          >
-                            {event.category}
                           </div>
                           <Link href={`/student/home/clubs/${event.club_id}`} className={styles.viewClubButton}>
                             View Club

@@ -460,7 +460,7 @@
   color: #ef4444;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .profileSection {
     max-width: 100%;
   }

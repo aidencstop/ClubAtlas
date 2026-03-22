@@ -27,7 +27,7 @@ function formatDateForDisplay(dateStr: string): string {
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
+  return `${month}/${day}/${year}`;
 }
 
 function getDatePart(dateTime: string): string {
@@ -119,7 +119,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent }: Cre
                     <input
                       type="text"
                       readOnly
-                      placeholder="dd/mm/yyyy"
+                      placeholder="mm/dd/yyyy"
                       value={formatDateForDisplay(formData.dateTime)}
                       onClick={() => setShowDatePicker(!showDatePicker)}
                       className={styles.input}

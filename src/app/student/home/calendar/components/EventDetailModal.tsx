@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './EventDetailModal.module.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { attendEvent, cancelAttendance } from '@/lib/api/events';
 
-// 로컬 아이콘 및 이미지 경로
-const roboticsImage = "https://www.figma.com/api/mcp/asset/e4e2b0f4-0057-43dc-9d3f-e5ca513f6c4b"; // 클럽 썸네일 이미지 (Figma 유지)
 const closeIcon = "/images/icons/calendar/close.svg";
 const clockIcon = "/images/icons/calendar/clock.svg";
 const locationIcon = "/images/icons/calendar/location2.svg"; // EventDetailModal 전용
 const usersIcon = "/images/icons/calendar/users.svg";
 const attendanceIcon = "/images/icons/calendar/attendance.svg";
 const bellIcon = "/images/icons/calendar/bell.svg";
+
 
 interface CalendarEvent {
   id: string;
@@ -21,6 +21,9 @@ interface CalendarEvent {
   title: string;
   color: string;
   club_id: string;
+  club_name?: string;
+  banner_url?: string;
+  logo_url?: string;
   description: string;
   location: string;
   start_datetime: Date;
@@ -34,8 +37,11 @@ interface EventDetailModalProps {
 
 export default function EventDetailModal({ onClose, event }: EventDetailModalProps) {
   const { user } = useAuth();
+  const router = useRouter();
   const [attendanceStatus, setAttendanceStatus] = useState<'planning' | 'checked-in' | 'cannot'>('cannot');
   const [showSavedNotification, setShowSavedNotification] = useState(false);
+
+  const isPast = event.start_datetime < new Date();
 
   useEffect(() => {
     if (user && event.attendees?.includes(user.uid)) {
@@ -46,6 +52,7 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
   }, [event.id, user]);
 
   const handleAttendanceChange = async (status: 'planning' | 'checked-in' | 'cannot') => {
+    if (isPast) return;
     const prev = attendanceStatus;
     setAttendanceStatus(status);
 
@@ -72,7 +79,14 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         {/* 이미지 헤더 */}
         <div className={styles.imageHeader}>
-          <img src={roboticsImage} alt="Robotics Club" className={styles.headerImage} />
+          {(event.banner_url || event.logo_url) && (
+            <img
+              src={event.banner_url || event.logo_url}
+              alt={event.club_name || 'Club'}
+              className={styles.headerImage}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
           <div className={styles.imageOverlay} />
           <button className={styles.closeButton} onClick={onClose}>
             <img src={closeIcon} alt="Close" />
@@ -86,6 +100,14 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
         <div className={styles.contentSection}>
           {/* 제목 */}
           <h1 className={styles.eventTitle}>{event.title}</h1>
+          {event.club_name && (
+            <button
+              className={styles.relatedLink}
+              onClick={() => router.push(`/student/home/clubs/${event.club_id}`)}
+            >
+              {event.club_name} →
+            </button>
+          )}
 
           {/* 이벤트 정보 */}
           <div className={styles.infoSection}>
@@ -141,8 +163,14 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
               Your Attendance
             </h3>
 
-            <div className={styles.attendanceOptions}>
-              <label className={`${styles.radioOption} ${attendanceStatus === 'planning' ? styles.selected : ''}`}>
+            {isPast && (
+              <div className={styles.pastNotice}>
+                This event has already ended. Attendance can no longer be changed.
+              </div>
+            )}
+
+            <div className={`${styles.attendanceOptions} ${isPast ? styles.attendanceDisabled : ''}`}>
+              <label className={`${styles.radioOption} ${attendanceStatus === 'planning' ? styles.selected : ''} ${isPast ? styles.radioOptionDisabled : ''}`}>
                 <input
                   type="radio"
                   name="attendance"
@@ -150,6 +178,7 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
                   checked={attendanceStatus === 'planning'}
                   onChange={() => handleAttendanceChange('planning')}
                   className={styles.radioInput}
+                  disabled={isPast}
                 />
                 <div className={styles.radioContent}>
                   <div className={styles.radioTitle}>Planning to Attend</div>
@@ -157,7 +186,7 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
                 </div>
               </label>
 
-              <label className={`${styles.radioOption} ${attendanceStatus === 'checked-in' ? styles.selected : ''}`}>
+              <label className={`${styles.radioOption} ${attendanceStatus === 'checked-in' ? styles.selected : ''} ${isPast ? styles.radioOptionDisabled : ''}`}>
                 <input
                   type="radio"
                   name="attendance"
@@ -165,6 +194,7 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
                   checked={attendanceStatus === 'checked-in'}
                   onChange={() => handleAttendanceChange('checked-in')}
                   className={styles.radioInput}
+                  disabled={isPast}
                 />
                 <div className={styles.radioContent}>
                   <div className={styles.radioTitle}>
@@ -175,7 +205,7 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
                 </div>
               </label>
 
-              <label className={`${styles.radioOption} ${attendanceStatus === 'cannot' ? styles.selected : ''}`}>
+              <label className={`${styles.radioOption} ${attendanceStatus === 'cannot' ? styles.selected : ''} ${isPast ? styles.radioOptionDisabled : ''}`}>
                 <input
                   type="radio"
                   name="attendance"
@@ -183,6 +213,7 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
                   checked={attendanceStatus === 'cannot'}
                   onChange={() => handleAttendanceChange('cannot')}
                   className={styles.radioInput}
+                  disabled={isPast}
                 />
                 <div className={styles.radioContent}>
                   <div className={styles.radioTitle}>Cannot Attend</div>
@@ -206,7 +237,10 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
               <img src={bellIcon} alt="Subscribe" className={styles.buttonIcon} />
               Subscribe to Updates
             </button>
-            <button className={styles.viewProfileButton}>
+            <button
+              className={styles.viewProfileButton}
+              onClick={() => router.push(`/student/home/clubs/${event.club_id}`)}
+            >
               View Club Profile
             </button>
           </div>

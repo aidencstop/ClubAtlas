@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import styles from './AnnouncementsSection.module.css';
 import AnnouncementCard from './AnnouncementCard';
 import CreateAnnouncementModal, { AnnouncementFormData } from './CreateAnnouncementModal';
@@ -24,7 +25,10 @@ interface Announcement {
 export default function AnnouncementsSection() {
   const { userProfile } = useAuth();
   const { selectedClubId } = useSelectedClub();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(
+    searchParams.get('openModal') === 'true'
+  );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<EditAnnouncementFormData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);

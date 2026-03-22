@@ -154,7 +154,7 @@
   border-color: #609c22;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .leadersGrid {
     grid-template-columns: 1fr;
   }

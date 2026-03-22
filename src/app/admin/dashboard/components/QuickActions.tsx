@@ -18,7 +18,7 @@ export default function QuickActions({ onCreateEvent }: QuickActionsProps) {
           </div>
           <span className={styles.actionLabel}>Create Event</span>
         </button>
-        <Link href="/admin/dashboard/announcements" className={styles.actionButton}>
+        <Link href="/admin/dashboard/announcements?openModal=true" className={styles.actionButton}>
           <div className={styles.actionIconContainer} style={{ backgroundColor: "#f3e8ff" }}>
             <img src="/images/icons/dashboard/nav-announcements.svg" alt="New Announcement" className={styles.actionIcon} />
           </div>

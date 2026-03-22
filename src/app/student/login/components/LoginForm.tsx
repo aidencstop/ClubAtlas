@@ -100,7 +100,7 @@ export default function LoginForm() {
             id="email"
             type="email"
             className={styles.input}
-            placeholder="student@email.edu"
+            placeholder="student@concordacademy.org"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

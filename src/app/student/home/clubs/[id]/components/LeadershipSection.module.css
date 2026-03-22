@@ -71,7 +71,7 @@
   text-decoration: underline;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .leadersGrid {
     grid-template-columns: repeat(2, 1fr);
   }

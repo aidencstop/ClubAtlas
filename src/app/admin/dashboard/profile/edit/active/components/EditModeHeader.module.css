@@ -160,7 +160,7 @@
   background: #e5e7eb;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .header {
     padding: 16px 24px;
   }

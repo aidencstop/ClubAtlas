@@ -144,7 +144,7 @@
 
 /* Main Content */
 .mainWrapper {
-  padding: 72px 63px 0;
+  padding: 72px 63px 80px;
   background: linear-gradient(131.07deg, #f1fff6 0%, #daede1 100%);
   flex: 1;
 }
@@ -387,7 +387,7 @@
 .clubsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 32px;
 }
 
 .clubCard {
@@ -638,7 +638,7 @@
   }
 
   .mainWrapper {
-    padding: 72px 40px 0;
+    padding: 72px 40px 80px;
   }
 }
 
@@ -660,7 +660,7 @@
   }
 
   .mainWrapper {
-    padding: 72px 24px 0;
+    padding: 72px 24px 80px;
   }
 
   .title {

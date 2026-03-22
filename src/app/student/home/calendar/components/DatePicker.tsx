@@ -10,7 +10,23 @@ interface DatePickerProps {
 }
 
 export default function DatePicker({ selectedDate, onDateSelect, onClose }: DatePickerProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1)); // February 2026
+  const parseSelectedDate = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+    const parts = dateStr.split('/');
+    if (parts.length !== 3) return null;
+    const [day, month, year] = parts;
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  };
+
+  const selectedDateObj = parseSelectedDate(selectedDate);
+  const now = new Date();
+
+  const getInitialMonth = () => {
+    if (selectedDateObj) return new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth());
+    return new Date(now.getFullYear(), now.getMonth());
+  };
+
+  const [currentMonth, setCurrentMonth] = useState(getInitialMonth);
   
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
@@ -27,18 +43,27 @@ export default function DatePicker({ selectedDate, onDateSelect, onClose }: Date
     
     const days: (number | null)[] = [];
     
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
     
-    // Add all days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(day);
     }
     
     return days;
   };
+
+  const isToday = (day: number) =>
+    day === now.getDate() &&
+    currentMonth.getMonth() === now.getMonth() &&
+    currentMonth.getFullYear() === now.getFullYear();
+
+  const isSelected = (day: number) =>
+    selectedDateObj !== null &&
+    day === selectedDateObj.getDate() &&
+    currentMonth.getMonth() === selectedDateObj.getMonth() &&
+    currentMonth.getFullYear() === selectedDateObj.getFullYear();
   
   const handlePrevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
@@ -58,8 +83,6 @@ export default function DatePicker({ selectedDate, onDateSelect, onClose }: Date
   };
   
   const days = getDaysInMonth(currentMonth);
-  const today = 15; // For demo purposes
-  const selected = 11; // For demo purposes
   
   return (
     <div className={styles.datePicker}>
@@ -94,8 +117,8 @@ export default function DatePicker({ selectedDate, onDateSelect, onClose }: Date
             key={index}
             className={`${styles.calendarDay} ${
               day === null ? styles.emptyDay : ''
-            } ${day === selected ? styles.selectedDay : ''} ${
-              day === today ? styles.todayDay : ''
+            } ${day !== null && isSelected(day) ? styles.selectedDay : ''} ${
+              day !== null && isToday(day) ? styles.todayDay : ''
             }`}
             onClick={() => day && handleDateClick(day)}
           >

@@ -115,20 +115,26 @@ export default function PendingApprovals() {
 
       const item = modalState.item;
       
+      let endpoint = '';
+      let body: Record<string, string> = {};
+
       if (item.type === 'leader_request') {
-        const endpoint = modalState.type === 'approve' 
+        endpoint = modalState.type === 'approve'
           ? `/api/admin/leader-requests/${item.id}/approve`
           : `/api/admin/leader-requests/${item.id}/reject`;
+        body = modalState.type === 'approve'
+          ? { assign_to_club_id: item.metadata?.requested_club_id || '', admin_notes: '' }
+          : { admin_notes: 'Denied by super admin' };
+      } else if (item.type === 'club_creation_request') {
+        endpoint = modalState.type === 'approve'
+          ? `/api/admin/club-creation-requests/${item.id}/approve`
+          : `/api/admin/club-creation-requests/${item.id}/reject`;
+        body = modalState.type === 'approve'
+          ? { admin_notes: '' }
+          : { admin_notes: 'Denied by super admin' };
+      }
 
-        const body = modalState.type === 'approve'
-          ? { 
-              assign_to_club_id: item.metadata?.requested_club_id || '',
-              admin_notes: ''
-            }
-          : { 
-              admin_notes: 'Denied by super admin'
-            };
-
+      if (endpoint) {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
           {

@@ -14,7 +14,6 @@ const logoIcon = "/images/icons/logo.svg";
 const backArrowIcon = "/images/icons/club-detail/back-arrow.svg";
 const usersIcon = "/images/icons/club-detail/users.svg";
 const calendarBadgeIcon = "/images/icons/club-detail/calendar-badge.svg";
-const shareIcon = "/images/icons/club-detail/share.svg";
 const subscribeIcon = "/images/icons/club-detail/subscribe.svg";
 const emailSmallIcon = "/images/icons/club-detail/email-small.svg";
 const calendarIcon = "/images/icons/club-detail/calendar.svg";
@@ -243,9 +242,6 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
                 </div>
               </div>
               <div className={styles.heroActions}>
-                <button className={styles.shareButton}>
-                  <img src={shareIcon} alt="" width="20" height="20" />
-                </button>
                 <button 
                   className={styles.subscribeButton}
                   onClick={handleSubscribe}

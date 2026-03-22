@@ -74,6 +74,11 @@
   color: #133f2e;
 }
 
+.navLinkActive {
+  font-weight: 800;
+  color: #2a644d;
+}
+
 .actions {
   display: flex;
   gap: 12px;

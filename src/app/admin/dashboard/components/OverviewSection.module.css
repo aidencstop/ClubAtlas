@@ -1,9 +1,8 @@
 .overviewSection {
-  flex: 1;
+  flex: 0 0 calc(100% - 290px - 24px);
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: min(100%, 1200px);
   min-width: 0;
 }
 
@@ -64,9 +63,10 @@
   text-align: center;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .overviewSection {
     max-width: 100%;
+    flex: 1 1 0;
   }
 
   .statsGrid {

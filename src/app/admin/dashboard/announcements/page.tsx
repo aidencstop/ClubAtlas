@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import styles from '../Dashboard.module.css';
 import DashboardHeader from '../components/DashboardHeader';
 import SidebarNavigation from '../components/SidebarNavigation';
@@ -12,7 +13,9 @@ export default function AnnouncementsPage() {
       <div className={styles.mainContent}>
         <SidebarNavigation />
         <div className={styles.announcementsContent}>
-          <AnnouncementsSection />
+          <Suspense>
+            <AnnouncementsSection />
+          </Suspense>
         </div>
       </div>
     </div>

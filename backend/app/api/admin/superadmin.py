@@ -600,6 +600,27 @@ async def get_pending_approvals(
                 }
             )
             approvals.append(approval_item)
+
+        # 클럽 생성 요청 조회
+        club_creation_requests = await firestore_service.query_documents(
+            'club_creation_requests',
+            filters=[('status', '==', 'pending')],
+            limit=limit
+        )
+
+        for req in club_creation_requests:
+            approval_item = PendingApprovalItem(
+                id=req['id'],
+                type='club_creation_request',
+                title='New Club Request',
+                subtitle=req.get('club_name', 'Unknown Club'),
+                timestamp=req.get('submitted_at', datetime.now()),
+                metadata={
+                    'club_name': req.get('club_name'),
+                    'description': req.get('description'),
+                }
+            )
+            approvals.append(approval_item)
         
         # 최신순 정렬
         approvals.sort(key=lambda x: x.timestamp, reverse=True)

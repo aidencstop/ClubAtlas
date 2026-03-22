@@ -74,6 +74,8 @@ export default function EventsSection() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     if (selectedClubId) {
@@ -240,9 +242,28 @@ export default function EventsSection() {
     const isUpcoming = event.status === 'upcoming';
     return filterTab === 'upcoming' ? isUpcoming : !isUpcoming;
   });
-  const filteredEvents = filteredByTab.filter(event =>
-    event.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  const filteredEvents = filteredByTab
+    .filter(event => event.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      if (filterTab === 'past') {
+        return new Date(b.dateTime || 0).getTime() - new Date(a.dateTime || 0).getTime();
+      }
+      return new Date(a.dateTime || 0).getTime() - new Date(b.dateTime || 0).getTime();
+    });
+
+  const totalPages = Math.ceil(filteredEvents.length / PAGE_SIZE);
+  const paginatedEvents = filteredEvents.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const handleTabChange = (tab: 'upcoming' | 'past') => {
+    setFilterTab(tab);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -262,7 +283,7 @@ export default function EventsSection() {
                 type="text"
                 placeholder="Search events..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className={styles.searchInput}
               />
             </div>
@@ -270,14 +291,14 @@ export default function EventsSection() {
               <button
                 type="button"
                 className={`${styles.filterTab} ${filterTab === 'upcoming' ? styles.filterTabActive : ''}`}
-                onClick={() => setFilterTab('upcoming')}
+                onClick={() => handleTabChange('upcoming')}
               >
                 Upcoming
               </button>
               <button
                 type="button"
                 className={`${styles.filterTab} ${filterTab === 'past' ? styles.filterTabActive : ''}`}
-                onClick={() => setFilterTab('past')}
+                onClick={() => handleTabChange('past')}
               >
                 Past
               </button>
@@ -298,11 +319,40 @@ export default function EventsSection() {
                 : 'No past events yet.'}
           </div>
         ) : (
-          <div className={styles.eventsGrid}>
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} onEdit={handleEditEvent} onDelete={handleDeleteEvent} onViewDetails={handleViewDetails} />
-            ))}
-          </div>
+          <>
+            <div className={styles.eventsGrid}>
+              {paginatedEvents.map((event) => (
+                <EventCard key={event.id} event={event} onEdit={handleEditEvent} onDelete={handleDeleteEvent} onViewDetails={handleViewDetails} />
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.pageButton}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ‹
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    className={`${styles.pageButton} ${currentPage === page ? styles.pageButtonActive : ''}`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  className={styles.pageButton}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  ›
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
