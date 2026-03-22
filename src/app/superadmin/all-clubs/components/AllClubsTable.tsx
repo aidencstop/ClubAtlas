@@ -68,8 +68,50 @@ export default function AllClubsTable() {
 
   useEffect(() => {
     setCurrentPage(1);
-    loadClubs();
-  }, [searchQuery, categoryFilter, statusFilter]);
+
+    if (!user) return;
+
+    const controller = new AbortController();
+
+    const fetchClubs = async () => {
+      try {
+        setLoading(true);
+        const token = await getIdToken();
+        if (!token) return;
+
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('search', searchQuery);
+        if (categoryFilter) params.append('category', categoryFilter);
+        if (statusFilter) params.append('status', statusFilter);
+        params.append('page_size', '100');
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/clubs?${params.toString()}`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` },
+            signal: controller.signal,
+          }
+        );
+
+        if (response.ok) {
+          const data: AllClubsResponse = await response.json();
+          setClubs(data.clubs);
+        }
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Failed to load clubs:', error);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchClubs();
+
+    return () => controller.abort();
+  }, [searchQuery, categoryFilter, statusFilter, user]);
 
   const loadClubs = async () => {
     if (!user) return;
@@ -87,11 +129,7 @@ export default function AllClubsTable() {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/superadmin/clubs?${params.toString()}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        }
+        { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
       if (response.ok) {

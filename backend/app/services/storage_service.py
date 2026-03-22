@@ -12,7 +12,7 @@ class StorageService:
     """Firebase Storage 파일 업로드/삭제 서비스"""
     
     def __init__(self):
-        self.bucket_name = os.getenv('FIREBASE_STORAGE_BUCKET', 'clubatlas-ecaa4.appspot.com')
+        self.bucket_name = os.getenv('FIREBASE_STORAGE_BUCKET', 'clubatlas-ecaa4.firebasestorage.app')
         self._bucket = None
 
     def _get_bucket(self):
