@@ -14,6 +14,8 @@ def initialize_firebase_admin():
         private_key = os.getenv("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n")
         client_email = os.getenv("FIREBASE_CLIENT_EMAIL")
 
+        storage_bucket = os.getenv("FIREBASE_STORAGE_BUCKET", "clubatlas-ecaa4.firebasestorage.app")
+
         if project_id and private_key and client_email:
             cred = credentials.Certificate({
                 "type": "service_account",
@@ -27,9 +29,11 @@ def initialize_firebase_admin():
                 "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
                 "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL", ""),
             })
-            firebase_admin.initialize_app(cred)
+            firebase_admin.initialize_app(cred, {"storageBucket": storage_bucket})
         else:
             options = {"projectId": project_id} if project_id else {}
+            if storage_bucket:
+                options["storageBucket"] = storage_bucket
             firebase_admin.initialize_app(options=options)
 
         return firebase_admin.get_app()
