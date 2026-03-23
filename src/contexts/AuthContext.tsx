@@ -9,6 +9,27 @@ import { auth } from '@/lib/firebase/config';
 import { onAuthChange, getIdToken } from '@/lib/firebase/auth';
 import { getCurrentUserProfile, AuthVerifyResponse } from '@/lib/api/auth';
 
+const PROFILE_CACHE_KEY = 'userProfile_cache';
+
+function getCachedProfile(): AuthVerifyResponse | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const cached = sessionStorage.getItem(PROFILE_CACHE_KEY);
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedProfile(profile: AuthVerifyResponse | null): void {
+  if (typeof window === 'undefined') return;
+  if (profile) {
+    sessionStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profile));
+  } else {
+    sessionStorage.removeItem(PROFILE_CACHE_KEY);
+  }
+}
+
 interface AuthContextType {
   user: User | null;
   userProfile: AuthVerifyResponse | null;
@@ -24,60 +45,69 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<AuthVerifyResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cachedProfile = getCachedProfile();
+  const initialUser = auth?.currentUser ?? null;
 
-  // 사용자 프로필 새로고침
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [userProfile, setUserProfile] = useState<AuthVerifyResponse | null>(
+    initialUser ? cachedProfile : null
+  );
+  const [loading, setLoading] = useState(!(initialUser && cachedProfile));
+
   const refreshUserProfile = async () => {
     if (!user) {
       setUserProfile(null);
+      setCachedProfile(null);
       return;
     }
 
     try {
-      const token = await getIdToken(true); // 강제 갱신
+      const token = await getIdToken(true);
       if (!token) {
         setUserProfile(null);
+        setCachedProfile(null);
         return;
       }
 
       const response = await getCurrentUserProfile(token);
       if (response.data) {
         setUserProfile(response.data);
+        setCachedProfile(response.data);
       } else {
         setUserProfile(null);
+        setCachedProfile(null);
       }
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       setUserProfile(null);
+      setCachedProfile(null);
     }
   };
 
-  // Firebase 인증 상태 변경 감지
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
       setUser(firebaseUser);
-      
+
       if (firebaseUser) {
-        // 사용자가 로그인한 경우 프로필 조회
         try {
           const token = await firebaseUser.getIdToken();
           if (token) {
             const response = await getCurrentUserProfile(token);
             if (response.data) {
               setUserProfile(response.data);
+              setCachedProfile(response.data);
             }
           }
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
           setUserProfile(null);
+          setCachedProfile(null);
         }
       } else {
-        // 로그아웃한 경우
         setUserProfile(null);
+        setCachedProfile(null);
       }
-      
+
       setLoading(false);
     });
 

@@ -4,6 +4,7 @@ Firestore 데이터베이스 서비스
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from firebase_admin import firestore
+from starlette.concurrency import run_in_threadpool
 from app.services.firebase_admin import get_firestore
 
 
@@ -34,9 +35,9 @@ class FirestoreService:
         data['created_at'] = firestore.SERVER_TIMESTAMP
         data['updated_at'] = firestore.SERVER_TIMESTAMP
         
-        doc_ref.set(data)
+        await run_in_threadpool(doc_ref.set, data)
         
-        doc = doc_ref.get()
+        doc = await run_in_threadpool(doc_ref.get)
         return {'id': doc.id, **doc.to_dict()}
     
     async def get_document(
@@ -47,7 +48,7 @@ class FirestoreService:
         """문서 조회"""
         db = self._get_db()
         doc_ref = db.collection(collection).document(document_id)
-        doc = doc_ref.get()
+        doc = await run_in_threadpool(doc_ref.get)
         
         if doc.exists:
             return {'id': doc.id, **doc.to_dict()}
@@ -65,9 +66,9 @@ class FirestoreService:
         
         data['updated_at'] = firestore.SERVER_TIMESTAMP
         
-        doc_ref.update(data)
+        await run_in_threadpool(doc_ref.update, data)
         
-        doc = doc_ref.get()
+        doc = await run_in_threadpool(doc_ref.get)
         return {'id': doc.id, **doc.to_dict()}
     
     async def set_document(
@@ -83,16 +84,16 @@ class FirestoreService:
         
         if merge:
             data['updated_at'] = firestore.SERVER_TIMESTAMP
-            existing_doc = doc_ref.get()
+            existing_doc = await run_in_threadpool(doc_ref.get)
             if not existing_doc.exists:
                 data['created_at'] = firestore.SERVER_TIMESTAMP
         else:
             data['created_at'] = firestore.SERVER_TIMESTAMP
             data['updated_at'] = firestore.SERVER_TIMESTAMP
         
-        doc_ref.set(data, merge=merge)
+        await run_in_threadpool(lambda: doc_ref.set(data, merge=merge))
         
-        doc = doc_ref.get()
+        doc = await run_in_threadpool(doc_ref.get)
         return {'id': doc.id, **doc.to_dict()}
     
     async def delete_document(
@@ -103,7 +104,7 @@ class FirestoreService:
         """문서 삭제"""
         db = self._get_db()
         doc_ref = db.collection(collection).document(document_id)
-        doc_ref.delete()
+        await run_in_threadpool(doc_ref.delete)
         return True
     
     async def query_documents(
@@ -131,7 +132,7 @@ class FirestoreService:
         if limit:
             query = query.limit(limit)
         
-        docs = query.stream()
+        docs = await run_in_threadpool(lambda: list(query.stream()))
         
         return [{'id': doc.id, **doc.to_dict()} for doc in docs]
     
@@ -148,8 +149,8 @@ class FirestoreService:
             for field, operator, value in filters:
                 query = query.where(field, operator, value)
         
-        docs = query.stream()
-        return len(list(docs))
+        docs = await run_in_threadpool(lambda: list(query.stream()))
+        return len(docs)
 
 
 class UserService(FirestoreService):
@@ -300,9 +301,7 @@ class ClubService(FirestoreService):
         """동아리 조회수 증가"""
         db = self._get_db()
         doc_ref = db.collection(self.COLLECTION).document(club_id)
-        doc_ref.update({
-            'stats.view_count': firestore.Increment(1)
-        })
+        await run_in_threadpool(doc_ref.update, {'stats.view_count': firestore.Increment(1)})
 
 
 class SubscriptionService(FirestoreService):
@@ -342,7 +341,7 @@ class SubscriptionService(FirestoreService):
         try:
             db = self._get_db()
             club_ref = db.collection('clubs').document(club_id)
-            club_ref.update({'stats.total_subscribers': firestore.Increment(1)})
+            await run_in_threadpool(club_ref.update, {'stats.total_subscribers': firestore.Increment(1)})
         except Exception as e:
             print(f"Failed to update club subscriber count: {e}")
         
@@ -369,7 +368,7 @@ class SubscriptionService(FirestoreService):
         try:
             db = self._get_db()
             club_ref = db.collection('clubs').document(club_id)
-            club_ref.update({'stats.total_subscribers': firestore.Increment(-1)})
+            await run_in_threadpool(club_ref.update, {'stats.total_subscribers': firestore.Increment(-1)})
         except Exception as e:
             print(f"Failed to update club subscriber count: {e}")
         
@@ -504,7 +503,7 @@ class EventService(FirestoreService):
         try:
             db = self._get_db()
             club_ref = db.collection('clubs').document(club_id)
-            club_ref.update({'stats.total_events': firestore.Increment(1)})
+            await run_in_threadpool(club_ref.update, {'stats.total_events': firestore.Increment(1)})
         except Exception as e:
             print(f"Failed to update club event count: {e}")
         
@@ -698,7 +697,7 @@ class AnnouncementService(FirestoreService):
         """열람 수 증가"""
         db = self._get_db()
         announcement_ref = db.collection(self.COLLECTION).document(announcement_id)
-        announcement_ref.update({'opens': firestore.Increment(1)})
+        await run_in_threadpool(announcement_ref.update, {'opens': firestore.Increment(1)})
         
         return await self.get_announcement(announcement_id)
 

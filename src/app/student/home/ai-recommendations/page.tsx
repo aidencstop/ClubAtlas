@@ -97,6 +97,17 @@ export default function AIRecommendationsPage() {
     }));
   }, [currentStep, selectedCategories, selectedActivityTypes, selectedTimeSlots, recommendations, clubsData]);
 
+  const handleRestart = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    setCurrentStep(1);
+    setSelectedCategories([]);
+    setSelectedActivityTypes([]);
+    setSelectedTimeSlots([]);
+    setRecommendations([]);
+    setClubsData({});
+    setError(null);
+  };
+
   const toggleSelection = (item: string, list: string[], setList: (list: string[]) => void) => {
     if (list.includes(item)) {
       setList(list.filter(i => i !== item));
@@ -493,7 +504,7 @@ export default function AIRecommendationsPage() {
                     {error && (
                       <div className={styles.errorMessage}>
                         <p>{error}</p>
-                        <button onClick={() => { sessionStorage.removeItem(SESSION_KEY); setCurrentStep(1); setRecommendations([]); setClubsData({}); setError(null); }} className={styles.retryButton}>
+                        <button onClick={handleRestart} className={styles.retryButton}>
                           Try Again
                         </button>
                       </div>
@@ -502,7 +513,7 @@ export default function AIRecommendationsPage() {
                     {!error && recommendations.length === 0 && !isLoading && (
                       <div className={styles.noResultsMessage}>
                         <p>No recommendations found. Try adjusting your preferences.</p>
-                        <button onClick={() => { sessionStorage.removeItem(SESSION_KEY); setCurrentStep(1); setRecommendations([]); setClubsData({}); }} className={styles.retryButton}>
+                        <button onClick={handleRestart} className={styles.retryButton}>
                           Start Over
                         </button>
                       </div>
@@ -513,6 +524,15 @@ export default function AIRecommendationsPage() {
 
             </div>
           </div>
+
+          {/* Restart Button */}
+          {currentStep === 4 && !error && recommendations.length > 0 && !isLoading && (
+            <div className={styles.restartButtonWrapper}>
+              <button onClick={handleRestart} className={styles.restartButton}>
+                Get New Recommendations
+              </button>
+            </div>
+          )}
 
           {/* Recommendations Results Grid */}
           {currentStep === 4 && !error && recommendations.length > 0 && (
