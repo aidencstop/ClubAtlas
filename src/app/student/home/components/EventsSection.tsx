@@ -65,6 +65,7 @@ export default function EventsSection() {
       title: event.eventType,
       color: event.color,
       club_id: event.clubId,
+      club_name: event.clubName,
       description: event.description,
       location: event.location,
       start_datetime: event.startDatetime,
