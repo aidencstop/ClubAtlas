@@ -186,18 +186,22 @@ export default function AIRecommendationsPage() {
         setRecommendations(recs);
         setCurrentStep(4);
 
-        // Step 3: 각 추천 club의 상세 정보 가져오기
+        // Step 3: 각 추천 club의 상세 정보 병렬로 가져오기
+        const clubResults = await Promise.all(
+          recs.map(rec =>
+            getClub(rec.club_id).catch(err => {
+              console.error(`Failed to load club ${rec.club_id}:`, err);
+              return null;
+            })
+          )
+        );
         const clubsDataMap: { [key: string]: Club } = {};
-        for (const rec of recs) {
-          try {
-            const clubResponse = await getClub(rec.club_id);
-            if (clubResponse.data && !clubResponse.error) {
-              clubsDataMap[rec.club_id] = clubResponse.data;
-            }
-          } catch (clubError) {
-            console.error(`Failed to load club ${rec.club_id}:`, clubError);
+        recs.forEach((rec, idx) => {
+          const res = clubResults[idx];
+          if (res?.data && !res.error) {
+            clubsDataMap[rec.club_id] = res.data;
           }
-        }
+        });
         setClubsData(clubsDataMap);
       }
     } catch (error: any) {
