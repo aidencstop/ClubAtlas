@@ -46,7 +46,7 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_API_URL
-    value: https://clubatlas-api-mfolzs4sya-uc.a.run.app
+    value: https://clubatlas-api-1027306571468.us-central1.run.app
     availability:
       - BUILD
       - RUNTIME
