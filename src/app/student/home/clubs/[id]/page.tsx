@@ -164,9 +164,9 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
         color: '#666'
       }}>
         <p>{error || '클럽을 찾을 수 없습니다.'}</p>
-        <Link href="/student/home/clubs" style={{ marginTop: '20px', color: '#007bff' }}>
-          ← Back to Browse
-        </Link>
+        <button onClick={() => router.back()} style={{ marginTop: '20px', color: '#007bff', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+          ← Back
+        </button>
       </div>
     );
   }
@@ -189,10 +189,10 @@ export default function ClubProfilePage({ params }: ClubProfilePageProps) {
             </div>
             <span className={styles.logoText}>ClubAtlas</span>
           </Link>
-          <Link href="/student/home/clubs" className={styles.backButton}>
+          <button onClick={() => router.back()} className={styles.backButton}>
             <img src={backArrowIcon} alt="" width="16" height="16" />
-            Back to Browse
-          </Link>
+            Back
+          </button>
         </div>
       </header>
 

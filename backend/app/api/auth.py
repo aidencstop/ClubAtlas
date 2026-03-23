@@ -35,7 +35,8 @@ async def signup_student(signup_data: SignupStudentRequest):
     """
     try:
         # 도메인 검증
-        if not signup_data.email.lower().endswith('@concordacademy.org'):
+        email_lower = signup_data.email.lower()
+        if not email_lower.endswith('@concordacademy.org') and not email_lower.endswith('@gmail.com'):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Only @concordacademy.org email addresses are allowed."

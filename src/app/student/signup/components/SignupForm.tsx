@@ -10,7 +10,11 @@ import { signupStudent } from '@/lib/api/auth';
 const userPlusIcon = "/images/icons/signup/user-plus.svg";
 const arrowLeftIcon = "/images/icons/signup/arrow-left.svg";
 
-export default function SignupForm() {
+interface SignupFormProps {
+  onVerificationSent?: () => void;
+}
+
+export default function SignupForm({ onVerificationSent }: SignupFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -53,7 +57,8 @@ export default function SignupForm() {
     e.preventDefault();
     setError('');
 
-    if (!formData.email.toLowerCase().endsWith('@concordacademy.org')) {
+    const emailLower = formData.email.toLowerCase();
+    if (!emailLower.endsWith('@concordacademy.org') && !emailLower.endsWith('@gmail.com')) {
       setError('Only @concordacademy.org email addresses are allowed.');
       return;
     }
@@ -100,6 +105,7 @@ export default function SignupForm() {
       await logout();
 
       setVerificationSent(true);
+      onVerificationSent?.();
     } catch (err: any) {
       console.error('Signup error:', err);
       setError('Sign up failed. Please try again.');
@@ -133,10 +139,10 @@ export default function SignupForm() {
             After verifying, you can sign in.
           </p>
         </div>
-        <Link href="/student/login" className={styles.submitButton} style={{ textAlign: 'center', display: 'block', textDecoration: 'none' }}>
+        <Link href="/student/login" className={styles.submitButton} style={{ textDecoration: 'none', width: '30%', alignSelf: 'center' }}>
           Go to Sign In
         </Link>
-        <Link href="/welcome" className={styles.backLink} style={{ marginTop: '16px', display: 'block' }}>
+        <Link href="/welcome" className={styles.backLink} style={{ marginTop: '16px' }}>
           <img src={arrowLeftIcon} alt="" className={styles.backIcon} />
           <span>Back to Home</span>
         </Link>

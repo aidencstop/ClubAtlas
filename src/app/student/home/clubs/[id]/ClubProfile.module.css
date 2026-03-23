@@ -71,6 +71,11 @@
   letter-spacing: -0.3125px;
   text-decoration: none;
   transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .backButton:hover {

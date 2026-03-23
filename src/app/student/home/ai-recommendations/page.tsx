@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import styles from './AIRecommendations.module.css';
 import Header from '../components/Header';
@@ -9,6 +8,8 @@ import ClubRecommendationCard from './components/ClubRecommendationCard';
 import { createRecommendationPreferences } from '@/lib/api/users';
 import { getRecommendations } from '@/lib/api/recommendations';
 import { getClub, Club } from '@/lib/api/clubs';
+
+const SESSION_KEY = 'ai_recommendations_state';
 
 // AI Recommendations 페이지 전용 아이콘
 const aiStarIcon = "/images/icons/ai/star.svg";
@@ -63,15 +64,38 @@ interface ClubRecommendation {
   reasons: RecommendationReason[];
 }
 
+function loadFromSession<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed[key] ?? fallback;
+    }
+  } catch {}
+  return fallback;
+}
+
 export default function AIRecommendationsPage() {
-  const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>([]);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState<Step>(() => loadFromSession('currentStep', 1));
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => loadFromSession('selectedCategories', []));
+  const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(() => loadFromSession('selectedActivityTypes', []));
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>(() => loadFromSession('selectedTimeSlots', []));
   const [isLoading, setIsLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState<ClubRecommendation[]>([]);
-  const [clubsData, setClubsData] = useState<{ [key: string]: Club }>({});
+  const [recommendations, setRecommendations] = useState<ClubRecommendation[]>(() => loadFromSession('recommendations', []));
+  const [clubsData, setClubsData] = useState<{ [key: string]: Club }>(() => loadFromSession('clubsData', {}));
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      currentStep,
+      selectedCategories,
+      selectedActivityTypes,
+      selectedTimeSlots,
+      recommendations,
+      clubsData,
+    }));
+  }, [currentStep, selectedCategories, selectedActivityTypes, selectedTimeSlots, recommendations, clubsData]);
 
   const toggleSelection = (item: string, list: string[], setList: (list: string[]) => void) => {
     if (list.includes(item)) {
@@ -469,7 +493,7 @@ export default function AIRecommendationsPage() {
                     {error && (
                       <div className={styles.errorMessage}>
                         <p>{error}</p>
-                        <button onClick={() => setCurrentStep(1)} className={styles.retryButton}>
+                        <button onClick={() => { sessionStorage.removeItem(SESSION_KEY); setCurrentStep(1); setRecommendations([]); setClubsData({}); setError(null); }} className={styles.retryButton}>
                           Try Again
                         </button>
                       </div>
@@ -478,7 +502,7 @@ export default function AIRecommendationsPage() {
                     {!error && recommendations.length === 0 && !isLoading && (
                       <div className={styles.noResultsMessage}>
                         <p>No recommendations found. Try adjusting your preferences.</p>
-                        <button onClick={() => setCurrentStep(1)} className={styles.retryButton}>
+                        <button onClick={() => { sessionStorage.removeItem(SESSION_KEY); setCurrentStep(1); setRecommendations([]); setClubsData({}); }} className={styles.retryButton}>
                           Start Over
                         </button>
                       </div>
