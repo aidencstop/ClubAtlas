@@ -42,6 +42,7 @@ interface CalendarEvent {
   title: string;
   color: string;
   club_id: string;
+  club_name?: string;
   description: string;
   location: string;
   start_datetime: Date;
