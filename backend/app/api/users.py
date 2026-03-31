@@ -7,10 +7,13 @@ from app.models.user import (
     UserProfileUpdate,
     UserProfileResponse,
     ProfileEditRequest,
-    RecommendationPreferencesUpdate
+    RecommendationPreferencesUpdate,
+    NotificationPreferencesUpdate,
+    UserNotificationPreferences,
 )
 from app.api.dependencies import get_current_user, get_current_user_optional
-from app.services.firestore_service import user_service
+from app.services.firestore_service import user_service, subscription_service, bookmark_service
+from app.services.firebase_admin import get_auth
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
@@ -110,6 +113,12 @@ async def get_my_profile(current_user: dict = Depends(get_current_user)):
         derived_first = stored_first
         derived_last = stored_last
 
+    raw_notif = profile.get('notification_preferences')
+    notif_prefs = UserNotificationPreferences(
+        email_notifications=raw_notif.get('email_notifications', True) if raw_notif else True,
+        event_reminders=raw_notif.get('event_reminders', True) if raw_notif else True,
+    )
+
     return UserProfileResponse(
         uid=profile['id'],
         email=profile['email'],
@@ -120,6 +129,7 @@ async def get_my_profile(current_user: dict = Depends(get_current_user)):
         student_id=profile.get('student_id'),
         interests=profile.get('interests', []),
         recommendation_preferences=profile.get('recommendation_preferences'),
+        notification_preferences=notif_prefs,
         created_at=profile.get('created_at'),
         updated_at=profile.get('updated_at')
     )
@@ -271,6 +281,75 @@ async def get_recommendation_preferences(
         "message": "Preferences retrieved successfully",
         "preferences": preferences
     }
+
+
+@router.put("/notification-preferences")
+async def update_notification_preferences(
+    prefs: NotificationPreferencesUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    사용자 알림 설정 업데이트
+    """
+    uid = current_user['uid']
+
+    profile = await user_service.get_user_profile(uid)
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Profile not found"
+        )
+
+    await user_service.update_notification_preferences(
+        uid=uid,
+        email_notifications=prefs.email_notifications,
+        event_reminders=prefs.event_reminders,
+    )
+
+    return {
+        "message": "Notification preferences updated successfully",
+        "notification_preferences": {
+            "email_notifications": prefs.email_notifications,
+            "event_reminders": prefs.event_reminders,
+        }
+    }
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_my_account(current_user: dict = Depends(get_current_user)):
+    """
+    계정 삭제
+
+    - Firestore 사용자 프로필 삭제
+    - 구독 데이터 삭제
+    - 북마크 데이터 삭제
+    - Firebase Auth 계정 삭제
+    """
+    uid = current_user['uid']
+
+    subscriptions = await subscription_service.query_documents(
+        subscription_service.COLLECTION,
+        filters=[('user_id', '==', uid)]
+    )
+    for sub in subscriptions:
+        await subscription_service.delete_document(subscription_service.COLLECTION, sub['id'])
+
+    bookmarks = await bookmark_service.query_documents(
+        bookmark_service.COLLECTION,
+        filters=[('user_id', '==', uid)]
+    )
+    for bm in bookmarks:
+        await bookmark_service.delete_document(bookmark_service.COLLECTION, bm['id'])
+
+    await user_service.delete_document(user_service.COLLECTION, uid)
+
+    try:
+        get_auth().delete_user(uid)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"계정 삭제 중 오류가 발생했습니다: {str(e)}"
+        )
 
 
 @router.put("/recommendation-preferences")

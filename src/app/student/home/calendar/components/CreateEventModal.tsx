@@ -67,7 +67,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: CreateE
     setIsLoading(true);
 
     try {
-      const [day, month, year] = date.split('/');
+      const [month, day, year] = date.split('/');
       const startDatetime = new Date(`${year}-${month}-${day}T${startTime}`);
       const endDatetime = new Date(`${year}-${month}-${day}T${endTime}`);
 
@@ -178,7 +178,7 @@ export default function CreateEventModal({ isOpen, onClose, onSuccess }: CreateE
                   <input
                     type="text"
                     className={styles.input}
-                    placeholder="dd/mm/yyyy"
+                    placeholder="mm/dd/yyyy"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     onClick={() => !isLoading && setShowDatePicker(!showDatePicker)}

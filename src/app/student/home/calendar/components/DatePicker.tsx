@@ -14,7 +14,7 @@ export default function DatePicker({ selectedDate, onDateSelect, onClose }: Date
     if (!dateStr) return null;
     const parts = dateStr.split('/');
     if (parts.length !== 3) return null;
-    const [day, month, year] = parts;
+    const [month, day, year] = parts;
     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   };
 
@@ -77,7 +77,7 @@ export default function DatePicker({ selectedDate, onDateSelect, onClose }: Date
     const year = currentMonth.getFullYear();
     const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
-    const dateStr = `${dayStr}/${month}/${year}`;
+    const dateStr = `${month}/${dayStr}/${year}`;
     onDateSelect(dateStr);
     onClose();
   };

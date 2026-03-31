@@ -1771,4 +1771,84 @@
   background: #c10007;
 }
 
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.deleteModal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.deleteModalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 12px 0;
+}
+
+.deleteModalMessage {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.deleteModalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.deleteModalCancel {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.deleteModalCancel:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.deleteModalCancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deleteModalConfirm {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.deleteModalConfirm:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.deleteModalConfirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 

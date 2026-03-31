@@ -21,7 +21,7 @@ async def get_clubs(
     categories: Optional[str] = Query(None, description="쉼표로 구분된 카테고리"),
     activity_type: Optional[str] = Query(None, description="활동 유형"),
     page: int = Query(1, ge=1, description="페이지 번호"),
-    page_size: int = Query(20, ge=1, le=100, description="페이지 크기"),
+    page_size: int = Query(20, ge=1, le=1000, description="페이지 크기"),
     current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
     """
@@ -38,16 +38,11 @@ async def get_clubs(
         
         offset = (page - 1) * page_size
         
-        clubs = await club_service.get_clubs(
+        clubs, total = await club_service.get_clubs(
             categories=category_list,
             activity_type=activity_type,
             limit=page_size,
             offset=offset
-        )
-        
-        total = await club_service.count_documents(
-            club_service.COLLECTION,
-            filters=[('is_active', '==', True)]
         )
         
         club_objects = []

@@ -3,6 +3,11 @@
  */
 import { apiClient, ApiResponse } from './client';
 
+export interface UserNotificationPreferences {
+  email_notifications: boolean;
+  event_reminders: boolean;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -13,6 +18,7 @@ export interface UserProfile {
   student_id?: string;
   interests?: string[];
   recommendation_preferences?: any;
+  notification_preferences?: UserNotificationPreferences;
   created_at?: string;
   updated_at?: string;
 }
@@ -106,4 +112,14 @@ export async function updateRecommendationPreferences(
       Authorization: `Bearer ${token}`,
     },
   });
+}
+
+export async function updateNotificationPreferences(
+  data: { email_notifications: boolean; event_reminders: boolean }
+): Promise<ApiResponse<{ message: string; notification_preferences: { email_notifications: boolean; event_reminders: boolean } }>> {
+  return apiClient.put('/api/users/notification-preferences', data);
+}
+
+export async function deleteMyAccount(): Promise<ApiResponse<null>> {
+  return apiClient.delete('/api/users/me');
 }

@@ -54,6 +54,18 @@ class RecommendationPreferencesUpdate(BaseModel):
     available_time_slots: List[str] = Field(..., description="활동 가능한 시간대 (복수 선택)")
 
 
+class NotificationPreferencesUpdate(BaseModel):
+    """알림 설정 업데이트 요청"""
+    email_notifications: bool
+    event_reminders: bool
+
+
+class UserNotificationPreferences(BaseModel):
+    """사용자 알림 설정"""
+    email_notifications: bool = True
+    event_reminders: bool = True
+
+
 class UserProfileResponse(BaseModel):
     """사용자 프로필 응답"""
     uid: str
@@ -65,6 +77,7 @@ class UserProfileResponse(BaseModel):
     student_id: Optional[str] = None
     interests: List[str]
     recommendation_preferences: Optional[RecommendationPreferences]
+    notification_preferences: Optional[UserNotificationPreferences] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

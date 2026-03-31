@@ -179,6 +179,19 @@ class UserService(FirestoreService):
     async def get_user_profile(self, uid: str) -> Optional[Dict[str, Any]]:
         """사용자 프로필 조회"""
         return await self.get_document(self.COLLECTION, uid)
+
+    async def get_users_by_ids(self, uids: List[str]) -> Dict[str, Dict[str, Any]]:
+        """여러 UID의 사용자 프로필을 한 번에 조회 (Firestore batch read)"""
+        if not uids:
+            return {}
+        db = self._get_db()
+        refs = [db.collection(self.COLLECTION).document(uid) for uid in uids]
+        docs = await run_in_threadpool(db.get_all, refs)
+        result: Dict[str, Dict[str, Any]] = {}
+        for doc in docs:
+            if doc.exists:
+                result[doc.id] = {'id': doc.id, **doc.to_dict()}
+        return result
     
     async def update_user_interests(
         self,
@@ -192,6 +205,24 @@ class UserService(FirestoreService):
             {'interests': interests}
         )
     
+    async def update_notification_preferences(
+        self,
+        uid: str,
+        email_notifications: bool,
+        event_reminders: bool
+    ) -> Dict[str, Any]:
+        """사용자 알림 설정 업데이트"""
+        return await self.update_document(
+            self.COLLECTION,
+            uid,
+            {
+                'notification_preferences': {
+                    'email_notifications': email_notifications,
+                    'event_reminders': event_reminders,
+                }
+            }
+        )
+
     async def update_recommendation_preferences(
         self,
         uid: str,
@@ -263,31 +294,30 @@ class ClubService(FirestoreService):
         activity_type: Optional[str] = None,
         limit: int = 50,
         offset: int = 0
-    ) -> List[Dict[str, Any]]:
-        """동아리 목록 조회"""
+    ) -> tuple[List[Dict[str, Any]], int]:
+        """동아리 목록 조회. (page, total) 튜플 반환."""
         filters = []
-        
+
         if categories:
             filters.append(('categories', 'array_contains_any', categories))
-        
+
         if activity_type:
-            # activity_type이 배열이므로 array-contains 사용
             filters.append(('activity_type', 'array-contains', activity_type))
-        
+
         filters.append(('is_active', '==', True))
-        
+
         # order_by를 제거하고 Python에서 정렬 (복합 인덱스 불필요)
-        clubs = await self.query_documents(
+        all_clubs = await self.query_documents(
             self.COLLECTION,
             filters=filters,
             limit=None
         )
-        
-        # Python에서 정렬 및 페이징
-        clubs.sort(key=lambda x: x.get('name', '').lower())
+
+        all_clubs.sort(key=lambda x: x.get('name', '').lower())
+        total = len(all_clubs)
         start_idx = offset
         end_idx = offset + limit
-        return clubs[start_idx:end_idx]
+        return all_clubs[start_idx:end_idx], total
     
     async def update_club(
         self,
@@ -321,11 +351,18 @@ class SubscriptionService(FirestoreService):
             if existing.get('is_active'):
                 raise ValueError("이미 구독 중입니다")
             subscription_id = existing['id']
-            return await self.update_document(
+            subscription = await self.update_document(
                 self.COLLECTION,
                 subscription_id,
                 {'is_active': True, 'notification_enabled': True}
             )
+            try:
+                db = self._get_db()
+                club_ref = db.collection('clubs').document(club_id)
+                await run_in_threadpool(club_ref.update, {'stats.total_subscribers': firestore.Increment(1)})
+            except Exception as e:
+                print(f"Failed to update club subscriber count: {e}")
+            return subscription
         
         subscription_id = f"{user_id}_{club_id}"
         data = {

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 async def send_upcoming_event_reminders() -> None:
     """1주일/1일 전 이벤트 리마인더 알림 발송"""
     from app.services.firestore_service import (
-        event_service, club_service, subscription_service, notification_service
+        event_service, club_service, subscription_service, notification_service, user_service
     )
 
     now = datetime.now()
@@ -48,7 +48,15 @@ async def send_upcoming_event_reminders() -> None:
             )
             subscriber_ids = {sub['user_id'] for sub in subscribers}
             attendee_ids = set(event.get('attendees', []))
-            recipient_ids = list(subscriber_ids | attendee_ids)
+            all_candidate_ids = list(subscriber_ids | attendee_ids)
+
+            user_profiles = await user_service.get_users_by_ids(all_candidate_ids)
+            recipient_ids = [
+                uid for uid in all_candidate_ids
+                if user_profiles.get(uid, {}).get(
+                    'notification_preferences', {}
+                ).get('event_reminders', True)
+            ]
 
             try:
                 formatted_date = start_dt.strftime('%b %d, %I:%M %p')

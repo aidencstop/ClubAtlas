@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './MyPage.module.css';
 import Header from '../components/Header';
@@ -9,8 +10,9 @@ import { getClub, Club } from '@/lib/api/clubs';
 import { getMyAttendanceHistory, getMyCalendarEvents, AttendanceRecord, AttendanceStats, Event } from '@/lib/api/events';
 import { getMyBookmarks, deleteBookmark, createBookmark, BookmarkedClub } from '@/lib/api/bookmarks';
 import { getRecommendations, ClubRecommendation } from '@/lib/api/recommendations';
-import { fetchMyProfile, UserProfile } from '@/lib/api/users';
+import { fetchMyProfile, UserProfile, deleteMyAccount, updateNotificationPreferences } from '@/lib/api/users';
 import { useAuth } from '@/contexts/AuthContext';
+import { logout } from '@/lib/firebase/auth';
 import EditProfileModal from '@/components/EditProfileModal';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 
@@ -63,7 +65,10 @@ interface SubscribedClubData extends Subscription {
 
 export default function MyPagePage() {
   const { user, userProfile } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [subscriptions, setSubscriptions] = useState<SubscribedClubData[]>([]);
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
@@ -130,6 +135,12 @@ export default function MyPagePage() {
       const response = await fetchMyProfile();
       if (response.data) {
         setFullUserProfile(response.data);
+        if (response.data.notification_preferences) {
+          setNotificationSettings({
+            emailNotifications: response.data.notification_preferences.email_notifications,
+            eventReminders: response.data.notification_preferences.event_reminders,
+          });
+        }
       }
     } catch (err) {
       console.error('Failed to load user profile:', err);
@@ -369,11 +380,40 @@ export default function MyPagePage() {
     }
   };
 
-  const handleToggleNotification = (type: 'emailNotifications' | 'eventReminders') => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
+  const handleToggleNotification = async (type: 'emailNotifications' | 'eventReminders') => {
+    const next = {
+      ...notificationSettings,
+      [type]: !notificationSettings[type],
+    };
+    setNotificationSettings(next);
+    try {
+      await updateNotificationPreferences({
+        email_notifications: next.emailNotifications,
+        event_reminders: next.eventReminders,
+      });
+    } catch (err) {
+      console.error('Failed to update notification preferences:', err);
+      setNotificationSettings(notificationSettings);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await deleteMyAccount();
+      if (response.error) {
+        alert(response.error);
+        return;
+      }
+      await logout();
+      router.push('/welcome');
+    } catch (err) {
+      console.error('Delete account error:', err);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
   };
 
   const handleUnsubscribe = async (clubId: string) => {
@@ -1307,7 +1347,7 @@ export default function MyPagePage() {
                   </div>
                   <button 
                     className={styles.deleteAccountButton}
-                    onClick={() => alert('Account deletion requires additional verification. Please contact support.')}
+                    onClick={() => setShowDeleteModal(true)}
                   >
                     Delete Account
                   </button>
@@ -1333,6 +1373,33 @@ export default function MyPagePage() {
               alert('Password changed successfully!');
             }}
           />
+
+          {showDeleteModal && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.deleteModal}>
+                <h2 className={styles.deleteModalTitle}>Delete Account</h2>
+                <p className={styles.deleteModalMessage}>
+                  Are you sure you want to permanently delete your account? This action cannot be undone.
+                </p>
+                <div className={styles.deleteModalActions}>
+                  <button
+                    className={styles.deleteModalCancel}
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={styles.deleteModalConfirm}
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'OK'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

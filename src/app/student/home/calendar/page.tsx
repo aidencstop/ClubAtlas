@@ -115,24 +115,23 @@ export default function CalendarPage() {
       });
 
       if (response.data) {
-        const calendarEvents: CalendarEvent[] = await Promise.all(
-          response.data.events.map(async (apiEvent: ApiEvent, idx: number) => {
+        const apiEvents = response.data.events;
+
+        const uniqueClubIds = [...new Set(apiEvents.map(e => e.club_id))];
+        const clubResults = await Promise.all(
+          uniqueClubIds.map(id => getClub(id).catch(() => null))
+        );
+        const clubMap: Record<string, { name: string; banner_url?: string; logo_url?: string }> = {};
+        uniqueClubIds.forEach((id, idx) => {
+          const data = clubResults[idx]?.data;
+          if (data) {
+            clubMap[id] = { name: data.name, banner_url: data.banner_url, logo_url: data.logo_url };
+          }
+        });
+
+        const calendarEvents: CalendarEvent[] = apiEvents.map((apiEvent: ApiEvent, idx: number) => {
             const startDate = new Date(apiEvent.start_datetime);
-            
-            let clubName = 'Club';
-            let bannerUrl: string | undefined;
-            let logoUrl: string | undefined;
-            try {
-              const clubResponse = await getClub(apiEvent.club_id);
-              if (clubResponse.data) {
-                clubName = clubResponse.data.name;
-                bannerUrl = clubResponse.data.banner_url;
-                logoUrl = clubResponse.data.logo_url;
-              }
-            } catch (err) {
-              console.error(`Failed to fetch club ${apiEvent.club_id}:`, err);
-            }
-            
+            const club = clubMap[apiEvent.club_id];
             return {
               id: apiEvent.id || '',
               date: startDate.getDate(),
@@ -140,16 +139,15 @@ export default function CalendarPage() {
               title: apiEvent.title,
               color: eventColors[idx % eventColors.length],
               club_id: apiEvent.club_id,
-              club_name: clubName,
-              banner_url: bannerUrl,
-              logo_url: logoUrl,
+              club_name: club?.name ?? 'Club',
+              banner_url: club?.banner_url,
+              logo_url: club?.logo_url,
               description: apiEvent.description,
               location: apiEvent.location,
               start_datetime: startDate,
               attendees: apiEvent.attendees || []
             };
-          })
-        );
+          });
 
         setEvents(calendarEvents);
 

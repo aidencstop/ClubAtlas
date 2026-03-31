@@ -60,8 +60,8 @@ class RecommendationService:
             RecommendationResult
         """
         # 1. 모든 활성 동아리 가져오기
-        all_clubs = await club_service.get_clubs(limit=100)
-        
+        all_clubs, _ = await club_service.get_clubs(limit=100)
+
         if not all_clubs:
             return RecommendationResult(
                 user_id=user_id,

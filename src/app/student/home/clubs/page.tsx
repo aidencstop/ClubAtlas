@@ -32,13 +32,17 @@ export default function BrowseClubsPage() {
   const [error, setError] = useState<string | null>(null);
   const [subscribedClubIds, setSubscribedClubIds] = useState<Set<string>>(new Set());
   const [subscribingClubId, setSubscribingClubId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState('name');
   
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 500;
+
+  useEffect(() => {
+    loadSubscriptions();
+  }, []);
 
   useEffect(() => {
     loadClubs(1, true);
-    loadSubscriptions();
-  }, [selectedCategory, selectedActivityType]);
+  }, [selectedCategory]);
 
   const loadSubscriptions = async () => {
     try {
@@ -71,10 +75,6 @@ export default function BrowseClubsPage() {
 
       if (selectedCategory !== 'All') {
         params.categories = selectedCategory;
-      }
-
-      if (selectedActivityType !== 'All') {
-        params.activity_type = selectedActivityType;
       }
 
       const response = await getClubs(params);
@@ -160,36 +160,62 @@ export default function BrowseClubsPage() {
                           selectedTime !== 'All' || 
                           selectedCommitment !== 'All';
 
-  const filteredClubs = clubs.filter(club => {
+  const filteredAndSortedClubs = clubs.filter(club => {
     // Search filter
     const matchesSearch = searchQuery === '' || 
                          club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          club.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          club.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    // Activity Type filter
+    const matchesActivityType = selectedActivityType === 'All' ||
+      (Array.isArray(club.activity_type)
+        ? club.activity_type.includes(selectedActivityType)
+        : club.activity_type === selectedActivityType);
     
     // Day filter
     let matchesDay = true;
-    if (selectedDay !== 'All' && club.meeting_schedule && club.meeting_schedule.length > 0) {
-      matchesDay = club.meeting_schedule.some(schedule => schedule.day === selectedDay);
+    if (selectedDay !== 'All') {
+      const schedule = club.meeting_schedule;
+      if (!schedule || schedule.length === 0) {
+        matchesDay = false;
+      } else {
+        matchesDay = schedule.some(s => s.day === selectedDay);
+      }
     }
-    
+
     // Time filter
     let matchesTime = true;
-    if (selectedTime !== 'All' && club.meeting_schedule && club.meeting_schedule.length > 0) {
-      matchesTime = club.meeting_schedule.some(schedule => {
-        if (schedule.time_slots && schedule.time_slots.length > 0) {
-          const timeSlot = schedule.time_slots[0];
-          const hour = parseInt(timeSlot.split(':')[0]);
-          
+    if (selectedTime !== 'All') {
+      const schedule = club.meeting_schedule;
+      if (!schedule || schedule.length === 0) {
+        matchesTime = false;
+      } else {
+        matchesTime = schedule.some(s => {
+          if (!s.time_slots || s.time_slots.length === 0) return false;
+          const hour = parseInt(s.time_slots[0].split(':')[0]);
           if (selectedTime === 'Morning') return hour >= 6 && hour < 12;
           if (selectedTime === 'Afternoon') return hour >= 12 && hour < 17;
           if (selectedTime === 'Evening') return hour >= 17 && hour < 23;
-        }
-        return false;
-      });
+          return false;
+        });
+      }
     }
     
-    return matchesSearch && matchesDay && matchesTime;
+    return matchesSearch && matchesActivityType && matchesDay && matchesTime;
+  }).sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === 'members') {
+      return (b.stats?.total_subscribers ?? 0) - (a.stats?.total_subscribers ?? 0);
+    }
+    if (sortBy === 'recent') {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    }
+    return 0;
   });
 
   const hasMore = clubs.length < totalClubs;
@@ -352,13 +378,16 @@ export default function BrowseClubsPage() {
           {/* Results Header */}
           <div className={styles.resultsHeader}>
             <p className={styles.resultsCount}>
-              {isLoading ? 'Loading...' : `${filteredClubs.length} clubs found`}
+              {isLoading ? 'Loading...' : `${filteredAndSortedClubs.length} clubs found`}
             </p>
-            <select className={styles.sortSelect}>
-              <option>Sort by: Relevance</option>
-              <option>Sort by: Name</option>
-              <option>Sort by: Members</option>
-              <option>Sort by: Recently Added</option>
+            <select
+              className={styles.sortSelect}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="name">Sort by: Name</option>
+              <option value="members">Sort by: Members</option>
+              <option value="recent">Sort by: Recently Added</option>
             </select>
           </div>
 
@@ -390,11 +419,11 @@ export default function BrowseClubsPage() {
           {/* Clubs Grid */}
           {!isLoading && !error && (
             <div className={styles.clubsGrid}>
-              {filteredClubs.map((club) => {
+              {filteredAndSortedClubs.map((club) => {
                 const meetingInfo = getMeetingInfo(club);
                 const displayImage = club.banner_url || club.logo_url || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=192&fit=crop';
                 const mainCategory = club.categories && club.categories.length > 0 ? club.categories[0] : 'General';
-                const memberCount = club.stats?.total_members || 0;
+                const memberCount = club.stats?.total_subscribers || 0;
                 const isSubscribed = subscribedClubIds.has(club.id);
                 const isSubscribing = subscribingClubId === club.id;
 
@@ -462,7 +491,7 @@ export default function BrowseClubsPage() {
           )}
 
           {/* Empty State */}
-          {!isLoading && !error && filteredClubs.length === 0 && (
+          {!isLoading && !error && filteredAndSortedClubs.length === 0 && (
             <div style={{ 
               padding: '60px 20px', 
               textAlign: 'center',
@@ -473,7 +502,7 @@ export default function BrowseClubsPage() {
           )}
 
           {/* Load More Button */}
-          {!isLoading && !error && hasMore && filteredClubs.length > 0 && (
+          {!isLoading && !error && hasMore && filteredAndSortedClubs.length > 0 && (
             <div className={styles.loadMoreWrapper}>
               <button 
                 className={styles.loadMoreButton}

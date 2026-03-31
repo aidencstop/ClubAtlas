@@ -52,9 +52,16 @@ export async function apiRequest<T>(
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
+      const detail = data?.detail;
+      const errorMessage =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((e: { msg?: string }) => e.msg ?? String(e)).join(', ')
+          : data?.message || 'An error occurred';
       return {
         status: response.status,
-        error: data?.detail || data?.message || 'An error occurred',
+        error: errorMessage,
       };
     }
 

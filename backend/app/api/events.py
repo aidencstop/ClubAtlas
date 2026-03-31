@@ -408,7 +408,15 @@ async def send_event_reminder(
 
         attendee_ids = set(event.get('attendees', []))
 
-        recipient_ids = list(subscriber_ids | attendee_ids)
+        all_candidate_ids = list(subscriber_ids | attendee_ids)
+
+        user_profiles = await user_service.get_users_by_ids(all_candidate_ids)
+        recipient_ids = [
+            uid for uid in all_candidate_ids
+            if user_profiles.get(uid, {}).get(
+                'notification_preferences', {}
+            ).get('event_reminders', True)
+        ]
 
         if not recipient_ids:
             return {"sent": 0, "message": "No recipients found"}
