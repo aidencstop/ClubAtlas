@@ -146,11 +146,6 @@ export default function RequestAccessPage() {
       setError('Please enter a valid email address.');
       return;
     }
-    if (formData.reason.length < 10) {
-      setError('Reason must be at least 10 characters.');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -353,26 +348,6 @@ export default function RequestAccessPage() {
               readOnly
               disabled
             />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="reason" className={styles.label}>
-              Reason for Request
-            </label>
-            <textarea
-              id="reason"
-              name="reason"
-              className={styles.textarea}
-              placeholder="Explain why you want to become a club leader (minimum 10 characters)"
-              value={formData.reason}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              rows={5}
-            />
-            <p className={styles.hint}>
-              Minimum 10 characters. Be specific about your qualifications and plans.
-            </p>
           </div>
 
           <button

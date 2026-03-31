@@ -1,5 +1,29 @@
 import { apiRequest, ApiResponse } from './client';
 
+export interface StudentInfo {
+  uid: string;
+  display_name?: string;
+  email: string;
+  subscription_count: number;
+  created_at?: string;
+}
+
+export interface StudentsListResponse {
+  students: StudentInfo[];
+  total: number;
+}
+
+export async function getStudents(): Promise<ApiResponse<StudentsListResponse>> {
+  return apiRequest<StudentsListResponse>('/api/superadmin/students', { method: 'GET' });
+}
+
+export async function deleteStudent(uid: string): Promise<ApiResponse<{ message: string; uid: string }>> {
+  return apiRequest<{ message: string; uid: string }>(
+    `/api/superadmin/students/${uid}`,
+    { method: 'DELETE' }
+  );
+}
+
 export interface ClubLeaderInfo {
   uid: string;
   display_name?: string;

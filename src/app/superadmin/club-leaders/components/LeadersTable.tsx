@@ -30,10 +30,16 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState<Leader | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     loadLeaders();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const loadLeaders = async () => {
     setIsLoading(true);
@@ -146,11 +152,21 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
       )
     : leaders;
 
+  const totalPages = Math.ceil(filteredLeaders.length / PAGE_SIZE);
+  const pagedLeaders = filteredLeaders.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.tableHeader}>
-        <div className={styles.headerCell} style={{ width: '205.5px' }}>Name</div>
-        <div className={styles.headerCell} style={{ width: '205.5px' }}>Email</div>
+        <div className={styles.headerCell} style={{ width: '160px' }}>Name</div>
+        <div className={styles.headerCell} style={{ width: '280px' }}>Email</div>
         <div className={styles.headerCell} style={{ width: '131.656px' }}>Club</div>
         <div className={styles.headerCell} style={{ width: '131.672px' }}>Role</div>
         <div className={styles.headerCell} style={{ width: '57.828px' }}>Status</div>
@@ -158,21 +174,21 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
       </div>
 
       <div className={styles.tableBody}>
-        {filteredLeaders.length === 0 ? (
+        {pagedLeaders.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
             {query ? 'No leaders found matching your search.' : 'No active club leaders found.'}
           </div>
         ) : (
-          filteredLeaders.map((leader) => (
+          pagedLeaders.map((leader) => (
           <div key={leader.rowKey} className={styles.tableRow}>
-            <div className={styles.nameCell} style={{ width: '205.5px' }}>
+            <div className={styles.nameCell} style={{ width: '160px' }}>
               <div className={styles.avatar}>
                 {leader.initial}
               </div>
               <span className={styles.name}>{leader.name}</span>
             </div>
             
-            <div className={styles.emailCell} style={{ width: '205.5px' }}>
+            <div className={styles.emailCell} style={{ width: '280px' }}>
               {leader.email}
             </div>
             
@@ -210,6 +226,34 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
           ))
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.pageButton}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            ‹
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              className={`${styles.pageButton} ${currentPage === page ? styles.pageButtonActive : ''}`}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            className={styles.pageButton}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            ›
+          </button>
+        </div>
+      )}
 
       <EditLeaderModal
         isOpen={isEditModalOpen}

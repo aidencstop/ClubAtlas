@@ -29,6 +29,8 @@ from app.models.superadmin import (
     ClubCreateBySuperAdmin,
     ClubUpdateBySuperAdmin,
     StudentStatistics,
+    StudentInfo,
+    StudentsListResponse,
     ActivityChartData,
     AnalyticsOverview,
     TrafficChartData,
@@ -1090,6 +1092,52 @@ async def get_club_statistics(
 # Student Users APIs
 # ============================================================================
 
+@router.get("/students", response_model=StudentsListResponse)
+async def get_students(
+    current_user: dict = Depends(require_super_admin)
+):
+    """
+    학생 사용자 목록 조회 (SuperAdmin 전용)
+    """
+    try:
+        all_students = await user_service.query_documents(
+            user_service.COLLECTION,
+            filters=[('role', '==', 'student')],
+            limit=100000
+        )
+
+        active_subscriptions = await subscription_service.query_documents(
+            subscription_service.COLLECTION,
+            filters=[('is_active', '==', True)],
+            limit=100000
+        )
+
+        user_sub_count: dict = {}
+        for sub in active_subscriptions:
+            user_id = sub.get('user_id')
+            if user_id:
+                user_sub_count[user_id] = user_sub_count.get(user_id, 0) + 1
+
+        students_info = [
+            StudentInfo(
+                uid=s.get('id', ''),
+                display_name=s.get('display_name'),
+                email=s.get('email', ''),
+                subscription_count=user_sub_count.get(s.get('id', ''), 0),
+                created_at=s.get('created_at')
+            )
+            for s in all_students
+        ]
+
+        return StudentsListResponse(students=students_info, total=len(students_info))
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch students: {str(e)}"
+        )
+
+
 @router.get("/students/statistics", response_model=StudentStatistics)
 async def get_student_statistics(
     current_user: dict = Depends(require_super_admin)
@@ -1153,6 +1201,59 @@ async def get_student_statistics(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch student statistics: {str(e)}"
+        )
+
+
+@router.delete("/students/{uid}")
+async def delete_student(
+    uid: str,
+    current_user: dict = Depends(require_super_admin)
+):
+    """
+    학생 사용자 삭제 (SuperAdmin 전용)
+
+    - Firestore users 컬렉션에서 해당 사용자 삭제
+    - 해당 사용자의 활성 구독도 비활성화
+    """
+    try:
+        user = await user_service.get_user_profile(uid)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        if user.get('role') not in ['student', None]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User is not a student"
+            )
+
+        # 해당 사용자의 활성 구독 비활성화
+        user_subscriptions = await subscription_service.query_documents(
+            subscription_service.COLLECTION,
+            filters=[('user_id', '==', uid), ('is_active', '==', True)],
+            limit=1000
+        )
+        for sub in user_subscriptions:
+            await subscription_service.update_document(
+                subscription_service.COLLECTION,
+                sub['id'],
+                {'is_active': False}
+            )
+
+        # Firestore에서 사용자 삭제
+        await user_service.delete_document(user_service.COLLECTION, uid)
+
+        return {"message": "Student deleted successfully", "uid": uid}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete student: {str(e)}"
         )
 
 

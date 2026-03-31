@@ -6,7 +6,6 @@
   flex-direction: column;
   gap: 24px;
   overflow-y: auto;
-  background: linear-gradient(180deg, rgba(232, 240, 227, 0.4) 0%, rgba(255, 255, 255, 0) 24%);
 }
 
 .title {

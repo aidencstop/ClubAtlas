@@ -12,7 +12,7 @@
 }
 
 .contentArea {
-  flex: 1;
+  flex: 1 0 900px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -65,6 +65,11 @@
 }
 
 @media (max-width: 1200px) {
+  .mainContent {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -72,18 +77,14 @@
 
 @media (max-width: 768px) {
   .mainContent {
-    padding-left: 24px;
-    padding-right: 24px;
     padding-top: 120px;
   }
-  
-  .bottomGrid {
+
+  .statsGrid {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 768px) {
-  .statsGrid {
+  .bottomGrid {
     grid-template-columns: 1fr;
   }
 }

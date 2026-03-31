@@ -79,6 +79,8 @@ export default function MyPagePage() {
   const [historyFilter, setHistoryFilter] = useState<'all' | 'attended' | 'missed'>('all');
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
+  const HISTORY_PAGE_SIZE = 5;
   
   const [bookmarkedClubs, setBookmarkedClubs] = useState<BookmarkedClub[]>([]);
   const [isLoadingBookmarks, setIsLoadingBookmarks] = useState(false);
@@ -126,6 +128,7 @@ export default function MyPagePage() {
 
   useEffect(() => {
     if (activeTab === 'history') {
+      setHistoryPage(1);
       loadAttendanceHistory();
     }
   }, [historyFilter]);
@@ -1054,40 +1057,78 @@ export default function MyPagePage() {
                     }}>
                       No event history found.
                     </div>
-                  ) : (
-                    <div className={styles.eventTimelineList}>
-                      {attendanceRecords.map((record, index) => {
-                        const isAttended = record.status === 'attended';
-                        const eventDate = new Date(record.event.end_datetime);
-                        const formattedDate = eventDate.toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        });
+                  ) : (() => {
+                    const totalPages = Math.ceil(attendanceRecords.length / HISTORY_PAGE_SIZE);
+                    const pagedRecords = attendanceRecords.slice(
+                      (historyPage - 1) * HISTORY_PAGE_SIZE,
+                      historyPage * HISTORY_PAGE_SIZE
+                    );
 
-                        return (
-                          <div
-                            key={index}
-                            className={isAttended ? styles.eventItemAttended : styles.eventItemMissed}
-                          >
-                            <div className={styles.eventItemContent}>
-                              <div className={isAttended ? styles.eventIconAttended : styles.eventIconMissed}>
-                                <img src={isAttended ? eventCheckIcon : eventXIcon} alt="" />
+                    return (
+                      <>
+                        <div className={styles.eventTimelineList}>
+                          {pagedRecords.map((record, index) => {
+                            const isAttended = record.status === 'attended';
+                            const eventDate = new Date(record.event.end_datetime);
+                            const formattedDate = eventDate.toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            });
+
+                            return (
+                              <div
+                                key={index}
+                                className={isAttended ? styles.eventItemAttended : styles.eventItemMissed}
+                              >
+                                <div className={styles.eventItemContent}>
+                                  <div className={isAttended ? styles.eventIconAttended : styles.eventIconMissed}>
+                                    <img src={isAttended ? eventCheckIcon : eventXIcon} alt="" />
+                                  </div>
+                                  <div className={styles.eventItemInfo}>
+                                    <p className={styles.eventItemClub}>{record.club_name}</p>
+                                    <h3 className={styles.eventItemEvent}>{record.event.title}</h3>
+                                    <p className={styles.eventItemDate}>{formattedDate}</p>
+                                  </div>
+                                </div>
+                                <div className={isAttended ? styles.eventStatusAttended : styles.eventStatusMissed}>
+                                  {isAttended ? 'Attended' : 'Missed'}
+                                </div>
                               </div>
-                              <div className={styles.eventItemInfo}>
-                                <p className={styles.eventItemClub}>{record.club_name}</p>
-                                <h3 className={styles.eventItemEvent}>{record.event.title}</h3>
-                                <p className={styles.eventItemDate}>{formattedDate}</p>
-                              </div>
-                            </div>
-                            <div className={isAttended ? styles.eventStatusAttended : styles.eventStatusMissed}>
-                              {isAttended ? 'Attended' : 'Missed'}
-                            </div>
+                            );
+                          })}
+                        </div>
+
+                        {totalPages > 1 && (
+                          <div className={styles.pagination}>
+                            <button
+                              className={styles.pageButton}
+                              onClick={() => setHistoryPage(p => p - 1)}
+                              disabled={historyPage === 1}
+                            >
+                              ‹
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                              <button
+                                key={page}
+                                className={`${styles.pageButton} ${historyPage === page ? styles.pageButtonActive : ''}`}
+                                onClick={() => setHistoryPage(page)}
+                              >
+                                {page}
+                              </button>
+                            ))}
+                            <button
+                              className={styles.pageButton}
+                              onClick={() => setHistoryPage(p => p + 1)}
+                              disabled={historyPage === totalPages}
+                            >
+                              ›
+                            </button>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
             </div>

@@ -35,6 +35,7 @@
   cursor: pointer;
   letter-spacing: -0.1504px;
   padding: 0;
+  text-decoration: none;
 }
 
 .viewAllLink:hover {

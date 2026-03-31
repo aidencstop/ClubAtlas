@@ -87,7 +87,6 @@ export default function PendingRequestsTable() {
           <div className={styles.headerCell} style={{ width: '150px' }}>Requested Club</div>
           <div className={styles.headerCell} style={{ width: '120px' }}>Position</div>
           <div className={styles.headerCell} style={{ width: '100px' }}>Date</div>
-          <div className={styles.headerCell} style={{ width: '250px' }}>Reason</div>
           <div className={styles.headerCell} style={{ width: '100px' }}>Actions</div>
         </div>
 
@@ -115,10 +114,6 @@ export default function PendingRequestsTable() {
               
               <div className={styles.dateCell} style={{ width: '100px' }}>
                 {formatDate(request.requested_at)}
-              </div>
-              
-              <div className={styles.reasonCell} style={{ width: '250px' }}>
-                {request.reason}
               </div>
               
               <div className={styles.actionsCell} style={{ width: '100px' }}>

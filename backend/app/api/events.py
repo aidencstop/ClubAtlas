@@ -3,7 +3,7 @@ Events API 엔드포인트
 """
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from datetime import datetime
+from datetime import datetime, timezone
 from app.models.event import (
     Event,
     EventCreate,
@@ -187,6 +187,115 @@ async def get_my_calendar_events(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to get calendar events"
+        )
+
+
+@router.get("/my-attendance", response_model=AttendanceHistoryResponse)
+async def get_my_attendance_history(
+    status_filter: Optional[str] = Query(None, description="attended, missed, all"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    내 이벤트 출석 이력 조회
+
+    - 구독한 동아리의 과거 이벤트 기준
+    - 참석한 이벤트와 불참한 이벤트 구분
+    - 출석 통계 제공
+    """
+    user_id = current_user['uid']
+
+    try:
+        from app.services.firestore_service import subscription_service
+
+        subscriptions = await subscription_service.get_user_subscriptions(
+            user_id,
+            active_only=True
+        )
+
+        if not subscriptions:
+            return AttendanceHistoryResponse(
+                records=[],
+                stats=AttendanceStats(
+                    total_events=0,
+                    attended=0,
+                    missed=0,
+                    attendance_rate=0.0
+                )
+            )
+
+        club_ids = [sub['club_id'] for sub in subscriptions]
+
+        now = datetime.now(timezone.utc)
+
+        all_events = []
+        club_names = {}
+
+        for club_id in club_ids:
+            club = await club_service.get_club(club_id)
+            if club:
+                club_names[club_id] = club['name']
+
+            events = await event_service.get_events(
+                club_id=club_id,
+                status=None,
+                start_date=None,
+                end_date=now,
+                limit=100
+            )
+
+            for event in events:
+                end_dt = event['end_datetime']
+                if end_dt.tzinfo is None:
+                    end_dt = end_dt.replace(tzinfo=timezone.utc)
+                if end_dt < now:
+                    all_events.append((club_id, event))
+
+        records = []
+        attended_count = 0
+        missed_count = 0
+
+        for club_id, event_data in all_events:
+            is_attended = user_id in event_data.get('attendees', [])
+            attendance_status = 'attended' if is_attended else 'missed'
+
+            if is_attended:
+                attended_count += 1
+            else:
+                missed_count += 1
+
+            if status_filter and status_filter != 'all':
+                if status_filter != attendance_status:
+                    continue
+
+            record = AttendanceRecord(
+                event=Event(**event_data),
+                status=attendance_status,
+                club_name=club_names.get(club_id, 'Unknown Club')
+            )
+            records.append(record)
+
+        records.sort(key=lambda x: x.event.end_datetime, reverse=True)
+
+        total_events = attended_count + missed_count
+        attendance_rate = (attended_count / total_events * 100) if total_events > 0 else 0.0
+
+        stats = AttendanceStats(
+            total_events=total_events,
+            attended=attended_count,
+            missed=missed_count,
+            attendance_rate=round(attendance_rate, 1)
+        )
+
+        return AttendanceHistoryResponse(
+            records=records,
+            stats=stats
+        )
+
+    except Exception as e:
+        print(f"Get attendance history error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get attendance history"
         )
 
 
@@ -451,115 +560,3 @@ async def send_event_reminder(
         )
 
 
-@router.get("/my-attendance", response_model=AttendanceHistoryResponse)
-async def get_my_attendance_history(
-    status_filter: Optional[str] = Query(None, description="attended, missed, all"),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    내 이벤트 출석 이력 조회
-    
-    - 구독한 동아리의 과거 이벤트 기준
-    - 참석한 이벤트와 불참한 이벤트 구분
-    - 출석 통계 제공
-    """
-    user_id = current_user['uid']
-    
-    try:
-        from app.services.firestore_service import subscription_service
-        
-        # 구독한 동아리 가져오기
-        subscriptions = await subscription_service.get_user_subscriptions(
-            user_id,
-            active_only=True
-        )
-        
-        if not subscriptions:
-            return AttendanceHistoryResponse(
-                records=[],
-                stats=AttendanceStats(
-                    total_events=0,
-                    attended=0,
-                    missed=0,
-                    attendance_rate=0.0
-                )
-            )
-        
-        club_ids = [sub['club_id'] for sub in subscriptions]
-        
-        # 현재 시간 이전의 이벤트만 (과거 이벤트)
-        now = datetime.now()
-        
-        all_events = []
-        club_names = {}
-        
-        # 각 클럽의 과거 이벤트 가져오기
-        for club_id in club_ids:
-            club = await club_service.get_club(club_id)
-            if club:
-                club_names[club_id] = club['name']
-            
-            events = await event_service.get_events(
-                club_id=club_id,
-                status=None,  # 모든 상태
-                start_date=None,
-                end_date=now,
-                limit=100
-            )
-            
-            for event in events:
-                # 종료 시간이 현재보다 이전인 것만
-                if event['end_datetime'] < now:
-                    all_events.append((club_id, event))
-        
-        # 출석 기록 생성
-        records = []
-        attended_count = 0
-        missed_count = 0
-        
-        for club_id, event_data in all_events:
-            is_attended = user_id in event_data.get('attendees', [])
-            attendance_status = 'attended' if is_attended else 'missed'
-            
-            if is_attended:
-                attended_count += 1
-            else:
-                missed_count += 1
-            
-            # 필터링 적용
-            if status_filter and status_filter != 'all':
-                if status_filter != attendance_status:
-                    continue
-            
-            record = AttendanceRecord(
-                event=Event(**event_data),
-                status=attendance_status,
-                club_name=club_names.get(club_id, 'Unknown Club')
-            )
-            records.append(record)
-        
-        # 최신순 정렬
-        records.sort(key=lambda x: x.event.end_datetime, reverse=True)
-        
-        # 통계 계산
-        total_events = attended_count + missed_count
-        attendance_rate = (attended_count / total_events * 100) if total_events > 0 else 0.0
-        
-        stats = AttendanceStats(
-            total_events=total_events,
-            attended=attended_count,
-            missed=missed_count,
-            attendance_rate=round(attendance_rate, 1)
-        )
-        
-        return AttendanceHistoryResponse(
-            records=records,
-            stats=stats
-        )
-        
-    except Exception as e:
-        print(f"Get attendance history error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get attendance history"
-        )

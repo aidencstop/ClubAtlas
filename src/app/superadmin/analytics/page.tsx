@@ -65,11 +65,6 @@ export default function AnalyticsPage() {
 
           <div className={styles.statsGrid}>
             <AnalyticsCard
-              value={loading ? "..." : (analytics?.total_page_views ?? 0).toLocaleString()}
-              label="Total Page Views"
-              subtext=""
-            />
-            <AnalyticsCard
               value={loading ? "..." : (analytics?.club_profile_views ?? 0).toLocaleString()}
               label="Club Profile Views"
               subtext=""
@@ -77,11 +72,6 @@ export default function AnalyticsPage() {
             <AnalyticsCard
               value={loading ? "..." : analytics ? `${analytics.avg_engagement.toFixed(1)}%` : "0%"}
               label="Avg Engagement"
-              subtext=""
-            />
-            <AnalyticsCard
-              value={loading ? "..." : analytics ? `${analytics.avg_session_time.toFixed(1)} min` : "0 min"}
-              label="Session Time"
               subtext=""
             />
           </div>

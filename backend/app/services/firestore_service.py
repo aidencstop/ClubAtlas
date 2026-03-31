@@ -571,21 +571,36 @@ class EventService(FirestoreService):
             limit=None
         )
         
+        from datetime import timezone as _tz
+
+        def _make_aware(dt):
+            if dt is not None and dt.tzinfo is None:
+                return dt.replace(tzinfo=_tz.utc)
+            return dt
+
+        aware_start = _make_aware(start_date)
+        aware_end = _make_aware(end_date)
+
         filtered_events = []
         for event in events:
             if status and event.get('status') != status:
                 continue
-            
+
             event_start = event.get('start_datetime')
             if event_start:
-                if start_date and event_start < start_date:
+                aware_event_start = _make_aware(event_start)
+                if aware_start and aware_event_start < aware_start:
                     continue
-                if end_date and event_start > end_date:
+                if aware_end and aware_event_start > aware_end:
                     continue
-            
+
             filtered_events.append(event)
-        
-        filtered_events.sort(key=lambda x: x.get('start_datetime', datetime.min))
+
+        def _sort_key(x):
+            dt = x.get('start_datetime')
+            return _make_aware(dt) if dt is not None else datetime.min.replace(tzinfo=_tz.utc)
+
+        filtered_events.sort(key=_sort_key)
         start_idx = offset
         end_idx = offset + limit
         return filtered_events[start_idx:end_idx]

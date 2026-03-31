@@ -44,7 +44,7 @@ class LeaderAccessRequest(BaseModel):
     requested_club_id: Optional[str] = Field(None, description="기존 동아리 ID (선택 시)")
     requested_club_name: Optional[str] = Field(None, description="신규 동아리 이름 (생성 요청 시)")
     requested_role: str = Field(..., description="요청할 직책 (President, Vice President 등)")
-    reason: str = Field(..., min_length=10, description="요청 사유 (최소 10자)")
+    reason: Optional[str] = Field(default='', description="요청 사유")
 
 
 class LeaderAccessRequestResponse(BaseModel):

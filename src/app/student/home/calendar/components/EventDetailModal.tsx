@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './EventDetailModal.module.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { attendEvent, cancelAttendance } from '@/lib/api/events';
+import { subscribeToClub, unsubscribeFromClub, checkSubscription } from '@/lib/api/subscriptions';
 
 const closeIcon = "/images/icons/calendar/close.svg";
 const clockIcon = "/images/icons/calendar/clock.svg";
@@ -40,6 +41,8 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
   const router = useRouter();
   const [attendanceStatus, setAttendanceStatus] = useState<'planning' | 'checked-in' | 'cannot'>('cannot');
   const [showSavedNotification, setShowSavedNotification] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const isPast = event.start_datetime < new Date();
 
@@ -50,6 +53,37 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
       setAttendanceStatus('cannot');
     }
   }, [event.id, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    checkSubscription(event.club_id).then((res) => {
+      if (res.data) {
+        setIsSubscribed(res.data.is_subscribed);
+      }
+    });
+  }, [event.club_id, user]);
+
+  const handleSubscribeToggle = async () => {
+    if (isSubscribing) return;
+    setIsSubscribing(true);
+    try {
+      if (isSubscribed) {
+        const res = await unsubscribeFromClub(event.club_id);
+        if (!res.error) {
+          setIsSubscribed(false);
+        }
+      } else {
+        const res = await subscribeToClub(event.club_id);
+        if (!res.error) {
+          setIsSubscribed(true);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to toggle subscription:', err);
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   const handleAttendanceChange = async (status: 'planning' | 'checked-in' | 'cannot') => {
     if (isPast) return;
@@ -233,9 +267,13 @@ export default function EventDetailModal({ onClose, event }: EventDetailModalPro
 
           {/* 액션 버튼 */}
           <div className={styles.actionButtons}>
-            <button className={styles.subscribeButton}>
+            <button
+              className={styles.subscribeButton}
+              onClick={handleSubscribeToggle}
+              disabled={isSubscribing}
+            >
               <img src={bellIcon} alt="Subscribe" className={styles.buttonIcon} />
-              Subscribe to Updates
+              {isSubscribed ? 'Subscribed' : 'Subscribe to Updates'}
             </button>
             <button
               className={styles.viewProfileButton}

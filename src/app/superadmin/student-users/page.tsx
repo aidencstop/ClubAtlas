@@ -7,7 +7,7 @@ import styles from './StudentUsers.module.css';
 import SuperAdminHeader from '../dashboard/components/SuperAdminHeader';
 import SuperAdminSidebar from '../dashboard/components/SuperAdminSidebar';
 import StatCard from './components/StatCard';
-import ActivityChart from './components/ActivityChart';
+import StudentsTable from './components/StudentsTable';
 
 interface StudentStats {
   total_users: number;
@@ -20,6 +20,7 @@ export default function StudentUsersPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<StudentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [verifyEmail, setVerifyEmail] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyResult, setVerifyResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -111,26 +112,31 @@ export default function StudentUsersPage() {
               subtextColor="green"
             />
             <StatCard
-              value={loading ? "..." : (stats?.active_this_month ?? 0).toLocaleString()}
-              label="Active This Month"
-              subtext={loading ? "" : stats ? `${Math.round((stats.active_this_month / stats.total_users) * 100)}% of total` : ""}
-              subtextColor="gray"
-            />
-            <StatCard
               value={loading ? "..." : (stats?.new_this_week ?? 0).toString()}
               label="New This Week"
               subtext=""
               subtextColor="green"
             />
-            <StatCard
-              value={loading ? "..." : (stats?.avg_subscriptions ?? 0).toString()}
-              label="Avg Subscriptions"
-              subtext="Per user"
-              subtextColor="gray"
-            />
           </div>
 
-          <ActivityChart />
+          <div className={styles.tableWrapper}>
+            <div className={styles.searchSection}>
+              <div className={styles.searchContainer}>
+                <img src="/images/icons/superadmin/club-leaders/search.svg" alt="Search" className={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Search students by name or email..."
+                  className={styles.searchInput}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button type="button" className={styles.searchButton}>
+                Search
+              </button>
+            </div>
+            <StudentsTable searchQuery={searchQuery} />
+          </div>
 
           {/* Force Email Verification */}
           <div style={{

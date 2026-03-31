@@ -1228,6 +1228,51 @@
   border-radius: 10px;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.pageButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #364153;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pageButton:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #d1d5dc;
+}
+
+.pageButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageButtonActive {
+  background: linear-gradient(135deg, #13412f 0%, #2a644d 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.pageButtonActive:hover {
+  background: linear-gradient(135deg, #13412f 0%, #2a644d 100%);
+  opacity: 0.9;
+}
+
 /* Saved Tab Content */
 .savedContent {
   display: flex;

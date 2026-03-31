@@ -83,6 +83,21 @@ class StudentStatistics(BaseModel):
     avg_subscriptions: float
 
 
+class StudentInfo(BaseModel):
+    """학생 사용자 정보"""
+    uid: str
+    display_name: Optional[str]
+    email: str
+    subscription_count: int
+    created_at: Optional[datetime]
+
+
+class StudentsListResponse(BaseModel):
+    """학생 사용자 목록 응답"""
+    students: List[StudentInfo]
+    total: int
+
+
 class ActivityChartData(BaseModel):
     """활동 추이 차트 데이터"""
     labels: List[str] = Field(..., description="날짜 레이블")
