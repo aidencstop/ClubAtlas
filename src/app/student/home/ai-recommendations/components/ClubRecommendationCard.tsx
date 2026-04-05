@@ -176,7 +176,7 @@ export default function ClubRecommendationCard({ recommendation, clubData }: Pro
           disabled={isLoading}
           className={`${styles.subscribeButton} ${isSubscribed ? styles.subscribeButtonActive : ''}`}
         >
-          {isLoading ? 'Loading...' : (isSubscribed ? 'Unsubscribe' : 'Subscribe')}
+          {isLoading ? 'Loading...' : (isSubscribed ? 'Saved' : 'Save')}
         </button>
       </div>
     </div>
