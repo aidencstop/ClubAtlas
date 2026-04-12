@@ -1897,3 +1897,108 @@
   cursor: not-allowed;
 }
 
+@media (max-width: 1199px) {
+  .header {
+    padding: 16px 32px;
+  }
+
+  .mainWrapper {
+    padding: 72px 32px 70px;
+  }
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding: 16px;
+  }
+
+  .mainWrapper {
+    padding: 72px 16px 40px;
+  }
+
+  .container {
+    padding: 16px 0;
+  }
+
+  .profileContent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profileStats {
+    flex-wrap: wrap;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .twoColumnGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendedGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .formRow,
+  .formNameRow {
+    grid-template-columns: 1fr;
+  }
+
+  .historyStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .clubDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .subscribedClubContent {
+    flex-direction: column;
+  }
+
+  .savedClubItem {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .savedClubItemActions {
+    flex-wrap: wrap;
+  }
+
+  .passwordSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .dangerZoneContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .clubActions {
+    flex-wrap: wrap;
+  }
+
+  .navigation {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendedGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .historyStatsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

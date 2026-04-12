@@ -6,6 +6,84 @@
   overflow: hidden;
 }
 
+.bulkActionBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: #eff6ff;
+  border-bottom: 1px solid #bedbff;
+}
+
+.bulkActionCount {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1447e6;
+  flex: 1;
+}
+
+.bulkDeleteButton {
+  height: 36px;
+  padding: 0 16px;
+  background: #e7000b;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bulkDeleteButton:hover:not(:disabled) {
+  background: #c10007;
+}
+
+.bulkDeleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulkCancelButton {
+  height: 36px;
+  padding: 0 16px;
+  background: white;
+  border: 1px solid #d1d5dc;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #364153;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bulkCancelButton:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.bulkCancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkboxCell {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #0f3a29;
+}
+
 .tableHeader {
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
@@ -47,6 +125,10 @@
 
 .tableRow:last-child {
   border-bottom: none;
+}
+
+.tableRowSelected {
+  background: #f0fdf4;
 }
 
 .nameCell {

@@ -618,3 +618,63 @@
   margin-top: 4px;
 }
 
+@media (max-width: 1199px) {
+  .header {
+    padding: 0 32px;
+  }
+
+  .mainWrapper {
+    padding: 48px 32px 70px;
+  }
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding: 0 16px;
+  }
+
+  .mainWrapper {
+    padding: 24px 16px 40px;
+  }
+
+  .titleSection {
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-size: 32px;
+    line-height: 36px;
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .viewModeCard {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .calendarCard {
+    min-height: auto;
+  }
+
+  .calendarDay {
+    min-height: 60px;
+    padding: 4px;
+  }
+
+  .dayHeader {
+    font-size: 12px;
+  }
+
+  .footer {
+    padding: 0 16px;
+  }
+}
+

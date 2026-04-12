@@ -1,6 +1,6 @@
 .panel {
   width: 512px;
-  min-width: 512px; /* 고정 너비 보장 */
+  min-width: 512px;
   height: 766px;
   background: white;
   border-radius: 0 24px 24px 0;
@@ -12,13 +12,14 @@
   gap: 32px;
   flex-shrink: 0;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .header {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 416px;
+  width: 100%;
 }
 
 .title {
@@ -45,7 +46,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  width: 416px;
+  width: 100%;
 }
 
 .fieldGroup {
@@ -155,14 +156,14 @@
 
 .divider {
   border-top: 1px solid #e5e7eb;
-  width: 416px;
+  width: 100%;
 }
 
 .footer {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  width: 416px;
+  width: 100%;
 }
 
 .footerText {
@@ -198,12 +199,33 @@
   color: #4a5565;
   text-decoration: none;
   letter-spacing: -0.1504px;
-  width: 416px;
+  width: 100%;
   text-align: left;
 }
 
 .backLink:hover {
   color: #155dfc;
   text-decoration: underline;
+}
+
+@media (max-width: 1199px) {
+  .panel {
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    height: auto;
+    min-height: 766px;
+  }
+}
+
+@media (max-width: 767px) {
+  .panel {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: unset;
+    padding: 40px 24px;
+    border-radius: 24px;
+  }
 }
 

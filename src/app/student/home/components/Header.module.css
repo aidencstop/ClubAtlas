@@ -467,8 +467,16 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .header {
+    padding: 16px;
+  }
+
   .navigation {
+    display: none;
+  }
+
+  .logoText {
     display: none;
   }
 }

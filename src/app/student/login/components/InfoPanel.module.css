@@ -136,4 +136,18 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 1199px) {
+  .panel {
+    width: 40%;
+    min-width: 280px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .panel {
+    display: none;
+  }
+}
+
 

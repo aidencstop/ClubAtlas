@@ -26,13 +26,22 @@
   flex-direction: column;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1199px) {
+  .mainContent {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (max-width: 767px) {
   .container {
-    --dashboard-padding-x: 24px;
+    --dashboard-padding-x: 16px;
   }
 
   .mainContent {
     flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
     padding-top: 136px;
     padding-bottom: 24px;
   }

@@ -187,3 +187,19 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+@media (max-width: 767px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+  }
+
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+    text-align: center;
+  }
+}

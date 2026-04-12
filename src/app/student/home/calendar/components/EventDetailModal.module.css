@@ -382,3 +382,19 @@
   background: #f9fafb;
 }
 
+@media (max-width: 767px) {
+  .modalContent {
+    width: calc(100% - 32px);
+    max-height: 95vh;
+    border-radius: 16px;
+  }
+
+  .contentSection {
+    padding: 20px 16px;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+  }
+}
+

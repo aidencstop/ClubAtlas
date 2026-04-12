@@ -73,6 +73,21 @@
   }
 }
 
+@media (max-width: 767px) {
+  .mainContent {
+    flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 80px;
+  }
+
+  .header {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
 
 
 

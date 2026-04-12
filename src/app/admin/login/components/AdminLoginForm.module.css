@@ -10,6 +10,7 @@
   justify-content: center;
   gap: 32px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .header {
@@ -120,6 +121,7 @@
   color: #0a0a0a;
   letter-spacing: -0.3125px;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -259,5 +261,27 @@
 .backLink:hover {
   color: #155dfc;
   text-decoration: underline;
+}
+
+@media (max-width: 1199px) {
+  .panel {
+    padding: 16px 32px 48px 32px;
+  }
+
+  .fieldGroup {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .panel {
+    padding: 40px 24px;
+    border-radius: 24px;
+    height: auto;
+  }
+
+  .fieldGroup {
+    max-width: 100%;
+  }
 }
 

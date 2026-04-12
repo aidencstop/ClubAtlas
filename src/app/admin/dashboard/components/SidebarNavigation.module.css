@@ -80,9 +80,42 @@
   letter-spacing: -0.3125px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1199px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+@media (max-width: 767px) {
   .sidebar {
     width: 100%;
+  }
+
+  .navContainer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .navTitle {
+    width: 100%;
+  }
+
+  .nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .navItem {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  .navText {
+    font-size: 14px;
   }
 }
 

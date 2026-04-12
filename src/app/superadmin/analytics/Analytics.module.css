@@ -62,9 +62,20 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .mainContent {
+    flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 80px;
+  }
+
   .statsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .bottomGrid {
+    width: 100%;
   }
 }
 

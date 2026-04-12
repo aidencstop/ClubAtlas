@@ -182,11 +182,28 @@
     padding-left: 24px;
     padding-right: 24px;
   }
+
+  .tableWrapper {
+    width: 100%;
+  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .mainContent {
     flex-direction: column;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 80px;
+  }
+
+  .header {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
   }
 }
 

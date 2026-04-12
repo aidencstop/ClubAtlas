@@ -92,7 +92,13 @@
   filter: brightness(0) invert(1);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1199px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+@media (max-width: 767px) {
   .sidebar {
     display: none;
   }

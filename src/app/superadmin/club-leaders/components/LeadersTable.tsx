@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './LeadersTable.module.css';
 import EditLeaderModal from './EditLeaderModal';
 import { getClubLeaders, removeLeaderFromClub, ClubLeaderInfo } from '@/lib/api/superadmin';
@@ -31,7 +31,11 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState<Leader | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
   const PAGE_SIZE = 5;
+
+  const selectAllRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadLeaders();
@@ -80,6 +84,7 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
         });
 
         setLeaders(mappedLeaders);
+        setSelectedRowKeys(new Set());
       }
     } catch (err) {
       console.error('Failed to load leaders:', err);
@@ -87,6 +92,59 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const query = searchQuery.toLowerCase();
+  const filteredLeaders = query
+    ? leaders.filter(
+        (l) =>
+          l.name.toLowerCase().includes(query) ||
+          l.email.toLowerCase().includes(query)
+      )
+    : leaders;
+
+  const totalPages = Math.ceil(filteredLeaders.length / PAGE_SIZE);
+  const pagedLeaders = filteredLeaders.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  const allCurrentPageSelected =
+    pagedLeaders.length > 0 && pagedLeaders.every((l) => selectedRowKeys.has(l.rowKey));
+  const someCurrentPageSelected = pagedLeaders.some((l) => selectedRowKeys.has(l.rowKey));
+
+  useEffect(() => {
+    if (selectAllRef.current) {
+      selectAllRef.current.indeterminate = someCurrentPageSelected && !allCurrentPageSelected;
+    }
+  }, [someCurrentPageSelected, allCurrentPageSelected]);
+
+  const handleSelectAll = () => {
+    if (allCurrentPageSelected) {
+      setSelectedRowKeys((prev) => {
+        const next = new Set(prev);
+        pagedLeaders.forEach((l) => next.delete(l.rowKey));
+        return next;
+      });
+    } else {
+      setSelectedRowKeys((prev) => {
+        const next = new Set(prev);
+        pagedLeaders.forEach((l) => next.add(l.rowKey));
+        return next;
+      });
+    }
+  };
+
+  const handleSelectRow = (rowKey: string) => {
+    setSelectedRowKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowKey)) {
+        next.delete(rowKey);
+      } else {
+        next.add(rowKey);
+      }
+      return next;
+    });
   };
 
   const handleEdit = (leader: Leader) => {
@@ -123,6 +181,50 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const selectedLeaders = leaders.filter((l) => selectedRowKeys.has(l.rowKey));
+    if (selectedLeaders.length === 0) return;
+
+    const preview = selectedLeaders
+      .slice(0, 5)
+      .map((l) => `• ${l.name} (${l.club})`)
+      .join('\n');
+    const moreText = selectedLeaders.length > 5 ? `\n...and ${selectedLeaders.length - 5} more` : '';
+
+    if (
+      !confirm(
+        `Are you sure you want to remove ${selectedLeaders.length} leader(s)?\n\n${preview}${moreText}\n\nLeaders with no remaining clubs will be reverted to student role.`
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+    const errors: string[] = [];
+
+    for (const leader of selectedLeaders) {
+      try {
+        const response = await removeLeaderFromClub(leader.id, leader.clubId);
+        if (response.error) {
+          errors.push(`${leader.name}: ${response.error}`);
+        }
+      } catch {
+        errors.push(`${leader.name}: Failed to remove`);
+      }
+    }
+
+    if (errors.length > 0) {
+      alert(`Some deletions failed:\n${errors.join('\n')}`);
+    }
+
+    setIsDeleting(false);
+    await loadLeaders();
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -143,28 +245,41 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
     );
   }
 
-  const query = searchQuery.toLowerCase();
-  const filteredLeaders = query
-    ? leaders.filter(
-        (l) =>
-          l.name.toLowerCase().includes(query) ||
-          l.email.toLowerCase().includes(query)
-      )
-    : leaders;
-
-  const totalPages = Math.ceil(filteredLeaders.length / PAGE_SIZE);
-  const pagedLeaders = filteredLeaders.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   return (
     <div className={styles.container}>
+      {selectedRowKeys.size > 0 && (
+        <div className={styles.bulkActionBar}>
+          <span className={styles.bulkActionCount}>
+            {selectedRowKeys.size} selected
+          </span>
+          <button
+            className={styles.bulkDeleteButton}
+            onClick={handleBulkDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : `Delete Selected (${selectedRowKeys.size})`}
+          </button>
+          <button
+            className={styles.bulkCancelButton}
+            onClick={() => setSelectedRowKeys(new Set())}
+            disabled={isDeleting}
+          >
+            Clear Selection
+          </button>
+        </div>
+      )}
+
       <div className={styles.tableHeader}>
+        <div className={styles.checkboxCell}>
+          <input
+            ref={selectAllRef}
+            type="checkbox"
+            className={styles.checkbox}
+            checked={allCurrentPageSelected}
+            onChange={handleSelectAll}
+            aria-label="Select all on this page"
+          />
+        </div>
         <div className={styles.headerCell} style={{ width: '160px' }}>Name</div>
         <div className={styles.headerCell} style={{ width: '280px' }}>Email</div>
         <div className={styles.headerCell} style={{ width: '131.656px' }}>Club</div>
@@ -180,49 +295,60 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
           </div>
         ) : (
           pagedLeaders.map((leader) => (
-          <div key={leader.rowKey} className={styles.tableRow}>
-            <div className={styles.nameCell} style={{ width: '160px' }}>
-              <div className={styles.avatar}>
-                {leader.initial}
+            <div
+              key={leader.rowKey}
+              className={`${styles.tableRow} ${selectedRowKeys.has(leader.rowKey) ? styles.tableRowSelected : ''}`}
+            >
+              <div className={styles.checkboxCell}>
+                <input
+                  type="checkbox"
+                  className={styles.checkbox}
+                  checked={selectedRowKeys.has(leader.rowKey)}
+                  onChange={() => handleSelectRow(leader.rowKey)}
+                  aria-label={`Select ${leader.name}`}
+                />
               </div>
-              <span className={styles.name}>{leader.name}</span>
+
+              <div className={styles.nameCell} style={{ width: '160px' }}>
+                <div className={styles.avatar}>{leader.initial}</div>
+                <span className={styles.name}>{leader.name}</span>
+              </div>
+
+              <div className={styles.emailCell} style={{ width: '280px' }}>
+                {leader.email}
+              </div>
+
+              <div className={styles.clubCell} style={{ width: '131.656px' }}>
+                {leader.club}
+              </div>
+
+              <div className={styles.roleCell} style={{ width: '131.672px' }}>
+                {leader.role}
+              </div>
+
+              <div className={styles.statusCell} style={{ width: '57.828px' }}>
+                <span className={`${styles.statusBadge} ${styles[leader.status.toLowerCase()]}`}>
+                  {leader.status}
+                </span>
+              </div>
+
+              <div className={styles.actionsCell} style={{ width: '57.828px' }}>
+                <button
+                  className={styles.actionButton}
+                  onClick={() => handleEdit(leader)}
+                  aria-label="Edit"
+                >
+                  <img src={editIcon} alt="Edit" className={styles.actionIcon} />
+                </button>
+                <button
+                  className={styles.actionButton}
+                  onClick={() => handleDelete(leader.id, leader.clubId, leader.club)}
+                  aria-label="Delete"
+                >
+                  <img src={deleteIcon} alt="Delete" className={styles.actionIcon} />
+                </button>
+              </div>
             </div>
-            
-            <div className={styles.emailCell} style={{ width: '280px' }}>
-              {leader.email}
-            </div>
-            
-            <div className={styles.clubCell} style={{ width: '131.656px' }}>
-              {leader.club}
-            </div>
-            
-            <div className={styles.roleCell} style={{ width: '131.672px' }}>
-              {leader.role}
-            </div>
-            
-            <div className={styles.statusCell} style={{ width: '57.828px' }}>
-              <span className={`${styles.statusBadge} ${styles[leader.status.toLowerCase()]}`}>
-                {leader.status}
-              </span>
-            </div>
-            
-            <div className={styles.actionsCell} style={{ width: '57.828px' }}>
-              <button
-                className={styles.actionButton}
-                onClick={() => handleEdit(leader)}
-                aria-label="Edit"
-              >
-                <img src={editIcon} alt="Edit" className={styles.actionIcon} />
-              </button>
-              <button
-                className={styles.actionButton}
-                onClick={() => handleDelete(leader.id, leader.clubId, leader.club)}
-                aria-label="Delete"
-              >
-                <img src={deleteIcon} alt="Delete" className={styles.actionIcon} />
-              </button>
-            </div>
-          </div>
           ))
         )}
       </div>
@@ -264,4 +390,3 @@ export default function LeadersTable({ searchQuery = '' }: LeadersTableProps) {
     </div>
   );
 }
-

@@ -63,6 +63,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
+  box-sizing: border-box;
 }
 
 /* 상단 헤더 섹션 - 숨김 */
@@ -95,49 +96,38 @@
 }
 
 /* 반응형 디자인 */
-@media (max-width: 1200px) {
+@media (max-width: 1199px) {
   .content {
     padding: 40px 32px;
   }
-  
+
   .loginCard {
     width: 100%;
     max-width: 1024px;
+    height: auto;
+    min-height: 766px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .content {
+    padding: 16px;
+    height: auto;
+    min-height: 100vh;
+  }
+
   .loginCard {
     flex-direction: column;
+    width: calc(100% - 0px);
+    max-width: 480px;
     height: auto;
-    max-width: 512px;
+    min-height: unset;
   }
-  
+
   .blurCircle1,
   .blurCircle2,
   .blurCircle3 {
-    display: none; /* 모바일에서는 블러 효과 제거 */
-  }
-}
-
-@media (max-width: 768px) {
-  .content {
-    padding: 24px 16px;
-    gap: 48px;
-  }
-  
-  .mainTitle {
-    font-size: 48px;
-    line-height: 52px;
-  }
-  
-  .subtitle {
-    font-size: 18px;
-    line-height: 28px;
-  }
-  
-  .loginCard {
-    width: 100%;
+    display: none;
   }
 }
 

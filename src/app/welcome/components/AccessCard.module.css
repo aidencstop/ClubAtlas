@@ -105,6 +105,25 @@
   display: block;
 }
 
+@media (max-width: 1199px) {
+  .card {
+    width: 100%;
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 767px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+    min-height: unset;
+  }
+
+  .cardContent {
+    padding: 28px 24px;
+  }
+}
+
 
 
 
