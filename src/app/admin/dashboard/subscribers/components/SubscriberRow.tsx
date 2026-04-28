@@ -22,7 +22,17 @@ export default function SubscriberRow({ subscriber, onViewDetails }: SubscriberR
           {subscriber.initial}
         </div>
         <div className={styles.info}>
-          <div className={styles.email}>{subscriber.email}</div>
+          <div className={styles.email}>
+            {(() => {
+              const [local, domain] = subscriber.email.split('@');
+              return (
+                <>
+                  <span className={styles.emailLocal}>{local}</span>
+                  <span className={styles.emailDomain}>@{domain}</span>
+                </>
+              );
+            })()}
+          </div>
           <div className={styles.date}>Subscribed {subscriber.subscribedDate}</div>
         </div>
       </div>

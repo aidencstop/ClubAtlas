@@ -1986,6 +1986,33 @@
   .navigation {
     display: none;
   }
+
+  .tabNavigation {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .tab {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    gap: 4px;
+    padding: 0 6px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  .tab img {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .tab span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 480px) {

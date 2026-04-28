@@ -927,6 +927,82 @@
 }
 
 @media (max-width: 768px) {
+  .mainWrapper {
+    padding-left: 0;
+    padding-right: 0;
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  .container {
+    padding: 24px 16px;
+    gap: 24px;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  .pageTitle h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .pageTitle p {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  /* aiBannerContent 내부 */
+  .aiBannerContent {
+    padding: 20px 16px;
+  }
+
+  .aiBannerHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .aiBannerText h2 {
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  .aiBannerText p {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* aiMessageLarge 내부 */
+  .chatMessages {
+    padding: 16px 12px;
+  }
+
+  .messageGroup {
+    gap: 10px;
+  }
+
+  .aiMessage,
+  .aiMessageLarge {
+    max-width: calc(100% - 50px);
+  }
+
+  .selectionGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-height: none;
+  }
+
+  .selectionButton {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  /* 결과 영역 */
   .recommendationsGrid {
     grid-template-columns: 1fr;
     gap: 16px;

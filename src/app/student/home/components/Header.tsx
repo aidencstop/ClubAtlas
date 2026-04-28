@@ -28,9 +28,11 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ clubs: Club[]; events: Event[] }>({ clubs: [], events: [] });
   const [isSearching, setIsSearching] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -42,6 +44,9 @@ export default function Header() {
       }
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSearch(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setShowMobileMenu(false);
       }
     }
 
@@ -176,7 +181,7 @@ export default function Header() {
   };
 
   return (
-    <header className={styles.header}>
+    <header className={styles.header} ref={mobileMenuRef}>
       <div className={styles.container}>
         <Link href="/student/home" className={styles.logoContainer}>
           <div className={styles.logoIcon}>
@@ -393,9 +398,51 @@ export default function Header() {
           >
             <img src={logoutIcon} alt="Logout" />
           </button>
+
+          <button
+            className={styles.hamburgerButton}
+            aria-label="Menu"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+          >
+            <span className={`${styles.hamburgerLine} ${showMobileMenu ? styles.hamburgerLineOpen1 : ''}`} />
+            <span className={`${styles.hamburgerLine} ${showMobileMenu ? styles.hamburgerLineOpen2 : ''}`} />
+            <span className={`${styles.hamburgerLine} ${showMobileMenu ? styles.hamburgerLineOpen3 : ''}`} />
+          </button>
         </div>
       </div>
 
+      {showMobileMenu && (
+        <nav className={styles.mobileMenu}>
+          <Link
+            href="/student/home/clubs"
+            className={`${styles.mobileNavLink} ${pathname.startsWith('/student/home/clubs') ? styles.mobileNavLinkActive : ''}`}
+            onClick={() => setShowMobileMenu(false)}
+          >
+            Browse Clubs
+          </Link>
+          <Link
+            href="/student/home/calendar"
+            className={`${styles.mobileNavLink} ${pathname.startsWith('/student/home/calendar') ? styles.mobileNavLinkActive : ''}`}
+            onClick={() => setShowMobileMenu(false)}
+          >
+            Calendar
+          </Link>
+          <Link
+            href="/student/home/ai-recommendations"
+            className={`${styles.mobileNavLink} ${pathname.startsWith('/student/home/ai-recommendations') ? styles.mobileNavLinkActive : ''}`}
+            onClick={() => setShowMobileMenu(false)}
+          >
+            AI Recommendations
+          </Link>
+          <Link
+            href="/student/home/mypage"
+            className={`${styles.mobileNavLink} ${pathname.startsWith('/student/home/mypage') ? styles.mobileNavLinkActive : ''}`}
+            onClick={() => setShowMobileMenu(false)}
+          >
+            My Page
+          </Link>
+        </nav>
+      )}
     </header>
   );
 }

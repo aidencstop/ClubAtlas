@@ -467,9 +467,78 @@
   }
 }
 
+.hamburgerButton {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.hamburgerButton:hover {
+  background: #e5e7eb;
+}
+
+.hamburgerLine {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #374151;
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  transform-origin: center;
+}
+
+.hamburgerLineOpen1 {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburgerLineOpen2 {
+  opacity: 0;
+}
+
+.hamburgerLineOpen3 {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileNavLink {
+  display: block;
+  padding: 14px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #364153;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mobileNavLink:hover {
+  background: #f9fafb;
+  color: #133f2e;
+}
+
+.mobileNavLinkActive {
+  color: #2a644d;
+  font-weight: 700;
+  background: #f0fdf4;
+}
+
 @media (max-width: 767px) {
   .header {
     padding: 16px;
+    height: auto;
   }
 
   .navigation {
@@ -478,6 +547,28 @@
 
   .logoText {
     display: none;
+  }
+
+  .hamburgerButton {
+    display: flex;
+  }
+
+  .mobileMenu {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 8px 0;
+  }
+
+  .searchDropdown {
+    position: fixed;
+    top: 72px;
+    left: 16px;
+    right: 16px;
+    min-width: unset;
+    max-width: unset;
+    width: auto;
   }
 }
 

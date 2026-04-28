@@ -76,6 +76,18 @@
   background: #f9fafb;
 }
 
+.emailLocal,
+.emailDomain {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .emailLocal,
+  .emailDomain {
+    display: block;
+  }
+}
+
 
 
 

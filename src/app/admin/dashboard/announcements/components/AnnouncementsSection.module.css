@@ -118,6 +118,24 @@
   color: #9ca3af;
 }
 
+@media (max-width: 768px) {
+  .createButton {
+    height: 24px;
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .buttonIcon {
+    width: 10px;
+    height: 10px;
+  }
+
+  .createButton span {
+    font-size: 8px;
+    line-height: 12px;
+  }
+}
+
 
 
 

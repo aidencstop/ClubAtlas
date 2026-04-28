@@ -48,14 +48,29 @@
 @media (max-width: 768px) {
   .tabs {
     flex-wrap: wrap;
+    gap: 4px;
   }
-  
+
   .tab {
-    min-width: calc(50% - 4px);
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+    gap: 4px;
+    padding: 0 6px;
+    overflow: hidden;
   }
-  
+
+  .icon {
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+  }
+
   .tab span {
-    font-size: 12px;
+    font-size: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 }
 

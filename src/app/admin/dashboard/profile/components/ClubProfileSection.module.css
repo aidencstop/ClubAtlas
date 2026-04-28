@@ -473,8 +473,17 @@
   }
 
   .editButton {
-    width: 100%;
-    justify-content: center;
+    height: 40px;
+    padding: 0 16px;
+  }
+
+  .buttonIcon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .buttonText {
+    font-size: 14px;
   }
 
   .imagesSection {
@@ -495,5 +504,18 @@
 
   .galleryGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fieldValue {
+    height: auto;
+    min-height: 56px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    word-break: break-word;
+  }
+
+  .fieldText {
+    word-break: break-word;
+    white-space: normal;
   }
 }

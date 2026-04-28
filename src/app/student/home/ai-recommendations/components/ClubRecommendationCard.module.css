@@ -245,17 +245,28 @@
     width: 100%;
   }
 
+  .cardContent {
+    padding: 16px;
+  }
+
   .clubName {
     font-size: 20px;
   }
 
+  .reasonsSection {
+    padding: 12px;
+  }
+
   .cardFooter {
     flex-direction: column;
+    padding: 16px;
   }
 
   .viewDetailsButton,
   .subscribeButton {
     width: 100%;
+    box-sizing: border-box;
+    display: block;
   }
 }
 
